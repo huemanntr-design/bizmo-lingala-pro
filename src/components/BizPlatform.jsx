@@ -730,6 +730,15 @@ function InsightCard({ icon, iconBg, title, description, action, onAction }) {
   );
 }
 
+function HelpText({ children, icon = "💡" }) {
+  return (
+    <div style={{ display:"flex", alignItems:"flex-start", gap:8, padding:"10px 14px", background:"rgba(26,86,255,0.04)", border:"1px solid rgba(26,86,255,0.1)", borderRadius:10, marginBottom:16, fontSize:12, color:"#7B91C4", lineHeight:1.6 }}>
+      <span style={{ flexShrink:0, fontSize:14 }}>{icon}</span>
+      <span>{children}</span>
+    </div>
+  );
+}
+
 function Modal({ title, onClose, children, maxWidth = 560 }) {
   return (
     <div className="modal-overlay" onClick={e => e.target === e.currentTarget && onClose()}>
@@ -996,10 +1005,7 @@ function HomePage({ data, setData, showToast, dark, kpiGoals, updateGoal }) {
           <h1 style={{ fontFamily: "'Bricolage Grotesque'", fontSize: 28, fontWeight: 800, letterSpacing: "-0.5px" }}>{data.user.name.split(" ").slice(0,2).join(" ")}</h1>
           <div style={{ fontSize: 12, color: "#7B91C4", marginTop: 3 }}>{data.user.company} · {data.user.role}</div>
         </div>
-        <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
-          <button className="btn btn-ghost" onClick={() => showToast("Export PDF en cours...", "info")}>📥 Export</button>
-          <button className="btn btn-wa" onClick={() => setShowWAModal(true)}>💬 Rapport WA</button>
-        </div>
+      <HelpText icon="👋">Ceci est votre tableau de bord — c'est un résumé de tout ce qui se passe dans votre business. Vous voyez combien d'argent vous avez gagné, dépensé et ce qui reste comme profit (bénéfice).</HelpText>
       </div>
 
       {/* Hero KPI */}
@@ -1017,16 +1023,17 @@ function HomePage({ data, setData, showToast, dark, kpiGoals, updateGoal }) {
       />
       <div className="mini-kpi-grid">
         <MiniKpiCard icon="📉" label="Dépenses" value={fmt(totalExpenses)} trend="+5.1%" trendUp={false} color="#D42B3A" />
-        <MiniKpiCard icon="✨" label="Profit Net" value={fmt(totalProfit)} trend="+23.7%" trendUp={true} color="#16C55E" />
-        <MiniKpiCard icon="🛍️" label="Ventes" value={data.sales.length} trend="+12%" trendUp={true} color="#F5C518" />
-        <MiniKpiCard icon="⚠️" label="Stock Bas" value={lowStock.length} trendUp={false} color={lowStock.length>0?"#D42B3A":"#16C55E"} />
+        <MiniKpiCard icon="✨" label="Bénéfice" value={fmt(totalProfit)} trend="+23.7%" trendUp={true} color="#16C55E" />
+        <MiniKpiCard icon="🛍️" label="Nb de Ventes" value={data.sales.length} trend="+12%" trendUp={true} color="#F5C518" />
+        <MiniKpiCard icon="⚠️" label="Produits en rupture" value={lowStock.length} trendUp={false} color={lowStock.length>0?"#D42B3A":"#16C55E"} />
       </div>
 
       {/* ── VISUAL ANALYTICS ROW ── */}
       <div className="g3" style={{ marginBottom:16 }}>
         {/* Profit Breakdown Donut */}
         <div className="card card-pad">
-          <div className="sec-title" style={{ marginBottom:14 }}>💰 Répartition Profit</div>
+          <div className="sec-title" style={{ marginBottom:8 }}>💰 Répartition Profit</div>
+          <div style={{ fontSize:10, color:"#7B91C4", marginBottom:8 }}>Comment votre argent se divise : ce que vous gardez (profit), ce que vous dépensez, et le coût des marchandises</div>
           <div style={{ display:"flex", alignItems:"center", gap:16 }}>
             <DonutChart
               segments={[
@@ -1053,7 +1060,8 @@ function HomePage({ data, setData, showToast, dark, kpiGoals, updateGoal }) {
 
         {/* Payment Methods Donut */}
         <div className="card card-pad">
-          <div className="sec-title" style={{ marginBottom:14 }}>💳 Modes de Paiement</div>
+          <div className="sec-title" style={{ marginBottom:8 }}>💳 Modes de Paiement</div>
+          <div style={{ fontSize:10, color:"#7B91C4", marginBottom:8 }}>Comment vos clients vous paient : cash, M-Pesa/Airtel (mobile), crédit (à rembourser plus tard), ou banque</div>
           {(() => {
             const methods = ["cash","mobile_money","credit","bank"];
             const colors = ["#16C55E","#25D366","#D42B3A","#1A56FF"];
@@ -1085,7 +1093,8 @@ function HomePage({ data, setData, showToast, dark, kpiGoals, updateGoal }) {
 
         {/* Daily Revenue Sparkline card */}
         <div className="card card-pad">
-          <div className="sec-title" style={{ marginBottom:14 }}>📈 Tendance Quotidienne</div>
+          <div className="sec-title" style={{ marginBottom:8 }}>📈 Tendance Quotidienne</div>
+          <div style={{ fontSize:10, color:"#7B91C4", marginBottom:8 }}>Cette courbe montre si vos revenus montent ↗ ou descendent ↘ chaque jour de la semaine</div>
           <SparkLine data={data.revenueChart.map(d=>d.amount)} width={200} height={60} color="#1A56FF" />
           <div style={{ display:"flex", gap:14, marginTop:12 }}>
             {[["Moy",fmt(data.revenueChart.reduce((s,d)=>s+d.amount,0)/7),"#1A56FF"],["Max",fmt(Math.max(...data.revenueChart.map(d=>d.amount))),"#16C55E"],["Min",fmt(Math.min(...data.revenueChart.map(d=>d.amount))),"#D42B3A"]].map(([l,v,c]) => (
@@ -1261,9 +1270,10 @@ function SalesPage({ data, setData, showToast, kpiGoals, updateGoal }) {
         <MiniKpiCard icon="📱" label="Mobile Money" value={data.sales.filter(s=>s.payment_method==="mobile_money").length} color="#25D366" />
         <MiniKpiCard icon="💳" label="Crédit" value={fmt(data.sales.filter(s=>s.payment_method==="credit").reduce((s,x)=>s+x.total_amount,0))} color="#D42B3A" />
       </div>
+      <HelpText icon="🛒">Ici vous enregistrez vos ventes. Le «Point de Vente» c'est comme votre caisse : vous choisissez les produits, le client paie, et tout est noté automatiquement. L'historique garde la trace de toutes vos ventes passées.</HelpText>
       <div className="sec-head"><h1 style={{ fontFamily:"'Bricolage Grotesque'", fontSize:22, fontWeight:800 }}>◈ Ventes & POS</h1></div>
       <div className="tabs" style={{ marginBottom: 20 }}>
-        {[["pos","🛒 Point de Vente"],["history","📋 Historique"],["invoices","🧾 Factures"]].map(([k,l]) => (
+        {[["pos","🛒 Point de Vente"],["gambiste","📱 Gambiste M-Pesa"],["history","📋 Historique"],["invoices","🧾 Factures"]].map(([k,l]) => (
           <div key={k} className={`tab ${tab===k?"active":""}`} onClick={() => setTab(k)}>{l}</div>
         ))}
       </div>
@@ -1395,6 +1405,150 @@ function SalesPage({ data, setData, showToast, kpiGoals, updateGoal }) {
         </>
       )}
 
+      {/* ─ GAMBISTE M-PESA MODULE ─ */}
+      {tab === "gambiste" && (() => {
+        const SERVICES = [
+          { id:"unites", emoji:"📞", name:"Unités (Crédit Airtime)", desc:"Vente de crédit téléphonique", networks:[
+            { id:"vodacom", name:"Vodacom", color:"#E60000", amounts:[100,200,500,1000,2000,5000] },
+            { id:"airtel", name:"Airtel", color:"#FF0000", amounts:[100,200,500,1000,2000,5000] },
+            { id:"orange", name:"Orange", color:"#FF6600", amounts:[100,200,500,1000,2000,5000] },
+            { id:"africell", name:"Africell", color:"#6B21A8", amounts:[100,200,500,1000,2000,5000] },
+          ]},
+          { id:"data", emoji:"🌐", name:"Forfaits Internet (Data)", desc:"Bundles data mobile", networks:[
+            { id:"vodacom", name:"Vodacom", color:"#E60000", packs:[{name:"500MB/jour",price:500},{name:"1GB/7j",price:1500},{name:"3GB/30j",price:5000},{name:"10GB/30j",price:12000}] },
+            { id:"airtel", name:"Airtel", color:"#FF0000", packs:[{name:"500MB/jour",price:400},{name:"1GB/7j",price:1200},{name:"3GB/30j",price:4000},{name:"10GB/30j",price:10000}] },
+            { id:"orange", name:"Orange", color:"#FF6600", packs:[{name:"500MB/jour",price:450},{name:"1GB/7j",price:1300},{name:"5GB/30j",price:6000},{name:"15GB/30j",price:15000}] },
+          ]},
+          { id:"transfert", emoji:"💸", name:"Envoi d'Argent", desc:"Transfert M-Pesa, Airtel Money, Orange Money" },
+          { id:"paiement", emoji:"🏦", name:"Paiements de Factures", desc:"SNEL, REGIDESO, Canal+, DSTV" },
+        ];
+        return (
+          <div>
+            <HelpText icon="📱">Le module <strong>Gambiste</strong> c'est pour ceux qui vendent des unités (crédit téléphonique), des forfaits internet, ou qui font des transferts d'argent M-Pesa. Notez chaque transaction ici pour suivre vos commissions et votre bénéfice.</HelpText>
+
+            <div className="g2" style={{ marginBottom:20 }}>
+              {SERVICES.map(svc => (
+                <div key={svc.id} className="card card-pad card-hover" style={{ cursor:"pointer" }}
+                  onClick={() => showToast(`${svc.name} sélectionné`, "info")}>
+                  <div style={{ display:"flex", alignItems:"center", gap:12, marginBottom:8 }}>
+                    <div style={{ width:48, height:48, borderRadius:12, background:"rgba(26,86,255,0.08)", display:"flex", alignItems:"center", justifyContent:"center", fontSize:24 }}>{svc.emoji}</div>
+                    <div>
+                      <div style={{ fontWeight:700, fontSize:14 }}>{svc.name}</div>
+                      <div style={{ fontSize:11, color:"#7B91C4" }}>{svc.desc}</div>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Quick Sale: Unités */}
+            <div className="card card-pad" style={{ marginBottom:16 }}>
+              <div className="sec-title" style={{ marginBottom:6 }}>📞 Vente Rapide d'Unités</div>
+              <div style={{ fontSize:11, color:"#7B91C4", marginBottom:14 }}>Choisissez le réseau et le montant. La commission est calculée automatiquement (environ 3-5% selon le réseau).</div>
+              <div style={{ display:"flex", gap:8, marginBottom:14, flexWrap:"wrap" }}>
+                {SERVICES[0].networks.map(net => (
+                  <div key={net.id} style={{ padding:"10px 16px", borderRadius:10, background:`${net.color}12`, border:`1px solid ${net.color}40`, cursor:"pointer", textAlign:"center", minWidth:80 }}>
+                    <div style={{ fontWeight:700, fontSize:13, color:net.color }}>{net.name}</div>
+                  </div>
+                ))}
+              </div>
+              <div style={{ display:"flex", gap:8, flexWrap:"wrap", marginBottom:14 }}>
+                {[100,200,500,1000,2000,5000].map(amt => (
+                  <button key={amt} className="btn btn-ghost" style={{ fontSize:12, padding:"8px 14px" }}
+                    onClick={() => showToast(`Vente ${amt} FC enregistrée! Commission: ${(amt*0.04).toFixed(0)} FC`, "success")}>
+                    {amt.toLocaleString()} FC
+                  </button>
+                ))}
+              </div>
+              <div className="form-group">
+                <label className="form-label">Numéro du client</label>
+                <input placeholder="+243 8XX XXX XXX" />
+              </div>
+              <div style={{ display:"flex", gap:8 }}>
+                <button className="btn btn-primary" style={{ flex:1, justifyContent:"center" }}
+                  onClick={() => showToast("✅ Transaction enregistrée!", "success")}>📱 Envoyer Unités</button>
+                <button className="btn btn-wa" style={{ justifyContent:"center" }}
+                  onClick={() => showToast("Reçu envoyé par WhatsApp!", "whatsapp")}>💬 Reçu WA</button>
+              </div>
+            </div>
+
+            {/* Data Bundles */}
+            <div className="card card-pad" style={{ marginBottom:16 }}>
+              <div className="sec-title" style={{ marginBottom:6 }}>🌐 Forfaits Internet (Data)</div>
+              <div style={{ fontSize:11, color:"#7B91C4", marginBottom:14 }}>Vendez des forfaits data. Votre commission est la différence entre le prix d'achat (ce que vous payez) et le prix de vente (ce que le client paie).</div>
+              {SERVICES[1].networks.map(net => (
+                <div key={net.id} style={{ marginBottom:12 }}>
+                  <div style={{ fontSize:12, fontWeight:700, color:net.color, marginBottom:8 }}>{net.name}</div>
+                  <div style={{ display:"flex", gap:8, flexWrap:"wrap" }}>
+                    {net.packs.map(pk => (
+                      <div key={pk.name} className="card card-pad-sm card-hover" style={{ cursor:"pointer", flex:"1 1 140px", minWidth:130 }}
+                        onClick={() => showToast(`Forfait ${pk.name} vendu! Prix: ${pk.price.toLocaleString()} FC`, "success")}>
+                        <div style={{ fontWeight:700, fontSize:13, marginBottom:2 }}>{pk.name}</div>
+                        <div style={{ fontSize:12, color:net.color, fontWeight:700 }}>{pk.price.toLocaleString()} FC</div>
+                        <div style={{ fontSize:10, color:"#16C55E", marginTop:2 }}>Commission: ~{(pk.price*0.05).toLocaleString()} FC</div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Money Transfers */}
+            <div className="card card-pad" style={{ marginBottom:16 }}>
+              <div className="sec-title" style={{ marginBottom:6 }}>💸 Transfert d'Argent</div>
+              <div style={{ fontSize:11, color:"#7B91C4", marginBottom:14 }}>Envoyez de l'argent pour vos clients via M-Pesa, Airtel Money ou Orange Money. Vous gagnez une commission sur chaque transfert.</div>
+              <div className="g2">
+                {[
+                  { name:"M-Pesa (Vodacom)", color:"#E60000", emoji:"📱" },
+                  { name:"Airtel Money", color:"#FF0000", emoji:"📲" },
+                  { name:"Orange Money", color:"#FF6600", emoji:"🟠" },
+                  { name:"Afri Money", color:"#6B21A8", emoji:"💜" },
+                ].map(wallet => (
+                  <div key={wallet.name} className="card card-pad-sm card-hover" style={{ cursor:"pointer", borderColor:`${wallet.color}30` }}
+                    onClick={() => showToast(`${wallet.name} — saisissez le montant`, "info")}>
+                    <div style={{ display:"flex", alignItems:"center", gap:10 }}>
+                      <span style={{ fontSize:24 }}>{wallet.emoji}</span>
+                      <div>
+                        <div style={{ fontWeight:700, fontSize:13, color:wallet.color }}>{wallet.name}</div>
+                        <div style={{ fontSize:10, color:"#7B91C4" }}>Transfert · Retrait · Dépôt</div>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+              <div style={{ marginTop:14 }}>
+                <div className="g2">
+                  <div className="form-group"><label className="form-label">Numéro envoyeur</label><input placeholder="+243..." /></div>
+                  <div className="form-group"><label className="form-label">Numéro receveur</label><input placeholder="+243..." /></div>
+                </div>
+                <div className="g2">
+                  <div className="form-group"><label className="form-label">Montant (FC)</label><input type="number" placeholder="50000" /></div>
+                  <div className="form-group"><label className="form-label">Commission (FC)</label><input type="number" placeholder="Auto: ~2%" /></div>
+                </div>
+                <button className="btn btn-primary" style={{ width:"100%", justifyContent:"center" }}
+                  onClick={() => showToast("✅ Transfert enregistré!", "success")}>💸 Enregistrer le Transfert</button>
+              </div>
+            </div>
+
+            {/* Bill Payments */}
+            <div className="card card-pad">
+              <div className="sec-title" style={{ marginBottom:6 }}>🏦 Paiement de Factures</div>
+              <div style={{ fontSize:11, color:"#7B91C4", marginBottom:14 }}>Payez les factures de vos clients : électricité (SNEL), eau (REGIDESO), TV (Canal+, DSTV). Vous gagnez une petite commission.</div>
+              <div style={{ display:"flex", gap:8, flexWrap:"wrap" }}>
+                {[["⚡","SNEL","Électricité","#F5C518"],["💧","REGIDESO","Eau","#1A56FF"],["📺","Canal+","Télévision","#000"],["📡","DSTV","Satellite","#0066CC"],["🎓","Frais Scolaires","École","#16C55E"],["🏥","INSS","Assurance","#D42B3A"]].map(([ico,name,desc,col]) => (
+                  <div key={name} className="card card-pad-sm card-hover" style={{ cursor:"pointer", flex:"1 1 120px", minWidth:110, textAlign:"center" }}
+                    onClick={() => showToast(`Paiement ${name} — saisissez la référence`, "info")}>
+                    <div style={{ fontSize:24, marginBottom:4 }}>{ico}</div>
+                    <div style={{ fontWeight:700, fontSize:12, color:col }}>{name}</div>
+                    <div style={{ fontSize:10, color:"#7B91C4" }}>{desc}</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        );
+      })()}
+
       {tab === "invoices" && (
         <div className="card card-pad" style={{ textAlign:"center", padding:40 }}>
           <div style={{ fontSize:48, marginBottom:16 }}>🧾</div>
@@ -1441,6 +1595,7 @@ function ProductsPage({ data, setData, showToast }) {
         <MiniKpiCard icon="📈" label="Marge Moy." value={(data.products.reduce((s,p)=>s+((p.unit_price-p.cogs)/p.unit_price*100),0)/data.products.length).toFixed(0)+"%"} color="#F5C518" />
         <MiniKpiCard icon="📊" label="Unités" value={data.products.reduce((s,p)=>s+p.stock_quantity,0)} color="#25D366" />
       </div>
+      <HelpText icon="📦">Vos produits et votre stock. Le «stock» c'est la quantité de marchandises que vous avez en réserve. Quand le stock est bas ⚠️, il faut recommander. La «marge» c'est le bénéfice que vous faites sur chaque produit (prix de vente − prix d'achat).</HelpText>
       <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:20, flexWrap:"wrap", gap:10 }}>
         <h1 style={{ fontFamily:"'Bricolage Grotesque'", fontSize:22, fontWeight:800 }}>◻ Produits & Stock</h1>
         <button className="btn btn-primary" onClick={() => setShowAdd(true)}>➕ Nouveau Produit</button>
@@ -1729,6 +1884,7 @@ function ClientsPage({ data, setData, showToast, kpiGoals, updateGoal }) {
         <MiniKpiCard icon="💳" label="Crédit Dû" value={fmt(data.clients.reduce((s,c)=>s+c.credit_balance,0))} trendUp={false} color="#D42B3A" />
         <MiniKpiCard icon="🎯" label="Leads" value={data.clients.filter(c=>c.status==="lead").length} color="#1A56FF" />
       </div>
+      <HelpText icon="👥">Vos clients — les gens et entreprises qui achètent chez vous. Les clients «VIP» 👑 sont ceux qui achètent beaucoup. Le «crédit» c'est l'argent qu'un client vous doit encore. Le «CRM» est un outil pour organiser et suivre vos relations avec chaque client.</HelpText>
       <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:20, flexWrap:"wrap", gap:10 }}>
         <h1 style={{ fontFamily:"'Bricolage Grotesque'", fontSize:22, fontWeight:800 }}>◎ Clients</h1>
         <button className="btn btn-primary" onClick={() => setShowAdd(true)}>➕ Nouveau Client</button>
@@ -2126,6 +2282,7 @@ function MarketingPage({ data, setData, showToast, kpiGoals, updateGoal }) {
         <MiniKpiCard icon="✨" label="IA" value={aiPosts.filter(p=>p.status==="ai_proposed").length} color="#F5C518" />
         <MiniKpiCard icon="🔄" label="Partages" value={data.posts.reduce((s,p)=>s+p.shares,0)} color="#69C9D0" />
       </div>
+      <HelpText icon="📣">Le Marketing, c'est comment vous faites connaître vos produits. Ici, l'IA vous aide à créer des publications pour Facebook, Instagram et TikTok. Vous pouvez programmer à l'avance et l'IA propose les meilleurs moments pour publier.</HelpText>
       <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:20 }}>
         <h1 style={{ fontFamily:"'Bricolage Grotesque'", fontSize:22, fontWeight:800 }}>◉ Marketing Hub</h1>
         <button className="btn btn-primary" onClick={() => showToast("Analytics...", "info")}>📊 Analytics</button>
@@ -2448,6 +2605,7 @@ function AccountingPage({ data, setData, showToast, kpiGoals, updateGoal }) {
         <MiniKpiCard icon="🧾" label="Nb Dépenses" value={data.expenses.length} color="#7B91C4" />
         <MiniKpiCard icon="✅" label="Approuvées" value={data.expenses.filter(e=>e.status==="approved").length} color="#16C55E" />
       </div>
+      <HelpText icon="🧾">La comptabilité c'est le suivi de tout l'argent qui entre et sort de votre business. Le «journal» note chaque mouvement. Les «revenus» c'est l'argent gagné, les «dépenses» c'est l'argent dépensé, et le «profit net» c'est ce qui vous reste à la fin.</HelpText>
       <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:20 }}>
         <h1 style={{ fontFamily:"'Bricolage Grotesque'", fontSize:22, fontWeight:800 }}>⊛ Comptabilité</h1>
         <div style={{ display:"flex", gap:10 }}>
