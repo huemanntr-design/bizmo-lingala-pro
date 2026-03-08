@@ -2084,9 +2084,15 @@ function MarketingPage({ data, setData, showToast, kpiGoals, updateGoal }) {
           {isAI && !isRej ? (
             <>
               <button onClick={() => validate(post.id)} style={{ flex:1, padding:"8px", background:"#16A34A", border:"none", borderRadius:8, color:"white", fontFamily:"'DM Sans'", fontSize:12, fontWeight:700, cursor:"pointer" }}>✅ Valider</button>
+              <button onClick={() => startEdit(post, true)} style={{ flex:1, padding:"8px", background:"rgba(26,86,255,0.12)", border:"1px solid rgba(26,86,255,0.3)", borderRadius:8, color:"#1A56FF", fontFamily:"'DM Sans'", fontSize:12, fontWeight:700, cursor:"pointer" }}>✏️ Modifier</button>
               <button onClick={() => reject(post.id)}   style={{ flex:1, padding:"8px", background:"rgba(212,43,58,0.12)", border:"1px solid rgba(212,43,58,0.3)", borderRadius:8, color:"#D42B3A", fontFamily:"'DM Sans'", fontSize:12, fontWeight:700, cursor:"pointer" }}>✕ Rejeter</button>
             </>
-          ) : <div style={{ fontSize:11, color: isRej?"#4a5678":"#16C55E", fontWeight:600 }}>{isRej?"✕ Rejeté":"✅ Programmé"}</div>}
+          ) : !isRej && post.status!=="published" ? (
+            <>
+              <button onClick={() => startEdit(post, false)} style={{ flex:1, padding:"8px", background:"rgba(26,86,255,0.12)", border:"1px solid rgba(26,86,255,0.3)", borderRadius:8, color:"#1A56FF", fontFamily:"'DM Sans'", fontSize:12, fontWeight:700, cursor:"pointer" }}>✏️ Modifier</button>
+              <div style={{ fontSize:11, color:"#16C55E", fontWeight:600, display:"flex", alignItems:"center" }}>✅ Programmé</div>
+            </>
+          ) : <div style={{ fontSize:11, color: isRej?"#4a5678":"#16C55E", fontWeight:600 }}>{isRej?"✕ Rejeté":"✅ Publié"}</div>}
         </div>
       </div>
     );
