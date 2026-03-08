@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from "react";
+import logoDrc from "@/assets/logo-drc.png";
 
 // ─── FONTS & DATA ──────────────────────────────────────────────────────────────
 const FONT_URL = "https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,300;12..96,400;12..96,500;12..96,600;12..96,700;12..96,800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&display=swap";
@@ -129,8 +130,8 @@ const buildStyles = (dark) => {
     bg:       "#050D1F",
     bg2:      "#080F22",
     bg3:      "#0C1428",
-    surface:  "#0F1A30",
-    surface2: "#142040",
+    surface:  "#162040",
+    surface2: "#1A2850",
     border:   "rgba(26,86,255,0.12)",
     border2:  "rgba(26,86,255,0.20)",
     text:     "#EEF2FF",
@@ -205,17 +206,11 @@ const buildStyles = (dark) => {
   }
   .logo-mark {
     width: 40px; height: 40px; min-width: 40px; border-radius: 10px;
-    background: linear-gradient(180deg, #007FFF 0%, #007FFF 40%, #CE1126 40%, #CE1126 60%, #F7D618 60%, #F7D618 100%);
-    display: flex; align-items: center; justify-content: center;
-    font-family: 'Bricolage Grotesque', sans-serif; font-weight: 800;
-    font-size: 17px; color: white; letter-spacing: -0.5px;
-    box-shadow: 0 4px 14px rgba(0,127,255,0.35);
-    position: relative; overflow: hidden;
+    overflow: hidden; display: flex; align-items: center; justify-content: center;
+    filter: drop-shadow(0 4px 12px rgba(0,127,255,0.35));
   }
-  .logo-mark::before {
-    content: ''; position: absolute; top: 0; left: -2px; right: -2px; bottom: 0;
-    background: linear-gradient(135deg, transparent 35%, #F7D618 35%, #F7D618 42%, transparent 42%);
-    pointer-events: none;
+  .logo-mark img {
+    width: 100%; height: 100%; object-fit: contain;
   }
   .logo-text { font-family: 'Bricolage Grotesque', sans-serif; font-weight: 800; font-size: 15px; white-space: nowrap; color: ${t.text}; letter-spacing: -0.3px; }
   .logo-sub { font-size: 10px; color: ${t.text3}; margin-top: 1px; }
@@ -4258,7 +4253,7 @@ export default function BizPlatform() {
         {/* ─ SIDEBAR ─ */}
         <div className={`sidebar ${sidebarExp ? "expanded" : ""}`}>
           <div className="logo-wrap" onClick={() => setSidebarExp(e => !e)}>
-            <div className="logo-mark">M</div>
+            <div className="logo-mark"><img src={logoDrc} alt="BizPlatform DRC" /></div>
             {sidebarExp && <div><div className="logo-text">BizPlatform</div><div className="logo-sub">DRC Enterprise Suite</div></div>}
           </div>
 
