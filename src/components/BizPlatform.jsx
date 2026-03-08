@@ -1082,6 +1082,14 @@ function ProductsPage({ data, setData, showToast }) {
 
   return (
     <div className="page-bg page-content fade-in">
+      <KpiBanner kpis={[
+        { icon:"📦", label:"Total Produits", value:data.products.length, color:"#1A56FF" },
+        { icon:"💰", label:"Valeur Stock", value:fmt(data.products.reduce((s,p)=>s+p.unit_price*p.stock_quantity,0)), color:"#16C55E" },
+        { icon:"⚠️", label:"Stock Bas", value:data.products.filter(p=>p.stock_quantity<=p.low_stock_alert).length+" produits", trendUp:false, color:"#D42B3A" },
+        { icon:"📈", label:"Marge Moyenne", value:(data.products.reduce((s,p)=>s+((p.unit_price-p.cogs)/p.unit_price*100),0)/data.products.length).toFixed(0)+"%", color:"#F5C518" },
+        { icon:"🏷️", label:"Catégories", value:[...new Set(data.products.map(p=>p.type))].length, color:"#7B91C4" },
+        { icon:"📊", label:"Unités Totales", value:data.products.reduce((s,p)=>s+p.stock_quantity,0), color:"#25D366" },
+      ]} />
       <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:20, flexWrap:"wrap", gap:10 }}>
         <h1 style={{ fontFamily:"'Bricolage Grotesque'", fontSize:22, fontWeight:800 }}>◻ Produits & Stock</h1>
         <button className="btn btn-primary" onClick={() => setShowAdd(true)}>➕ Nouveau Produit</button>
