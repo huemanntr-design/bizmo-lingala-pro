@@ -6,12 +6,12 @@ const FONT_URL = "https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:o
 const initialData = {
   user: { name: "Jean-Baptiste Mukendi", company: "Mukendi Enterprises", avatar: "JM", role: "Directeur Général", phone: "+243812000001" },
   products: [
-    { id: 1, name: "Eau Minérale 1.5L", type: "Boisson", unit_price: 1.5, currency: "USD", cogs: 0.8, stock_quantity: 120, low_stock_alert: 20, has_expiry: true, emoji: "💧" },
-    { id: 2, name: "Bière Primus 65cl",  type: "Boisson", unit_price: 2.0, currency: "USD", cogs: 1.1, stock_quantity: 8,   low_stock_alert: 15, has_expiry: true, emoji: "🍺" },
-    { id: 3, name: "Sac de Riz 25kg",    type: "Alimentaire", unit_price: 22, currency: "USD", cogs: 16, stock_quantity: 45, low_stock_alert: 10, has_expiry: false, emoji: "🌾" },
-    { id: 4, name: "Huile Végétale 5L",  type: "Alimentaire", unit_price: 8.5, currency: "USD", cogs: 5.5, stock_quantity: 3, low_stock_alert: 10, has_expiry: true, emoji: "🫙" },
-    { id: 5, name: "Savon Monganga",      type: "Hygiène", unit_price: 0.75, currency: "USD", cogs: 0.4, stock_quantity: 200, low_stock_alert: 50, has_expiry: false, emoji: "🧼" },
-    { id: 6, name: "Farine Manioc 10kg", type: "Alimentaire", unit_price: 6, currency: "USD", cogs: 3.8, stock_quantity: 30, low_stock_alert: 15, has_expiry: true, emoji: "🥣" },
+    { id: 1, name: "Eau Minérale 1.5L", type: "Boisson", unit_price: 1.5, currency: "USD", cogs: 0.8, stock_quantity: 120, low_stock_alert: 20, has_expiry: true, emoji: "💧", image: null },
+    { id: 2, name: "Bière Primus 65cl",  type: "Boisson", unit_price: 2.0, currency: "USD", cogs: 1.1, stock_quantity: 8,   low_stock_alert: 15, has_expiry: true, emoji: "🍺", image: null },
+    { id: 3, name: "Sac de Riz 25kg",    type: "Alimentaire", unit_price: 22, currency: "USD", cogs: 16, stock_quantity: 45, low_stock_alert: 10, has_expiry: false, emoji: "🌾", image: null },
+    { id: 4, name: "Huile Végétale 5L",  type: "Alimentaire", unit_price: 8.5, currency: "USD", cogs: 5.5, stock_quantity: 3, low_stock_alert: 10, has_expiry: true, emoji: "🫙", image: null },
+    { id: 5, name: "Savon Monganga",      type: "Hygiène", unit_price: 0.75, currency: "USD", cogs: 0.4, stock_quantity: 200, low_stock_alert: 50, has_expiry: false, emoji: "🧼", image: null },
+    { id: 6, name: "Farine Manioc 10kg", type: "Alimentaire", unit_price: 6, currency: "USD", cogs: 3.8, stock_quantity: 30, low_stock_alert: 15, has_expiry: true, emoji: "🥣", image: null },
   ],
   clients: [
     { id: 1, name: "Marie Kabila",          email: "marie@example.com",   phone: "+243812345678", status: "vip",    credit_limit: 500,  credit_balance: 120,  total_revenue: 3200,  address: "Gombe, Kinshasa" },
@@ -482,6 +482,207 @@ function Modal({ title, onClose, children, maxWidth = 560 }) {
   );
 }
 
+// ─── PRODUCT IMAGE EDITOR ────────────────────────────────────────────────────
+function ProductImageEditor({ product, onImageUpdate, showToast }) {
+  const [mode, setMode] = useState(null); // null, 'upload', 'capture', 'generating', 'confirm'
+  const [rawImage, setRawImage] = useState(null);
+  const [aiImage, setAiImage] = useState(null);
+  const [generating, setGenerating] = useState(false);
+  const videoRef = useRef(null);
+  const canvasRef = useRef(null);
+  const fileRef = useRef(null);
+  const streamRef = useRef(null);
+
+  const stopCamera = useCallback(() => {
+    if (streamRef.current) {
+      streamRef.current.getTracks().forEach(t => t.stop());
+      streamRef.current = null;
+    }
+  }, []);
+
+  useEffect(() => { return () => stopCamera(); }, [stopCamera]);
+
+  const startCamera = async () => {
+    setMode("capture");
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment", width: 640, height: 480 } });
+      streamRef.current = stream;
+      if (videoRef.current) videoRef.current.srcObject = stream;
+    } catch (e) {
+      showToast("❌ Impossible d'accéder à la caméra", "error");
+      setMode(null);
+    }
+  };
+
+  const capturePhoto = () => {
+    if (!videoRef.current || !canvasRef.current) return;
+    const v = videoRef.current;
+    const c = canvasRef.current;
+    c.width = v.videoWidth;
+    c.height = v.videoHeight;
+    c.getContext("2d").drawImage(v, 0, 0);
+    const dataUrl = c.toDataURL("image/jpeg", 0.85);
+    setRawImage(dataUrl);
+    stopCamera();
+    setMode("preview");
+  };
+
+  const handleUpload = (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (!file.type.startsWith("image/")) return showToast("Fichier image requis", "error");
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      setRawImage(ev.target.result);
+      setMode("preview");
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const generateAiImage = async () => {
+    if (!rawImage) return;
+    setGenerating(true);
+    setMode("generating");
+    // Simulate AI product shot generation (in production, this calls Lovable AI edge function)
+    await new Promise(r => setTimeout(r, 2500));
+    // For demo: apply a simulated "professional" effect by creating a styled canvas
+    try {
+      const img = new Image();
+      img.onload = () => {
+        const c = document.createElement("canvas");
+        c.width = 600; c.height = 600;
+        const ctx = c.getContext("2d");
+        // White/gradient background
+        const grad = ctx.createRadialGradient(300, 300, 50, 300, 300, 400);
+        grad.addColorStop(0, "#ffffff");
+        grad.addColorStop(1, "#e8ecf4");
+        ctx.fillStyle = grad;
+        ctx.fillRect(0, 0, 600, 600);
+        // Subtle shadow
+        ctx.shadowColor = "rgba(0,0,0,0.15)";
+        ctx.shadowBlur = 40;
+        ctx.shadowOffsetY = 15;
+        // Center and fit image
+        const scale = Math.min(460 / img.width, 460 / img.height);
+        const w = img.width * scale;
+        const h = img.height * scale;
+        ctx.drawImage(img, (600 - w) / 2, (600 - h) / 2, w, h);
+        // Brand watermark
+        ctx.shadowColor = "transparent";
+        ctx.font = "bold 11px 'DM Sans', sans-serif";
+        ctx.fillStyle = "rgba(26,86,255,0.35)";
+        ctx.textAlign = "right";
+        ctx.fillText("BizPlatform DRC ✨", 580, 585);
+        const result = c.toDataURL("image/jpeg", 0.92);
+        setAiImage(result);
+        setMode("confirm");
+        setGenerating(false);
+      };
+      img.src = rawImage;
+    } catch {
+      showToast("Erreur lors de la génération", "error");
+      setMode("preview");
+      setGenerating(false);
+    }
+  };
+
+  const confirmImage = () => {
+    onImageUpdate(aiImage || rawImage);
+    showToast("✅ Image produit mise à jour!", "success");
+    reset();
+  };
+
+  const useOriginal = () => {
+    onImageUpdate(rawImage);
+    showToast("✅ Image originale appliquée!", "success");
+    reset();
+  };
+
+  const reset = () => {
+    setMode(null); setRawImage(null); setAiImage(null); setGenerating(false); stopCamera();
+  };
+
+  return (
+    <div style={{ marginBottom: 16 }}>
+      {/* Current image or placeholder */}
+      <div style={{ display: "flex", alignItems: "center", gap: 14, marginBottom: 12 }}>
+        <div style={{ width: 80, height: 80, borderRadius: 12, border: "2px dashed rgba(26,86,255,0.25)", background: "rgba(26,86,255,0.04)", display: "flex", alignItems: "center", justifyContent: "center", overflow: "hidden", flexShrink: 0 }}>
+          {product.image ? (
+            <img src={product.image} alt={product.name} style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: 10 }} />
+          ) : (
+            <span style={{ fontSize: 36 }}>{product.emoji}</span>
+          )}
+        </div>
+        <div style={{ flex: 1 }}>
+          <div style={{ fontSize: 12, fontWeight: 700, marginBottom: 6, color: "#7B91C4", textTransform: "uppercase", letterSpacing: 0.5 }}>Image Produit</div>
+          {!mode && (
+            <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+              <button className="btn btn-primary" style={{ fontSize: 11, padding: "6px 12px" }} onClick={() => { fileRef.current?.click(); }}>📁 Uploader</button>
+              <button className="btn btn-ghost" style={{ fontSize: 11, padding: "6px 12px" }} onClick={startCamera}>📷 Capturer</button>
+              {product.image && <button className="btn btn-red" style={{ fontSize: 11, padding: "6px 10px" }} onClick={() => { onImageUpdate(null); showToast("Image supprimée", "info"); }}>🗑️</button>}
+            </div>
+          )}
+        </div>
+        <input ref={fileRef} type="file" accept="image/*" style={{ display: "none" }} onChange={handleUpload} />
+      </div>
+
+      {/* Camera capture */}
+      {mode === "capture" && (
+        <div style={{ borderRadius: 12, overflow: "hidden", border: "1px solid rgba(26,86,255,0.2)", marginBottom: 10 }}>
+          <video ref={videoRef} autoPlay playsInline muted style={{ width: "100%", display: "block", maxHeight: 280 }} />
+          <canvas ref={canvasRef} style={{ display: "none" }} />
+          <div style={{ display: "flex", gap: 8, padding: 10, background: "rgba(0,0,0,0.3)" }}>
+            <button className="btn btn-primary" style={{ flex: 1, justifyContent: "center" }} onClick={capturePhoto}>📸 Prendre la photo</button>
+            <button className="btn btn-ghost" onClick={() => { stopCamera(); setMode(null); }}>✕ Annuler</button>
+          </div>
+        </div>
+      )}
+
+      {/* Preview raw image */}
+      {mode === "preview" && rawImage && (
+        <div style={{ borderRadius: 12, overflow: "hidden", border: "1px solid rgba(26,86,255,0.2)", marginBottom: 10 }}>
+          <img src={rawImage} alt="Preview" style={{ width: "100%", maxHeight: 280, objectFit: "contain", background: "#f0f0f0", display: "block" }} />
+          <div style={{ display: "flex", gap: 8, padding: 10, background: "rgba(26,86,255,0.04)" }}>
+            <button className="btn btn-primary" style={{ flex: 2, justifyContent: "center" }} onClick={generateAiImage}>✨ Générer photo pro IA</button>
+            <button className="btn btn-ghost" style={{ flex: 1, justifyContent: "center" }} onClick={useOriginal}>📎 Utiliser telle quelle</button>
+            <button className="btn btn-ghost btn-icon" onClick={reset}>✕</button>
+          </div>
+        </div>
+      )}
+
+      {/* Generating */}
+      {mode === "generating" && (
+        <div style={{ textAlign: "center", padding: "30px 0", borderRadius: 12, border: "1px solid rgba(245,197,24,0.25)", background: "rgba(245,197,24,0.04)", marginBottom: 10 }}>
+          <Spinner />
+          <div style={{ fontSize: 13, fontWeight: 600, color: "#F5C518", marginTop: 12 }}>✨ L'IA transforme votre image en photo professionnelle...</div>
+          <div style={{ fontSize: 11, color: "#7B91C4", marginTop: 4 }}>Fond propre · Éclairage studio · Qualité e-commerce</div>
+        </div>
+      )}
+
+      {/* Confirm AI result */}
+      {mode === "confirm" && aiImage && (
+        <div style={{ borderRadius: 12, overflow: "hidden", border: "2px solid rgba(22,197,94,0.35)", marginBottom: 10 }}>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 1, background: "rgba(26,86,255,0.1)" }}>
+            <div style={{ background: "rgba(0,0,0,0.03)", padding: 8 }}>
+              <div style={{ fontSize: 10, fontWeight: 700, color: "#7B91C4", textAlign: "center", marginBottom: 4 }}>ORIGINALE</div>
+              <img src={rawImage} alt="Original" style={{ width: "100%", height: 160, objectFit: "contain", borderRadius: 8, background: "#f8f8f8" }} />
+            </div>
+            <div style={{ background: "rgba(22,197,94,0.03)", padding: 8 }}>
+              <div style={{ fontSize: 10, fontWeight: 700, color: "#16C55E", textAlign: "center", marginBottom: 4 }}>✨ IA PRO</div>
+              <img src={aiImage} alt="AI Enhanced" style={{ width: "100%", height: 160, objectFit: "contain", borderRadius: 8, background: "#f8f8f8" }} />
+            </div>
+          </div>
+          <div style={{ display: "flex", gap: 8, padding: 10 }}>
+            <button className="btn btn-success" style={{ flex: 2, justifyContent: "center" }} onClick={confirmImage}>✅ Confirmer photo IA</button>
+            <button className="btn btn-ghost" style={{ flex: 1, justifyContent: "center" }} onClick={useOriginal}>📎 Garder l'originale</button>
+            <button className="btn btn-ghost btn-icon" onClick={() => { setAiImage(null); setMode("preview"); }}>🔄</button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 function Toast({ message, type, onClose }) {
   useEffect(() => { const t = setTimeout(onClose, 3500); return () => clearTimeout(t); }, [onClose]);
   const icons = { success: "✅", error: "❌", info: "ℹ️", whatsapp: "💬", warning: "⚠️" };
@@ -794,7 +995,8 @@ function ProductsPage({ data, setData, showToast }) {
   const [search, setSearch] = useState("");
   const [showAdd, setShowAdd] = useState(false);
   const [selected, setSelected] = useState(null);
-  const [newProd, setNewProd] = useState({ name:"", type:"Alimentaire", unit_price:"", cogs:"", stock_quantity:"", low_stock_alert:10, has_expiry:false, emoji:"📦" });
+  const [editing, setEditing] = useState(null); // full edit mode
+  const [newProd, setNewProd] = useState({ name:"", type:"Alimentaire", unit_price:"", cogs:"", stock_quantity:"", low_stock_alert:10, has_expiry:false, emoji:"📦", image:null });
 
   const filtered = data.products.filter(p => p.name.toLowerCase().includes(search.toLowerCase()) || p.type.toLowerCase().includes(search.toLowerCase()));
 
@@ -830,7 +1032,9 @@ function ProductsPage({ data, setData, showToast }) {
               const low = p.stock_quantity <= p.low_stock_alert;
               return (
                 <div key={p.id} className="card card-pad card-hover" style={{ cursor:"pointer", borderColor: low ? "rgba(245,197,24,0.3)" : undefined }} onClick={() => setSelected(p)}>
-                  <div style={{ fontSize:40, marginBottom:12, textAlign:"center" }}>{p.emoji}</div>
+                  <div style={{ height:80, marginBottom:12, textAlign:"center", display:"flex", alignItems:"center", justifyContent:"center", overflow:"hidden", borderRadius:8, background:"rgba(26,86,255,0.03)" }}>
+                    {p.image ? <img src={p.image} alt={p.name} style={{ maxHeight:"100%", maxWidth:"100%", objectFit:"contain", borderRadius:8 }} /> : <span style={{ fontSize:40 }}>{p.emoji}</span>}
+                  </div>
                   <div style={{ fontWeight:700, fontSize:14, marginBottom:2 }}>{p.name}</div>
                   <div style={{ fontSize:11, color:"#7B91C4", marginBottom:12 }}>{p.type}</div>
                   <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:8 }}>
@@ -854,14 +1058,14 @@ function ProductsPage({ data, setData, showToast }) {
       {tab === "stock" && (
         <div className="card card-pad">
           <table className="data-table">
-            <thead><tr><th>Produit</th><th>Type</th><th>Stock</th><th>Alerte</th><th>Prix Vente</th><th>Coût</th><th>Marge</th><th>Statut</th></tr></thead>
+            <thead><tr><th>Produit</th><th>Type</th><th>Stock</th><th>Alerte</th><th>Prix Vente</th><th>Coût</th><th>Marge</th><th>Statut</th><th>Actions</th></tr></thead>
             <tbody>
               {data.products.map(p => {
                 const low = p.stock_quantity <= p.low_stock_alert;
                 const marg = ((p.unit_price-p.cogs)/p.unit_price*100).toFixed(0);
                 return (
                   <tr key={p.id}>
-                    <td><div style={{ display:"flex", alignItems:"center", gap:8 }}><span>{p.emoji}</span><span style={{ fontWeight:600 }}>{p.name}</span></div></td>
+                    <td><div style={{ display:"flex", alignItems:"center", gap:8 }}>{p.image ? <img src={p.image} alt="" style={{ width:28, height:28, borderRadius:6, objectFit:"cover" }} /> : <span>{p.emoji}</span>}<span style={{ fontWeight:600 }}>{p.name}</span></div></td>
                     <td style={{ color:"#7B91C4" }}>{p.type}</td>
                     <td style={{ fontWeight:700, color: low ? "#D42B3A" : "#16C55E" }}>{p.stock_quantity}</td>
                     <td style={{ color:"#7B91C4" }}>{p.low_stock_alert}</td>
@@ -869,6 +1073,7 @@ function ProductsPage({ data, setData, showToast }) {
                     <td style={{ color:"#7B91C4" }}>{fmt(p.cogs)}</td>
                     <td style={{ color:"#16C55E", fontWeight:600 }}>{marg}%</td>
                     <td><span className="tag" style={{ background: low ? "rgba(245,197,24,0.12)" : "rgba(22,197,94,0.12)", color: low ? "#F5C518" : "#16C55E" }}>{low ? "⚠️ Bas" : "✅ OK"}</span></td>
+                    <td><button className="btn btn-ghost" style={{ fontSize:11, padding:"4px 10px" }} onClick={() => setEditing({...p})}>✏️</button></td>
                   </tr>
                 );
               })}
@@ -903,8 +1108,17 @@ function ProductsPage({ data, setData, showToast }) {
       )}
 
       {/* Product detail modal */}
-      {selected && (
-        <Modal title={`${selected.emoji} ${selected.name}`} onClose={() => setSelected(null)}>
+      {selected && !editing && (
+        <Modal title={`${selected.emoji} ${selected.name}`} onClose={() => setSelected(null)} maxWidth={620}>
+          {/* Image editor */}
+          <ProductImageEditor
+            product={selected}
+            showToast={showToast}
+            onImageUpdate={(img) => {
+              setData(d => ({ ...d, products: d.products.map(p => p.id===selected.id ? {...p, image:img} : p) }));
+              setSelected(s => ({...s, image:img}));
+            }}
+          />
           <div className="g2" style={{ marginBottom:14 }}>
             {[["Prix Vente",fmt(selected.unit_price),"#1A56FF"],["Coût",fmt(selected.cogs),"#D42B3A"],["Marge",((selected.unit_price-selected.cogs)/selected.unit_price*100).toFixed(0)+"%","#16C55E"],["Stock",selected.stock_quantity+"u",selected.stock_quantity<=selected.low_stock_alert?"#D42B3A":"#16C55E"]].map(([k,v,c]) => (
               <div key={k} style={{ padding:14, background:`${c}0A`, borderRadius:10, border:`1px solid ${c}22` }}>
@@ -919,6 +1133,43 @@ function ProductsPage({ data, setData, showToast }) {
               <button className="btn btn-primary" onClick={() => { showToast("Stock mis à jour!", "success"); setSelected(null); }}>Sauvegarder</button>
             </div>
           </div>
+          <div style={{ display:"flex", gap:8, marginTop:10 }}>
+            <button className="btn btn-ghost" style={{ flex:1, justifyContent:"center" }} onClick={() => { setEditing({...selected}); }}>✏️ Modifier tout</button>
+            <button className="btn btn-red" style={{ justifyContent:"center" }} onClick={() => {
+              setData(d => ({ ...d, products: d.products.filter(p => p.id!==selected.id) }));
+              showToast("Produit supprimé!", "info"); setSelected(null);
+            }}>🗑️ Supprimer</button>
+          </div>
+        </Modal>
+      )}
+
+      {/* Full product edit modal */}
+      {editing && (
+        <Modal title={`✏️ Modifier: ${editing.name}`} onClose={() => setEditing(null)} maxWidth={620}>
+          <ProductImageEditor
+            product={editing}
+            showToast={showToast}
+            onImageUpdate={(img) => {
+              setEditing(e => ({...e, image:img}));
+              setData(d => ({ ...d, products: d.products.map(p => p.id===editing.id ? {...p, image:img} : p) }));
+            }}
+          />
+          {[["Nom","name","text"],["Prix de vente ($)","unit_price","number"],["Coût d'achat ($)","cogs","number"],["Stock","stock_quantity","number"],["Alerte stock bas","low_stock_alert","number"],["Emoji","emoji","text"]].map(([l,k,t]) => (
+            <div className="form-group" key={k}><label className="form-label">{l}</label><input type={t} value={editing[k]} onChange={e => setEditing(p => ({...p,[k]:t==="number"?Number(e.target.value):e.target.value}))} /></div>
+          ))}
+          <div className="form-group"><label className="form-label">Catégorie</label>
+            <select value={editing.type} onChange={e => setEditing(p => ({...p,type:e.target.value}))}>
+              {["Alimentaire","Boisson","Hygiène","Électronique","Textile","Autre"].map(t => <option key={t}>{t}</option>)}
+            </select>
+          </div>
+          <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom:14 }}>
+            <label className="form-label" style={{ margin:0 }}>Date d'expiration ?</label>
+            <label className="toggle"><input type="checkbox" checked={editing.has_expiry} onChange={() => setEditing(p => ({...p, has_expiry:!p.has_expiry}))} /><span className="toggle-track" /></label>
+          </div>
+          <button className="btn btn-primary" style={{ width:"100%", justifyContent:"center" }} onClick={() => {
+            setData(d => ({ ...d, products: d.products.map(p => p.id===editing.id ? {...editing} : p) }));
+            showToast("✅ Produit mis à jour!", "success"); setEditing(null); setSelected(null);
+          }}>💾 Sauvegarder les modifications</button>
         </Modal>
       )}
 
@@ -945,6 +1196,7 @@ function ClientsPage({ data, setData, showToast }) {
   const [search, setSearch] = useState("");
   const [selected, setSelected] = useState(null);
   const [showAdd, setShowAdd] = useState(false);
+  const [editingClient, setEditingClient] = useState(null);
   const [newClient, setNewClient] = useState({ name:"", email:"", phone:"", address:"", status:"active", credit_limit:200, credit_balance:0, total_revenue:0 });
 
   const filtered = data.clients.filter(c => c.name.toLowerCase().includes(search.toLowerCase()) || c.phone.includes(search));
@@ -1066,7 +1318,7 @@ function ClientsPage({ data, setData, showToast }) {
         </div>
       )}
 
-      {selected && (
+      {selected && !editingClient && (
         <Modal title={`${selected.name}`} onClose={() => setSelected(null)}>
           <div style={{ display:"flex", alignItems:"center", gap:14, marginBottom:20 }}>
             <Avatar name={selected.name} size={52} color={statusColors[selected.status]||"#1A56FF"} />
@@ -1086,6 +1338,35 @@ function ClientsPage({ data, setData, showToast }) {
             <button className="btn btn-wa" style={{ flex:1, justifyContent:"center" }} onClick={() => showToast(`WhatsApp à ${selected.name}!`, "whatsapp")}>💬 WhatsApp</button>
             <button className="btn btn-red" onClick={() => showToast("Rappel de paiement envoyé!", "whatsapp")}>⚠️ Rappel</button>
           </div>
+          <div style={{ display:"flex", gap:8, marginTop:12 }}>
+            <button className="btn btn-ghost" style={{ flex:1, justifyContent:"center" }} onClick={() => setEditingClient({...selected})}>✏️ Modifier</button>
+            <button className="btn btn-red" style={{ justifyContent:"center" }} onClick={() => {
+              setData(d => ({ ...d, clients: d.clients.filter(c => c.id!==selected.id) }));
+              showToast("Client supprimé!", "info"); setSelected(null);
+            }}>🗑️ Supprimer</button>
+          </div>
+        </Modal>
+      )}
+
+      {/* Edit client modal */}
+      {editingClient && (
+        <Modal title={`✏️ Modifier: ${editingClient.name}`} onClose={() => setEditingClient(null)}>
+          {[["Nom complet","name"],["Email","email"],["Téléphone","phone"],["Adresse","address"]].map(([l,k]) => (
+            <div className="form-group" key={k}><label className="form-label">{l}</label><input value={editingClient[k]} onChange={e => setEditingClient(p => ({...p,[k]:e.target.value}))} /></div>
+          ))}
+          <div className="form-group"><label className="form-label">Statut</label>
+            <select value={editingClient.status} onChange={e => setEditingClient(p => ({...p,status:e.target.value}))}>
+              {["lead","active","vip","inactive"].map(s => <option key={s}>{s}</option>)}
+            </select>
+          </div>
+          <div className="g2">
+            <div className="form-group"><label className="form-label">Limite Crédit ($)</label><input type="number" value={editingClient.credit_limit} onChange={e => setEditingClient(p => ({...p,credit_limit:Number(e.target.value)}))} /></div>
+            <div className="form-group"><label className="form-label">Solde Crédit ($)</label><input type="number" value={editingClient.credit_balance} onChange={e => setEditingClient(p => ({...p,credit_balance:Number(e.target.value)}))} /></div>
+          </div>
+          <button className="btn btn-primary" style={{ width:"100%", justifyContent:"center" }} onClick={() => {
+            setData(d => ({ ...d, clients: d.clients.map(c => c.id===editingClient.id ? {...editingClient} : c) }));
+            showToast("✅ Client mis à jour!", "success"); setEditingClient(null); setSelected(null);
+          }}>💾 Sauvegarder les modifications</button>
         </Modal>
       )}
 
