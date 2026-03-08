@@ -3101,7 +3101,7 @@ const BOT_REPLIES = {
   STOCK:    "📦 Envoyez *STOCK [nom produit]* pour vérifier la disponibilité.\nEx: STOCK Eau Minérale\n_Mukendi BizPlatform_ 🇨🇩",
 };
 
-function WhatsAppPage({ data, showToast }) {
+function WhatsAppPage({ data, showToast, kpiGoals, updateGoal }) {
   const [waTab, setWaTab] = useState("connect");
   const [status, setStatus] = useState("disconnected"); // disconnected | scanning | connected
   const [qrVisible, setQrVisible] = useState(false);
