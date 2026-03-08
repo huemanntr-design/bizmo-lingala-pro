@@ -441,7 +441,19 @@ const buildStyles = (dark) => {
   .g4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
   @media (max-width: 1200px) { .g4 { grid-template-columns: repeat(2,1fr); } }
   @media (max-width: 900px)  { .g3 { grid-template-columns: repeat(2,1fr); } }
-  @media (max-width: 640px)  { .g4,.g3,.g2 { grid-template-columns: 1fr; } .hero-banner-value { font-size: 28px; } .mini-kpi-grid { gap:8px; } .mini-kpi { min-width:120px; padding:12px; } .mini-kpi-val { font-size:18px; } }
+  @media (max-width: 640px)  {
+    .g4,.g3,.g2 { grid-template-columns: 1fr; }
+    .hero-banner-value { font-size: 28px; }
+    .mini-kpi-grid { gap:8px; }
+    .mini-kpi { min-width:120px; padding:12px; }
+    .mini-kpi-val { font-size:18px; }
+    [style*="grid-template-columns: 1fr 360px"],
+    [style*="grid-template-columns: 1fr 330px"],
+    [style*="grid-template-columns: 200px 1fr"],
+    [style*="grid-template-columns: 240px 1fr"],
+    [style*="grid-template-columns: 1fr 300px"],
+    [style*="gridTemplateColumns"] { grid-template-columns: 1fr !important; }
+  }
 
   /* ── MOBILE NAV ── */
   @media (max-width: 768px) {
