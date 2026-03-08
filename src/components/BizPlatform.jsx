@@ -1702,7 +1702,7 @@ function ProductsPage({ data, setData, showToast }) {
 }
 
 // ─── CLIENTS PAGE ──────────────────────────────────────────────────────────────
-function ClientsPage({ data, setData, showToast }) {
+function ClientsPage({ data, setData, showToast, kpiGoals, updateGoal }) {
   const [tab, setTab] = useState("list");
   const [search, setSearch] = useState("");
   const [selected, setSelected] = useState(null);
@@ -1712,18 +1712,21 @@ function ClientsPage({ data, setData, showToast }) {
 
   const filtered = data.clients.filter(c => c.name.toLowerCase().includes(search.toLowerCase()) || c.phone.includes(search));
   const statusColors = { vip:"#F5C518", active:"#16C55E", lead:"#1A56FF", inactive:"#7B91C4" };
+  const clientRevenueTotal = data.clients.reduce((s,c)=>s+c.total_revenue,0);
 
   return (
     <div className="page-bg page-content fade-in">
       <HeroBanner
         label="REVENUS CLIENTS"
-        value={fmt(data.clients.reduce((s,c)=>s+c.total_revenue,0))}
+        value={fmt(clientRevenueTotal)}
         subtitle={`${data.clients.length} clients · ${data.clients.filter(c=>c.status==="vip").length} VIP`}
         progress={(data.clients.filter(c=>c.status!=="inactive").length / data.clients.length) * 100}
         progressLabel={`${data.clients.filter(c=>c.status!=="inactive").length} clients actifs`}
         trend="+15%"
         trendUp={true}
         icon="👥"
+        onEditGoal={(v) => { showToast(`🎯 Objectif clients: ${v} clients actifs`, "success"); }}
+        goalLabel="Objectif clients actifs"
       />
       <div className="mini-kpi-grid">
         <MiniKpiCard icon="👑" label="VIP" value={data.clients.filter(c=>c.status==="vip").length} color="#F5C518" />
