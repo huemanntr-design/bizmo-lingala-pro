@@ -2148,7 +2148,7 @@ function AccountingPage({ data, setData, showToast }) {
 }
 
 // ─── PERSONAL FINANCE PAGE ─────────────────────────────────────────────────────
-function PersonalPage({ data, showToast }) {
+function PersonalPage({ data, setData, showToast }) {
   const [tab, setTab] = useState("overview");
   const [goals, setGoals] = useState([
     { id:1,name:"Fonds d'urgence",   emoji:"🛡️",target:5000, current:2200 },
@@ -2157,7 +2157,18 @@ function PersonalPage({ data, showToast }) {
     { id:4,name:"Vacances famille",   emoji:"✈️",target:3000, current:900  },
   ]);
 
-  const totalIncome   = 3200;
+  // Editable state
+  const [income, setIncome] = useState(3200);
+  const [editingIncome, setEditingIncome] = useState(false);
+  const [tempIncome, setTempIncome] = useState(3200);
+  const [editingBudget, setEditingBudget] = useState(false);
+  const [tempBudget, setTempBudget] = useState(null);
+  const [editingGoal, setEditingGoal] = useState(null); // goal object or "new"
+  const [tempGoal, setTempGoal] = useState({ name:"", emoji:"🎯", target:0, current:0 });
+  const [editingCategory, setEditingCategory] = useState(null); // index
+  const [tempCategory, setTempCategory] = useState({ name:"", budget:0, spent:0 });
+
+  const totalIncome   = income;
   const totalPersonal = data.budget.spent;
   const savingsRate   = (((totalIncome-totalPersonal)/totalIncome)*100).toFixed(0);
 
@@ -2171,6 +2182,35 @@ function PersonalPage({ data, showToast }) {
     const colors = ["#1A56FF","#D42B3A","#F5C518","#16C55E","#25D366","#7B91C4"];
     return { value: (c.spent / data.budget.spent) * 100, color: colors[i % colors.length], label: c.name, amount: c.spent };
   });
+
+  const saveIncome = () => { setIncome(Number(tempIncome)); setEditingIncome(false); showToast("✅ Revenus mis à jour!", "success"); };
+  const saveBudgetTotal = () => { setData(d => ({ ...d, budget: { ...d.budget, monthly: Number(tempBudget) } })); setEditingBudget(false); showToast("✅ Budget mensuel mis à jour!", "success"); };
+  const saveGoal = () => {
+    if (!tempGoal.name) return showToast("Nom requis", "error");
+    if (editingGoal === "new") {
+      setGoals(prev => [...prev, { ...tempGoal, id: Date.now(), target: Number(tempGoal.target), current: Number(tempGoal.current) }]);
+      showToast("✅ Objectif ajouté!", "success");
+    } else {
+      setGoals(prev => prev.map(g => g.id === editingGoal.id ? { ...tempGoal, id: g.id, target: Number(tempGoal.target), current: Number(tempGoal.current) } : g));
+      showToast("✅ Objectif modifié!", "success");
+    }
+    setEditingGoal(null);
+  };
+  const deleteGoal = (id) => { setGoals(prev => prev.filter(g => g.id !== id)); showToast("Objectif supprimé", "info"); };
+  const saveCategory = () => {
+    if (!tempCategory.name) return showToast("Nom requis", "error");
+    setData(d => {
+      const cats = [...d.budget.categories];
+      if (editingCategory === "new") {
+        cats.push({ name: tempCategory.name, budget: Number(tempCategory.budget), spent: Number(tempCategory.spent) });
+      } else {
+        cats[editingCategory] = { name: tempCategory.name, budget: Number(tempCategory.budget), spent: Number(tempCategory.spent) };
+      }
+      const newSpent = cats.reduce((s,c) => s + c.spent, 0);
+      return { ...d, budget: { ...d.budget, categories: cats, spent: newSpent } };
+    });
+    setEditingCategory(null); showToast("✅ Catégorie sauvegardée!", "success");
+  };
 
   return (
     <div className="page-bg page-content fade-in">
@@ -2186,19 +2226,19 @@ function PersonalPage({ data, showToast }) {
         trendUp={Number(savingsRate) > 0}
         icon="🏦"
       >
-        {/* Pedagogic explanation */}
-        <div style={{ display:"flex", gap:16, marginTop:16, paddingTop:14, borderTop:"1px solid rgba(26,86,255,0.1)" }}>
-          <div style={{ flex:1, textAlign:"center" }}>
-            <div style={{ fontSize:10, color:"#7B91C4", textTransform:"uppercase", letterSpacing:0.5, marginBottom:2 }}>Revenus</div>
+        {/* Pedagogic flow: Income → Expenses → Savings */}
+        <div style={{ display:"flex", gap:12, marginTop:16, paddingTop:14, borderTop:"1px solid rgba(26,86,255,0.1)", flexWrap:"wrap", justifyContent:"center" }}>
+          <div style={{ flex:"1 1 80px", textAlign:"center", cursor:"pointer", padding:"6px 4px", borderRadius:8, transition:"background 0.18s" }} onClick={() => { setTempIncome(income); setEditingIncome(true); }}>
+            <div style={{ fontSize:10, color:"#7B91C4", textTransform:"uppercase", letterSpacing:0.5, marginBottom:2 }}>Revenus ✏️</div>
             <div style={{ fontFamily:"'Bricolage Grotesque'", fontWeight:700, fontSize:18, color:"#16C55E" }}>{fmt(totalIncome)}</div>
           </div>
           <div style={{ fontSize:20, color:"#7B91C4", display:"flex", alignItems:"center" }}>→</div>
-          <div style={{ flex:1, textAlign:"center" }}>
-            <div style={{ fontSize:10, color:"#7B91C4", textTransform:"uppercase", letterSpacing:0.5, marginBottom:2 }}>Dépenses</div>
+          <div style={{ flex:"1 1 80px", textAlign:"center", cursor:"pointer", padding:"6px 4px", borderRadius:8 }} onClick={() => { setTempBudget(data.budget.monthly); setEditingBudget(true); }}>
+            <div style={{ fontSize:10, color:"#7B91C4", textTransform:"uppercase", letterSpacing:0.5, marginBottom:2 }}>Dépenses ✏️</div>
             <div style={{ fontFamily:"'Bricolage Grotesque'", fontWeight:700, fontSize:18, color:"#D42B3A" }}>{fmt(totalPersonal)}</div>
           </div>
           <div style={{ fontSize:20, color:"#7B91C4", display:"flex", alignItems:"center" }}>→</div>
-          <div style={{ flex:1, textAlign:"center" }}>
+          <div style={{ flex:"1 1 80px", textAlign:"center", padding:"6px 4px" }}>
             <div style={{ fontSize:10, color:"#7B91C4", textTransform:"uppercase", letterSpacing:0.5, marginBottom:2 }}>Épargne</div>
             <div style={{ fontFamily:"'Bricolage Grotesque'", fontWeight:700, fontSize:18, color:"#1A56FF" }}>{fmt(totalIncome - totalPersonal)}</div>
           </div>
@@ -2212,9 +2252,11 @@ function PersonalPage({ data, showToast }) {
         <MiniKpiCard icon="📱" label="M-PESA" value="+$320" color="#25D366" />
       </div>
 
-      <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:20 }}>
+      <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:20, flexWrap:"wrap", gap:10 }}>
         <h1 style={{ fontFamily:"'Bricolage Grotesque'", fontSize:22, fontWeight:800 }}>◷ Finance Personnelle</h1>
-        <button className="btn btn-ghost" onClick={() => showToast("Synchronisation...", "info")}>🔄 Sync</button>
+        <div style={{ display:"flex", gap:8 }}>
+          <button className="btn btn-ghost" onClick={() => showToast("Synchronisation...", "info")}>🔄 Sync</button>
+        </div>
       </div>
 
       <div className="tabs" style={{ marginBottom:20 }}>
@@ -2225,27 +2267,29 @@ function PersonalPage({ data, showToast }) {
 
       {tab==="overview" && (
         <>
-          <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:16, marginBottom:16 }}>
+          <div className="g2" style={{ marginBottom:16 }}>
             {/* Budget Donut */}
             <div className="card card-pad">
               <div className="sec-title" style={{ marginBottom:16 }}>📊 Où va votre argent?</div>
-              <div style={{ display:"flex", alignItems:"center", gap:24 }}>
+              <div style={{ display:"flex", alignItems:"center", gap:20, flexWrap:"wrap", justifyContent:"center" }}>
                 <DonutChart
                   segments={budgetSegments}
-                  size={140}
-                  strokeWidth={18}
+                  size={130}
+                  strokeWidth={16}
                   centerValue={budgetUsed.toFixed(0)+"%"}
                   centerLabel="utilisé"
                 />
-                <div style={{ flex:1 }}>
+                <div style={{ flex:"1 1 140px", minWidth:0 }}>
                   {data.budget.categories.map((c, i) => {
                     const colors = ["#1A56FF","#D42B3A","#F5C518","#16C55E","#25D366","#7B91C4"];
                     const over = c.spent > c.budget;
                     return (
-                      <div key={c.name} style={{ display:"flex", alignItems:"center", gap:8, padding:"6px 0", borderBottom:"1px solid rgba(26,86,255,0.06)" }}>
+                      <div key={c.name} style={{ display:"flex", alignItems:"center", gap:8, padding:"5px 0", borderBottom:"1px solid rgba(26,86,255,0.06)", cursor:"pointer" }}
+                        onClick={() => { setEditingCategory(i); setTempCategory({ name:c.name, budget:c.budget, spent:c.spent }); }}>
                         <div style={{ width:10, height:10, borderRadius:3, background:colors[i%colors.length], flexShrink:0 }} />
-                        <div style={{ flex:1, fontSize:12 }}>{c.name}</div>
+                        <div style={{ flex:1, fontSize:12, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{c.name}</div>
                         <div style={{ fontSize:12, fontWeight:700, color: over ? "#D42B3A" : "#7B91C4" }}>{fmt(c.spent)}</div>
+                        <span style={{ fontSize:10, color:"#7B91C4", opacity:0.6 }}>✏️</span>
                       </div>
                     );
                   })}
@@ -2253,7 +2297,7 @@ function PersonalPage({ data, showToast }) {
               </div>
               <div style={{ marginTop:14, padding:"10px 14px", background:"rgba(26,86,255,0.04)", borderRadius:10, border:"1px solid rgba(26,86,255,0.08)" }}>
                 <div style={{ fontSize:11, color:"#7B91C4", lineHeight:1.6 }}>
-                  💡 <strong>Astuce:</strong> Les experts recommandent la règle <strong>50/30/20</strong> — 50% besoins, 30% envies, 20% épargne. Votre taux d'épargne est de <strong style={{ color: Number(savingsRate) >= 20 ? "#16C55E" : "#F5C518" }}>{savingsRate}%</strong>.
+                  💡 <strong>Astuce:</strong> La règle <strong>50/30/20</strong> — 50% besoins, 30% envies, 20% épargne. Votre taux d'épargne est de <strong style={{ color: Number(savingsRate) >= 20 ? "#16C55E" : "#F5C518" }}>{savingsRate}%</strong>.
                 </div>
               </div>
             </div>
@@ -2262,18 +2306,18 @@ function PersonalPage({ data, showToast }) {
             <div className="card card-pad">
               <div className="sec-title" style={{ marginBottom:16 }}>📈 Tendance Mensuelle</div>
               <div style={{ marginBottom:16 }}>
-                <SparkLine data={[2800,2600,3000,2900,3100,3200,3200]} width={280} height={60} color="#16C55E" />
+                <SparkLine data={[2800,2600,3000,2900,3100,3200,3200]} width={Math.min(280, 260)} height={60} color="#16C55E" />
                 <div style={{ fontSize:11, color:"#7B91C4", marginTop:6 }}>↗ Revenus en hausse constante ces 7 derniers mois</div>
               </div>
               <div style={{ marginBottom:16 }}>
-                <SparkLine data={[1800,1900,1850,1700,1950,1920,1950]} width={280} height={40} color="#D42B3A" />
+                <SparkLine data={[1800,1900,1850,1700,1950,1920,1950]} width={Math.min(280, 260)} height={40} color="#D42B3A" />
                 <div style={{ fontSize:11, color:"#7B91C4", marginTop:4 }}>⚡ Dépenses stables — bon signe!</div>
               </div>
 
               {/* AI Insights */}
               <div className="sec-title" style={{ marginBottom:10, fontSize:13 }}>💡 Conseils Personnalisés</div>
               <InsightCard icon="🔴" iconBg="rgba(212,43,58,0.12)" title="Loisirs: +$70 au-dessus du budget" description="Vous avez dépensé $220 au lieu de $150. Essayez de limiter les sorties la dernière semaine." />
-              <InsightCard icon="🟡" iconBg="rgba(245,197,24,0.12)" title={`Épargne: ${savingsRate}% — Objectif 20%`} description="Augmentez votre virement automatique de $50/mois pour atteindre l'objectif." action="Ajuster" onAction={() => showToast("Paramètres d'épargne ouverts", "info")} />
+              <InsightCard icon="🟡" iconBg="rgba(245,197,24,0.12)" title={`Épargne: ${savingsRate}% — Objectif 20%`} description="Augmentez votre virement automatique de $50/mois pour atteindre l'objectif." action="Ajuster" onAction={() => { setTempIncome(income); setEditingIncome(true); }} />
               <InsightCard icon="🟢" iconBg="rgba(22,197,94,0.12)" title="Alimentation: Sous contrôle!" description="$350 dépensés sur un budget de $400. Excellent travail ce mois!" />
             </div>
           </div>
@@ -2281,7 +2325,7 @@ function PersonalPage({ data, showToast }) {
           {/* Mobile Money */}
           <div className="card card-pad">
             <div className="sec-title" style={{ marginBottom:14 }}>📱 Comptes Mobile Money</div>
-            <div style={{ display:"grid", gridTemplateColumns:"repeat(3,1fr)", gap:12 }}>
+            <div className="g3">
               {[["M-PESA","💚","#25D366",320,[280,310,290,320,300,350,320]],["Airtel Money","🔴","#D42B3A",180,[150,160,170,180,190,175,180]],["Orange Money","🟠","#F5C518",450,[400,380,420,430,440,460,450]]].map(([n,ico,c,a,trend]) => (
                 <div key={n} className="card card-pad-sm" style={{ borderColor:`${c}30` }}>
                   <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom:10 }}>
@@ -2289,7 +2333,7 @@ function PersonalPage({ data, showToast }) {
                     <span style={{ fontWeight:600, fontSize:13 }}>{n}</span>
                   </div>
                   <div style={{ fontFamily:"'Bricolage Grotesque'", fontWeight:800, fontSize:22, color:c, marginBottom:4 }}>+{fmt(a)}</div>
-                  <SparkLine data={trend} width={120} height={28} color={c} />
+                  <SparkLine data={trend} width={100} height={28} color={c} />
                   <div style={{ fontSize:10, color:"#7B91C4", marginTop:4 }}>Ce mois</div>
                 </div>
               ))}
@@ -2302,9 +2346,12 @@ function PersonalPage({ data, showToast }) {
         <>
           {/* Goals progress overview */}
           <div className="card card-pad" style={{ marginBottom:16 }}>
-            <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:16 }}>
+            <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:16, flexWrap:"wrap", gap:8 }}>
               <div className="sec-title">🎯 Progression Globale de vos Objectifs</div>
-              <div style={{ fontFamily:"'Bricolage Grotesque'", fontWeight:700, color:"#1A56FF" }}>{fmt(totalGoalsSaved)} / {fmt(totalGoalsTarget)}</div>
+              <div style={{ display:"flex", alignItems:"center", gap:10 }}>
+                <div style={{ fontFamily:"'Bricolage Grotesque'", fontWeight:700, color:"#1A56FF" }}>{fmt(totalGoalsSaved)} / {fmt(totalGoalsTarget)}</div>
+                <button className="btn btn-primary" style={{ fontSize:11, padding:"6px 12px" }} onClick={() => { setEditingGoal("new"); setTempGoal({ name:"", emoji:"🎯", target:0, current:0 }); }}>➕ Objectif</button>
+              </div>
             </div>
             <div className="hero-progress" style={{ height:12 }}>
               <div className="hero-progress-fill" style={{ width:`${(totalGoalsSaved/totalGoalsTarget*100)}%` }} />
@@ -2331,12 +2378,22 @@ function PersonalPage({ data, showToast }) {
                   <div className="progress" style={{ height:8, marginBottom:8 }}>
                     <div className="progress-fill" style={{ width:`${p}%`, background:p>80?"#16C55E":p>50?"#1A56FF":"#F5C518" }} />
                   </div>
-                  <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center" }}>
+                  <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", gap:6, flexWrap:"wrap" }}>
                     <span style={{ fontSize:11, color:"#7B91C4" }}>{p.toFixed(0)}% atteint</span>
-                    <button style={{ background:"none", border:"none", color:"#1A56FF", cursor:"pointer", fontSize:11, fontWeight:700 }}
-                      onClick={() => { setGoals(prev => prev.map(x => x.id===g.id?{...x,current:Math.min(x.current+100,x.target)}:x)); showToast(`+$100 ajouté à "${g.name}"!`,"success"); }}>
-                      + Verser $100
-                    </button>
+                    <div style={{ display:"flex", gap:6 }}>
+                      <button style={{ background:"none", border:"none", color:"#1A56FF", cursor:"pointer", fontSize:11, fontWeight:700 }}
+                        onClick={() => { setGoals(prev => prev.map(x => x.id===g.id?{...x,current:Math.min(x.current+100,x.target)}:x)); showToast(`+$100 ajouté à "${g.name}"!`,"success"); }}>
+                        + $100
+                      </button>
+                      <button style={{ background:"none", border:"none", color:"#F5C518", cursor:"pointer", fontSize:11, fontWeight:700 }}
+                        onClick={() => { setEditingGoal(g); setTempGoal({ name:g.name, emoji:g.emoji, target:g.target, current:g.current }); }}>
+                        ✏️ Modifier
+                      </button>
+                      <button style={{ background:"none", border:"none", color:"#D42B3A", cursor:"pointer", fontSize:11, fontWeight:700 }}
+                        onClick={() => deleteGoal(g.id)}>
+                        🗑️
+                      </button>
+                    </div>
                   </div>
                 </div>
               );
@@ -2346,77 +2403,84 @@ function PersonalPage({ data, showToast }) {
       )}
 
       {tab==="budget" && (
-        <div style={{ display:"grid", gridTemplateColumns:"1fr 340px", gap:16 }}>
-          <div className="card card-pad">
-            <div className="sec-head">
-              <div className="sec-title">🎯 Budget Mensuel par Catégorie</div>
-            </div>
-            {data.budget.categories.map((c, i) => {
-              const over = c.spent > c.budget;
-              const pct2 = Math.min((c.spent/c.budget)*100, 100);
-              const colors = ["#1A56FF","#D42B3A","#F5C518","#16C55E","#25D366"];
-              const emojis = ["🍽️","🚗","🏠","🎮","💰"];
-              return (
-                <div key={c.name} style={{ marginBottom:18 }}>
-                  <div style={{ display:"flex", justifyContent:"space-between", marginBottom:6, alignItems:"center" }}>
-                    <div style={{ display:"flex", alignItems:"center", gap:8 }}>
-                      <span>{emojis[i] || "📋"}</span>
-                      <span style={{ fontWeight:600, fontSize:13 }}>{c.name}</span>
-                    </div>
-                    <div style={{ display:"flex", alignItems:"center", gap:8 }}>
-                      <span style={{ fontSize:12, fontWeight:700, color: over?"#D42B3A":"#7B91C4" }}>{fmt(c.spent)}</span>
-                      <span style={{ fontSize:11, color:"#7B91C4" }}>/ {fmt(c.budget)}</span>
-                    </div>
-                  </div>
-                  <div className="progress" style={{ height:8 }}>
-                    <div className="progress-fill" style={{ width:`${pct2}%`, background: over?"#D42B3A":pct2>80?colors[i%colors.length]+"CC":colors[i%colors.length] }} />
-                  </div>
-                  {over && (
-                    <div style={{ fontSize:10, color:"#D42B3A", marginTop:4, display:"flex", alignItems:"center", gap:4 }}>
-                      ⚠️ Dépassé de {fmt(c.spent-c.budget)} — {((c.spent/c.budget-1)*100).toFixed(0)}% au-dessus
-                    </div>
-                  )}
-                  {!over && pct2 > 80 && (
-                    <div style={{ fontSize:10, color:"#F5C518", marginTop:4 }}>
-                      ⚡ Attention: {(100-pct2).toFixed(0)}% restant ({fmt(c.budget-c.spent)})
-                    </div>
-                  )}
+        <div className="g2" style={{ gridTemplateColumns:"1fr", maxWidth:"100%" }}>
+          <div style={{ display:"grid", gridTemplateColumns:"1fr 300px", gap:16 }}>
+            <div className="card card-pad" style={{ minWidth:0 }}>
+              <div className="sec-head" style={{ flexWrap:"wrap", gap:8 }}>
+                <div className="sec-title">🎯 Budget Mensuel par Catégorie</div>
+                <div style={{ display:"flex", gap:8 }}>
+                  <button className="btn btn-ghost" style={{ fontSize:11, padding:"5px 10px" }} onClick={() => { setTempBudget(data.budget.monthly); setEditingBudget(true); }}>✏️ Budget: {fmt(data.budget.monthly)}</button>
+                  <button className="btn btn-primary" style={{ fontSize:11, padding:"5px 10px" }} onClick={() => { setEditingCategory("new"); setTempCategory({ name:"", budget:0, spent:0 }); }}>➕</button>
                 </div>
-              );
-            })}
-          </div>
-
-          {/* Right: Summary */}
-          <div style={{ display:"flex", flexDirection:"column", gap:14 }}>
-            <div className="card card-pad" style={{ textAlign:"center" }}>
-              <DonutChart
-                segments={[
-                  { value: (data.budget.spent/data.budget.monthly)*100, color: budgetUsed > 90 ? "#D42B3A" : "#1A56FF" },
-                ]}
-                size={160}
-                strokeWidth={20}
-                centerValue={fmt(remaining)}
-                centerLabel="restant"
-              />
-              <div style={{ marginTop:14, fontFamily:"'Bricolage Grotesque'", fontWeight:700, fontSize:16 }}>
-                {budgetUsed > 100 ? "🔴 Budget dépassé!" : budgetUsed > 90 ? "🟡 Presque épuisé" : budgetUsed > 70 ? "🟢 En bonne voie" : "✅ Excellent contrôle"}
               </div>
-              <div style={{ fontSize:12, color:"#7B91C4", marginTop:4, lineHeight:1.6 }}>
-                {budgetUsed > 100
-                  ? `Vous avez dépensé ${fmt(data.budget.spent - data.budget.monthly)} de plus que prévu.`
-                  : `Il vous reste ${fmt(remaining)} pour les ${30 - new Date().getDate()} jours restants, soit ~${fmt(remaining / Math.max(30 - new Date().getDate(), 1))}/jour.`
-                }
-              </div>
+              {data.budget.categories.map((c, i) => {
+                const over = c.spent > c.budget;
+                const pct2 = Math.min((c.spent/c.budget)*100, 100);
+                const colors = ["#1A56FF","#D42B3A","#F5C518","#16C55E","#25D366"];
+                const emojis = ["🍽️","🚗","🏠","🎮","💰"];
+                return (
+                  <div key={c.name} style={{ marginBottom:18, cursor:"pointer" }} onClick={() => { setEditingCategory(i); setTempCategory({ name:c.name, budget:c.budget, spent:c.spent }); }}>
+                    <div style={{ display:"flex", justifyContent:"space-between", marginBottom:6, alignItems:"center" }}>
+                      <div style={{ display:"flex", alignItems:"center", gap:8 }}>
+                        <span>{emojis[i] || "📋"}</span>
+                        <span style={{ fontWeight:600, fontSize:13 }}>{c.name}</span>
+                        <span style={{ fontSize:10, color:"#7B91C4", opacity:0.5 }}>✏️</span>
+                      </div>
+                      <div style={{ display:"flex", alignItems:"center", gap:8 }}>
+                        <span style={{ fontSize:12, fontWeight:700, color: over?"#D42B3A":"#7B91C4" }}>{fmt(c.spent)}</span>
+                        <span style={{ fontSize:11, color:"#7B91C4" }}>/ {fmt(c.budget)}</span>
+                      </div>
+                    </div>
+                    <div className="progress" style={{ height:8 }}>
+                      <div className="progress-fill" style={{ width:`${pct2}%`, background: over?"#D42B3A":pct2>80?colors[i%colors.length]+"CC":colors[i%colors.length] }} />
+                    </div>
+                    {over && (
+                      <div style={{ fontSize:10, color:"#D42B3A", marginTop:4, display:"flex", alignItems:"center", gap:4 }}>
+                        ⚠️ Dépassé de {fmt(c.spent-c.budget)} — {((c.spent/c.budget-1)*100).toFixed(0)}% au-dessus
+                      </div>
+                    )}
+                    {!over && pct2 > 80 && (
+                      <div style={{ fontSize:10, color:"#F5C518", marginTop:4 }}>
+                        ⚡ Attention: {(100-pct2).toFixed(0)}% restant ({fmt(c.budget-c.spent)})
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
             </div>
 
-            <div className="card card-pad-sm" style={{ background:"rgba(26,86,255,0.04)", borderColor:"rgba(26,86,255,0.15)" }}>
-              <div style={{ fontSize:12, fontWeight:700, color:"#1A56FF", marginBottom:8 }}>📚 Le saviez-vous?</div>
-              <div style={{ fontSize:12, color:"#7B91C4", lineHeight:1.7 }}>
-                La <strong>règle 50/30/20</strong> est simple:<br/>
-                • <strong>50%</strong> pour les besoins (loyer, nourriture)<br/>
-                • <strong>30%</strong> pour les envies (loisirs, sorties)<br/>
-                • <strong>20%</strong> pour l'épargne et les dettes<br/><br/>
-                Sur vos {fmt(totalIncome)}, visez {fmt(totalIncome*0.2)} d'épargne minimum.
+            {/* Right: Summary */}
+            <div style={{ display:"flex", flexDirection:"column", gap:14 }}>
+              <div className="card card-pad" style={{ textAlign:"center" }}>
+                <DonutChart
+                  segments={[
+                    { value: (data.budget.spent/data.budget.monthly)*100, color: budgetUsed > 90 ? "#D42B3A" : "#1A56FF" },
+                  ]}
+                  size={140}
+                  strokeWidth={18}
+                  centerValue={fmt(remaining)}
+                  centerLabel="restant"
+                />
+                <div style={{ marginTop:14, fontFamily:"'Bricolage Grotesque'", fontWeight:700, fontSize:16 }}>
+                  {budgetUsed > 100 ? "🔴 Budget dépassé!" : budgetUsed > 90 ? "🟡 Presque épuisé" : budgetUsed > 70 ? "🟢 En bonne voie" : "✅ Excellent contrôle"}
+                </div>
+                <div style={{ fontSize:12, color:"#7B91C4", marginTop:4, lineHeight:1.6 }}>
+                  {budgetUsed > 100
+                    ? `Vous avez dépensé ${fmt(data.budget.spent - data.budget.monthly)} de plus que prévu.`
+                    : `Il vous reste ${fmt(remaining)} pour les ${30 - new Date().getDate()} jours restants, soit ~${fmt(remaining / Math.max(30 - new Date().getDate(), 1))}/jour.`
+                  }
+                </div>
+              </div>
+
+              <div className="card card-pad-sm" style={{ background:"rgba(26,86,255,0.04)", borderColor:"rgba(26,86,255,0.15)" }}>
+                <div style={{ fontSize:12, fontWeight:700, color:"#1A56FF", marginBottom:8 }}>📚 Le saviez-vous?</div>
+                <div style={{ fontSize:12, color:"#7B91C4", lineHeight:1.7 }}>
+                  La <strong>règle 50/30/20</strong> est simple:<br/>
+                  • <strong>50%</strong> pour les besoins (loyer, nourriture)<br/>
+                  • <strong>30%</strong> pour les envies (loisirs, sorties)<br/>
+                  • <strong>20%</strong> pour l'épargne et les dettes<br/><br/>
+                  Sur vos {fmt(totalIncome)}, visez {fmt(totalIncome*0.2)} d'épargne minimum.
+                </div>
               </div>
             </div>
           </div>
@@ -2430,25 +2494,19 @@ function PersonalPage({ data, showToast }) {
             <div style={{ fontSize:12, color:"#7B91C4", marginBottom:14, lineHeight:1.6 }}>
               💡 <strong>Stratégie avalanche:</strong> Remboursez d'abord la dette au taux le plus élevé pour économiser sur les intérêts. Ou utilisez la <strong>stratégie boule de neige:</strong> commencez par la plus petite dette pour la satisfaction rapide.
             </div>
-            <div style={{ display:"flex", gap:12 }}>
-              <div style={{ flex:1, padding:14, background:"rgba(212,43,58,0.06)", borderRadius:10, border:"1px solid rgba(212,43,58,0.15)", textAlign:"center" }}>
-                <div style={{ fontSize:11, color:"#7B91C4", marginBottom:4 }}>Total Restant</div>
-                <div style={{ fontFamily:"'Bricolage Grotesque'", fontWeight:800, fontSize:24, color:"#D42B3A" }}>{fmt(3400)}</div>
-              </div>
-              <div style={{ flex:1, padding:14, background:"rgba(22,197,94,0.06)", borderRadius:10, border:"1px solid rgba(22,197,94,0.15)", textAlign:"center" }}>
-                <div style={{ fontSize:11, color:"#7B91C4", marginBottom:4 }}>Déjà Remboursé</div>
-                <div style={{ fontFamily:"'Bricolage Grotesque'", fontWeight:800, fontSize:24, color:"#16C55E" }}>{fmt(2800)}</div>
-              </div>
-              <div style={{ flex:1, padding:14, background:"rgba(26,86,255,0.06)", borderRadius:10, border:"1px solid rgba(26,86,255,0.15)", textAlign:"center" }}>
-                <div style={{ fontSize:11, color:"#7B91C4", marginBottom:4 }}>Paiement/Mois</div>
-                <div style={{ fontFamily:"'Bricolage Grotesque'", fontWeight:800, fontSize:24, color:"#1A56FF" }}>{fmt(450)}</div>
-              </div>
+            <div className="g3">
+              {[["Total Restant",fmt(3400),"#D42B3A","rgba(212,43,58,0.06)","rgba(212,43,58,0.15)"],["Déjà Remboursé",fmt(2800),"#16C55E","rgba(22,197,94,0.06)","rgba(22,197,94,0.15)"],["Paiement/Mois",fmt(450),"#1A56FF","rgba(26,86,255,0.06)","rgba(26,86,255,0.15)"]].map(([l,v,c,bg,bc]) => (
+                <div key={l} style={{ padding:14, background:bg, borderRadius:10, border:`1px solid ${bc}`, textAlign:"center" }}>
+                  <div style={{ fontSize:11, color:"#7B91C4", marginBottom:4 }}>{l}</div>
+                  <div style={{ fontFamily:"'Bricolage Grotesque'", fontWeight:800, fontSize:22, color:c }}>{v}</div>
+                </div>
+              ))}
             </div>
           </div>
           <div style={{ display:"flex", flexDirection:"column", gap:14 }}>
             {[{name:"Prêt Banque",total:5000,remaining:2800,monthly:250,rate:"12%",emoji:"🏦",tip:"Priorité #1 — taux élevé. Envisagez un paiement supplémentaire."},{name:"Crédit Fournisseur",total:1200,remaining:600,monthly:200,rate:"0%",emoji:"📦",tip:"Pas d'intérêts! Maintenez les paiements réguliers."}].map(d => (
               <div key={d.name} className="card card-pad" style={{ borderColor:"rgba(212,43,58,0.2)" }}>
-                <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:12 }}>
+                <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:12, flexWrap:"wrap", gap:8 }}>
                   <div style={{ display:"flex", alignItems:"center", gap:12 }}>
                     <span style={{ fontSize:28 }}>{d.emoji}</span>
                     <div>
@@ -2473,6 +2531,88 @@ function PersonalPage({ data, showToast }) {
             ))}
           </div>
         </>
+      )}
+
+      {/* ── EDIT INCOME MODAL ── */}
+      {editingIncome && (
+        <Modal title="✏️ Modifier vos Revenus Mensuels" onClose={() => setEditingIncome(false)}>
+          <div style={{ padding:"12px 14px", background:"rgba(26,86,255,0.04)", borderRadius:10, border:"1px solid rgba(26,86,255,0.1)", marginBottom:14 }}>
+            <div style={{ fontSize:11, color:"#7B91C4", lineHeight:1.6 }}>💡 Entrez votre revenu mensuel total (salaires, revenus business, etc.)</div>
+          </div>
+          <div className="form-group"><label className="form-label">Montant ($)</label>
+            <input type="number" value={tempIncome} onChange={e => setTempIncome(e.target.value)} />
+          </div>
+          <button className="btn btn-primary" style={{ width:"100%", justifyContent:"center" }} onClick={saveIncome}>💾 Sauvegarder</button>
+        </Modal>
+      )}
+
+      {/* ── EDIT BUDGET TOTAL MODAL ── */}
+      {editingBudget && (
+        <Modal title="✏️ Modifier Budget Mensuel Total" onClose={() => setEditingBudget(false)}>
+          <div style={{ padding:"12px 14px", background:"rgba(26,86,255,0.04)", borderRadius:10, border:"1px solid rgba(26,86,255,0.1)", marginBottom:14 }}>
+            <div style={{ fontSize:11, color:"#7B91C4", lineHeight:1.6 }}>💡 Définissez votre plafond de dépenses mensuel. Astuce: essayez de ne pas dépasser 80% de vos revenus ({fmt(income * 0.8)}).</div>
+          </div>
+          <div className="form-group"><label className="form-label">Budget mensuel ($)</label>
+            <input type="number" value={tempBudget} onChange={e => setTempBudget(e.target.value)} />
+          </div>
+          <button className="btn btn-primary" style={{ width:"100%", justifyContent:"center" }} onClick={saveBudgetTotal}>💾 Sauvegarder</button>
+        </Modal>
+      )}
+
+      {/* ── EDIT GOAL MODAL ── */}
+      {editingGoal && (
+        <Modal title={editingGoal === "new" ? "➕ Nouvel Objectif d'Épargne" : `✏️ Modifier: ${editingGoal.name || ""}`} onClose={() => setEditingGoal(null)}>
+          <div style={{ padding:"12px 14px", background:"rgba(26,86,255,0.04)", borderRadius:10, border:"1px solid rgba(26,86,255,0.1)", marginBottom:14 }}>
+            <div style={{ fontSize:11, color:"#7B91C4", lineHeight:1.6 }}>💡 Définissez un objectif clair et réaliste. Les petits objectifs réguliers fonctionnent mieux que les gros objectifs lointains!</div>
+          </div>
+          <div className="form-group"><label className="form-label">Emoji</label>
+            <div style={{ display:"flex", gap:6, flexWrap:"wrap" }}>
+              {["🎯","🛡️","🚗","📈","✈️","🏠","💻","🎓","💍","🏖️","🏥","👶"].map(e => (
+                <div key={e} onClick={() => setTempGoal(p => ({...p, emoji:e}))} style={{ width:36, height:36, borderRadius:8, display:"flex", alignItems:"center", justifyContent:"center", fontSize:18, cursor:"pointer", background: tempGoal.emoji===e ? "rgba(26,86,255,0.15)" : "rgba(26,86,255,0.04)", border: `1px solid ${tempGoal.emoji===e ? "#1A56FF" : "rgba(26,86,255,0.1)"}` }}>{e}</div>
+              ))}
+            </div>
+          </div>
+          <div className="form-group"><label className="form-label">Nom de l'objectif</label>
+            <input value={tempGoal.name} onChange={e => setTempGoal(p => ({...p, name:e.target.value}))} placeholder="Ex: Fonds d'urgence" />
+          </div>
+          <div className="g2">
+            <div className="form-group"><label className="form-label">Montant cible ($)</label>
+              <input type="number" value={tempGoal.target} onChange={e => setTempGoal(p => ({...p, target:e.target.value}))} />
+            </div>
+            <div className="form-group"><label className="form-label">Déjà épargné ($)</label>
+              <input type="number" value={tempGoal.current} onChange={e => setTempGoal(p => ({...p, current:e.target.value}))} />
+            </div>
+          </div>
+          <button className="btn btn-primary" style={{ width:"100%", justifyContent:"center" }} onClick={saveGoal}>💾 {editingGoal === "new" ? "Ajouter" : "Sauvegarder"}</button>
+        </Modal>
+      )}
+
+      {/* ── EDIT CATEGORY MODAL ── */}
+      {editingCategory !== null && (
+        <Modal title={editingCategory === "new" ? "➕ Nouvelle Catégorie Budget" : `✏️ Modifier: ${tempCategory.name}`} onClose={() => setEditingCategory(null)}>
+          <div className="form-group"><label className="form-label">Nom de la catégorie</label>
+            <input value={tempCategory.name} onChange={e => setTempCategory(p => ({...p, name:e.target.value}))} placeholder="Ex: Transport" />
+          </div>
+          <div className="g2">
+            <div className="form-group"><label className="form-label">Budget alloué ($)</label>
+              <input type="number" value={tempCategory.budget} onChange={e => setTempCategory(p => ({...p, budget:e.target.value}))} />
+            </div>
+            <div className="form-group"><label className="form-label">Dépensé ce mois ($)</label>
+              <input type="number" value={tempCategory.spent} onChange={e => setTempCategory(p => ({...p, spent:e.target.value}))} />
+            </div>
+          </div>
+          {editingCategory !== "new" && (
+            <button className="btn btn-red" style={{ width:"100%", justifyContent:"center", marginBottom:10 }} onClick={() => {
+              setData(d => {
+                const cats = d.budget.categories.filter((_, idx) => idx !== editingCategory);
+                const newSpent = cats.reduce((s,c) => s + c.spent, 0);
+                return { ...d, budget: { ...d.budget, categories: cats, spent: newSpent } };
+              });
+              setEditingCategory(null); showToast("Catégorie supprimée", "info");
+            }}>🗑️ Supprimer cette catégorie</button>
+          )}
+          <button className="btn btn-primary" style={{ width:"100%", justifyContent:"center" }} onClick={saveCategory}>💾 Sauvegarder</button>
+        </Modal>
       )}
     </div>
   );
