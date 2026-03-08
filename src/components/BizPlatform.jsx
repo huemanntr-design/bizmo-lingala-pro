@@ -4786,6 +4786,10 @@ export default function BizPlatform() {
   const [globalSearch, setGlobalSearch] = useState("");
   const [showGlobalSearch, setShowGlobalSearch] = useState(false);
   const [showQuickAdd, setShowQuickAdd] = useState(false);
+  const [currency, setCurrency]     = useState("USD");
+
+  // Keep global currency in sync for fmt()
+  useEffect(() => { setGlobalCurrency(currency); }, [currency]);
 
   const updateGoal = useCallback((key, value) => {
     setKpiGoals(prev => ({ ...prev, [key]: value }));
