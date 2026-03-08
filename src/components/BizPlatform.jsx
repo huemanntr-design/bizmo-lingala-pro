@@ -206,17 +206,11 @@ const buildStyles = (dark) => {
   }
   .logo-mark {
     width: 40px; height: 40px; min-width: 40px; border-radius: 10px;
-    background: linear-gradient(180deg, #007FFF 0%, #007FFF 40%, #CE1126 40%, #CE1126 60%, #F7D618 60%, #F7D618 100%);
-    display: flex; align-items: center; justify-content: center;
-    font-family: 'Bricolage Grotesque', sans-serif; font-weight: 800;
-    font-size: 17px; color: white; letter-spacing: -0.5px;
-    box-shadow: 0 4px 14px rgba(0,127,255,0.35);
-    position: relative; overflow: hidden;
+    overflow: hidden; display: flex; align-items: center; justify-content: center;
+    filter: drop-shadow(0 4px 12px rgba(0,127,255,0.35));
   }
-  .logo-mark::before {
-    content: ''; position: absolute; top: 0; left: -2px; right: -2px; bottom: 0;
-    background: linear-gradient(135deg, transparent 35%, #F7D618 35%, #F7D618 42%, transparent 42%);
-    pointer-events: none;
+  .logo-mark img {
+    width: 100%; height: 100%; object-fit: contain;
   }
   .logo-text { font-family: 'Bricolage Grotesque', sans-serif; font-weight: 800; font-size: 15px; white-space: nowrap; color: ${t.text}; letter-spacing: -0.3px; }
   .logo-sub { font-size: 10px; color: ${t.text3}; margin-top: 1px; }
