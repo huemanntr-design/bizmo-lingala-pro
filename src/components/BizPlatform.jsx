@@ -1058,14 +1058,14 @@ function ProductsPage({ data, setData, showToast }) {
       {tab === "stock" && (
         <div className="card card-pad">
           <table className="data-table">
-            <thead><tr><th>Produit</th><th>Type</th><th>Stock</th><th>Alerte</th><th>Prix Vente</th><th>Coût</th><th>Marge</th><th>Statut</th></tr></thead>
+            <thead><tr><th>Produit</th><th>Type</th><th>Stock</th><th>Alerte</th><th>Prix Vente</th><th>Coût</th><th>Marge</th><th>Statut</th><th>Actions</th></tr></thead>
             <tbody>
               {data.products.map(p => {
                 const low = p.stock_quantity <= p.low_stock_alert;
                 const marg = ((p.unit_price-p.cogs)/p.unit_price*100).toFixed(0);
                 return (
                   <tr key={p.id}>
-                    <td><div style={{ display:"flex", alignItems:"center", gap:8 }}><span>{p.emoji}</span><span style={{ fontWeight:600 }}>{p.name}</span></div></td>
+                    <td><div style={{ display:"flex", alignItems:"center", gap:8 }}>{p.image ? <img src={p.image} alt="" style={{ width:28, height:28, borderRadius:6, objectFit:"cover" }} /> : <span>{p.emoji}</span>}<span style={{ fontWeight:600 }}>{p.name}</span></div></td>
                     <td style={{ color:"#7B91C4" }}>{p.type}</td>
                     <td style={{ fontWeight:700, color: low ? "#D42B3A" : "#16C55E" }}>{p.stock_quantity}</td>
                     <td style={{ color:"#7B91C4" }}>{p.low_stock_alert}</td>
@@ -1073,6 +1073,7 @@ function ProductsPage({ data, setData, showToast }) {
                     <td style={{ color:"#7B91C4" }}>{fmt(p.cogs)}</td>
                     <td style={{ color:"#16C55E", fontWeight:600 }}>{marg}%</td>
                     <td><span className="tag" style={{ background: low ? "rgba(245,197,24,0.12)" : "rgba(22,197,94,0.12)", color: low ? "#F5C518" : "#16C55E" }}>{low ? "⚠️ Bas" : "✅ OK"}</span></td>
+                    <td><button className="btn btn-ghost" style={{ fontSize:11, padding:"4px 10px" }} onClick={() => setEditing({...p})}>✏️</button></td>
                   </tr>
                 );
               })}
