@@ -1461,14 +1461,22 @@ function ClientsPage({ data, setData, showToast }) {
 
   return (
     <div className="page-bg page-content fade-in">
-      <KpiBanner kpis={[
-        { icon:"👥", label:"Total Clients", value:data.clients.length, color:"#1A56FF" },
-        { icon:"👑", label:"Clients VIP", value:data.clients.filter(c=>c.status==="vip").length, color:"#F5C518" },
-        { icon:"🟢", label:"Clients Actifs", value:data.clients.filter(c=>c.status==="active").length, color:"#16C55E" },
-        { icon:"💳", label:"Crédit Total", value:fmt(data.clients.reduce((s,c)=>s+c.credit_balance,0)), trendUp:false, color:"#D42B3A" },
-        { icon:"💵", label:"Revenus Clients", value:fmt(data.clients.reduce((s,c)=>s+c.total_revenue,0)), trend:"+15%", trendUp:true, color:"#25D366" },
-        { icon:"🎯", label:"Leads", value:data.clients.filter(c=>c.status==="lead").length, color:"#7B91C4" },
-      ]} />
+      <HeroBanner
+        label="REVENUS CLIENTS"
+        value={fmt(data.clients.reduce((s,c)=>s+c.total_revenue,0))}
+        subtitle={`${data.clients.length} clients · ${data.clients.filter(c=>c.status==="vip").length} VIP`}
+        progress={(data.clients.filter(c=>c.status!=="inactive").length / data.clients.length) * 100}
+        progressLabel={`${data.clients.filter(c=>c.status!=="inactive").length} clients actifs`}
+        trend="+15%"
+        trendUp={true}
+        icon="👥"
+      />
+      <div className="mini-kpi-grid">
+        <MiniKpiCard icon="👑" label="VIP" value={data.clients.filter(c=>c.status==="vip").length} color="#F5C518" />
+        <MiniKpiCard icon="🟢" label="Actifs" value={data.clients.filter(c=>c.status==="active").length} color="#16C55E" />
+        <MiniKpiCard icon="💳" label="Crédit Dû" value={fmt(data.clients.reduce((s,c)=>s+c.credit_balance,0))} trendUp={false} color="#D42B3A" />
+        <MiniKpiCard icon="🎯" label="Leads" value={data.clients.filter(c=>c.status==="lead").length} color="#1A56FF" />
+      </div>
       <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:20, flexWrap:"wrap", gap:10 }}>
         <h1 style={{ fontFamily:"'Bricolage Grotesque'", fontSize:22, fontWeight:800 }}>◎ Clients</h1>
         <button className="btn btn-primary" onClick={() => setShowAdd(true)}>➕ Nouveau Client</button>
