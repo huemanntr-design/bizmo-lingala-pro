@@ -1580,6 +1580,14 @@ function MarketingPage({ data, setData, showToast }) {
 
   return (
     <div className="page-bg page-content fade-in" style={{ position:"relative" }}>
+      <KpiBanner kpis={[
+        { icon:"📝", label:"Posts Totaux", value:data.posts.length + aiPosts.length, color:"#1A56FF" },
+        { icon:"✅", label:"Publiés", value:data.posts.filter(p=>p.status==="published").length, color:"#16C55E" },
+        { icon:"📅", label:"Programmés", value:data.posts.filter(p=>p.status==="scheduled").length + aiPosts.filter(p=>p.status==="scheduled").length, color:"#F5C518" },
+        { icon:"✨", label:"Propositions IA", value:aiPosts.filter(p=>p.status==="ai_proposed").length, color:"#E1306C" },
+        { icon:"👍", label:"Total Likes", value:data.posts.reduce((s,p)=>s+p.likes,0), trend:"+45%", trendUp:true, color:"#1877F2" },
+        { icon:"🔄", label:"Total Partages", value:data.posts.reduce((s,p)=>s+p.shares,0), color:"#69C9D0" },
+      ]} />
       <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:20 }}>
         <h1 style={{ fontFamily:"'Bricolage Grotesque'", fontSize:22, fontWeight:800 }}>◉ Marketing Hub</h1>
         <button className="btn btn-primary" onClick={() => showToast("Analytics...", "info")}>📊 Analytics</button>
