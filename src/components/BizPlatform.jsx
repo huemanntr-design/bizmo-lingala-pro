@@ -2288,6 +2288,13 @@ function WhatsAppPage({ data, showToast }) {
 
   return (
     <div className="page-bg page-content fade-in">
+      <KpiBanner kpis={[
+        { icon:"💬", label:"Messages Totaux", value:String(messages.length), color:"#25D366" },
+        { icon:"👥", label:"Contacts", value:String(contacts.length), color:"#1A56FF" },
+        { icon:"🤖", label:"Réponses Auto", value:String(messages.filter(m=>m.fromMe).length), sub:"par le bot", color:"#16C55E" },
+        { icon:"📢", label:"Diffusions", value:String(broadcastResults.length), sub:"envoyées", color:"#F5C518" },
+        { icon:"🔗", label:"Statut", value:status==="connected"?"Connecté":"Déconnecté", color:status==="connected"?"#16C55E":"#D42B3A" },
+      ]} />
       {/* Header */}
       <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:20, flexWrap:"wrap", gap:12 }}>
         <div style={{ display:"flex", alignItems:"center", gap:14 }}>
