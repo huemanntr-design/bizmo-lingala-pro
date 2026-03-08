@@ -1023,9 +1023,9 @@ function HomePage({ data, setData, showToast, dark, kpiGoals, updateGoal }) {
       />
       <div className="mini-kpi-grid">
         <MiniKpiCard icon="📉" label="Dépenses" value={fmt(totalExpenses)} trend="+5.1%" trendUp={false} color="#D42B3A" />
-        <MiniKpiCard icon="✨" label="Profit Net" value={fmt(totalProfit)} trend="+23.7%" trendUp={true} color="#16C55E" />
-        <MiniKpiCard icon="🛍️" label="Ventes" value={data.sales.length} trend="+12%" trendUp={true} color="#F5C518" />
-        <MiniKpiCard icon="⚠️" label="Stock Bas" value={lowStock.length} trendUp={false} color={lowStock.length>0?"#D42B3A":"#16C55E"} />
+        <MiniKpiCard icon="✨" label="Bénéfice" value={fmt(totalProfit)} trend="+23.7%" trendUp={true} color="#16C55E" />
+        <MiniKpiCard icon="🛍️" label="Nb de Ventes" value={data.sales.length} trend="+12%" trendUp={true} color="#F5C518" />
+        <MiniKpiCard icon="⚠️" label="Produits en rupture" value={lowStock.length} trendUp={false} color={lowStock.length>0?"#D42B3A":"#16C55E"} />
       </div>
 
       {/* ── VISUAL ANALYTICS ROW ── */}
