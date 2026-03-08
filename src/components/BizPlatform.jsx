@@ -4402,7 +4402,7 @@ export default function BizPlatform() {
         {/* ─ MOBILE NAV ─ */}
         <nav className="mobile-nav">
           {NAV.map(n => (
-            <div key={n.id} className={`mn-item ${activePage===n.id?(n.id==="whatsapp"?"wa-active":"active"):""}`} onClick={() => setActivePage(n.id)}>
+            <div key={n.id} className={`mn-item ${activePage===n.id?"active":""}`} onClick={() => setActivePage(n.id)}>
               <span>{n.icon}</span>
               <span className="mn-label">{n.short}</span>
             </div>
