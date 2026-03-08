@@ -3002,8 +3002,8 @@ function AccountingPage({ data, setData, showToast, kpiGoals, updateGoal }) {
   const netProfit = totalRev - totalExp;
 
   const cashbook = [
-    ...data.sales.map(s   => ({ date:s.sale_date,   desc:`Vente: ${s.product_name}`,   type:"in",  amount:s.total_amount })),
-    ...data.expenses.filter(e=>e.status==="approved").map(e => ({ date:e.expense_date, desc:e.description, type:"out", amount:e.amount })),
+    ...data.sales.map(s   => ({ date:s.sale_date, desc:`Vente: ${s.product_name}`, type:"in", amount:s.total_amount, source:"sale", detail: s })),
+    ...data.expenses.filter(e=>e.status==="approved").map(e => ({ date:e.expense_date, desc:e.description, type:"out", amount:e.amount, source:"expense", detail: e })),
   ].sort((a,b) => new Date(b.date)-new Date(a.date));
 
   return (
