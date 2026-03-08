@@ -3793,17 +3793,19 @@ function WhatsAppPage({ data, showToast, kpiGoals, updateGoal }) {
     setStatus("disconnected"); setQrVisible(false); showToast("Déconnecté de WhatsApp", "info");
   };
 
-  // ── Real send via server or demo ──
+  // ── Send via Twilio or demo ──
   const sendMessage = useCallback(async (contactId, body) => {
     const time = new Date().toLocaleTimeString("fr-FR",{hour:"2-digit",minute:"2-digit"});
     const contact = contacts.find(c => c.id === contactId);
     setMessages(p => [...p, { id:Date.now(), contactId, from:"me", body, fromMe:true, time }]);
 
-    if (serverOk && contact) {
+    if (status === "connected" && contact) {
       try {
-        await fetch("http://localhost:3001/send", { method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify({ phone: contact.phone, message: body }) });
+        await sendWhatsApp(contact.phone, body);
         return;
-      } catch {}
+      } catch (err) {
+        showToast(`⚠️ Twilio: ${err.message} — affichage local`, "warning");
+      }
     }
 
     // Demo bot auto-reply
@@ -3813,23 +3815,17 @@ function WhatsAppPage({ data, showToast, kpiGoals, updateGoal }) {
         setMessages(p => [...p, { id:Date.now()+1, contactId, from:contactId, body:BOT_REPLIES[cmd], fromMe:false, time:new Date().toLocaleTimeString("fr-FR",{hour:"2-digit",minute:"2-digit"}) }]);
       }, 1200);
     }
-  }, [serverOk, contacts]);
+  }, [status, contacts]);
 
   const sendTest = async () => {
     if (!testNumber.trim()) return showToast("Entrez un numéro", "error");
     setSendingTest(true);
     try {
-      if (serverOk) {
-        const r = await fetch("http://localhost:3001/send",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({phone:testNumber,message:testMsg})});
-        const d = await r.json();
-        if (d.success) { showToast("✅ Message envoyé via serveur!", "whatsapp"); }
-        else { throw new Error(); }
-      } else {
-        await new Promise(r => setTimeout(r, 1000));
-        showToast("✅ Message simulé envoyé! (mode démo)", "whatsapp");
-      }
-    } catch { showToast("Échec envoi — vérifiez le serveur", "error"); }
-    finally { setSendingTest(false); }
+      await sendWhatsApp(testNumber, testMsg);
+      showToast("✅ Message envoyé via Twilio!", "whatsapp");
+    } catch (err) {
+      showToast(`❌ Erreur Twilio: ${err.message}`, "error");
+    } finally { setSendingTest(false); }
   };
 
   const doBroadcast = async () => {
