@@ -1846,18 +1846,20 @@ function AccountingPage({ data, setData, showToast }) {
 
   return (
     <div className="page-bg page-content fade-in">
+      <KpiBanner kpis={[
+        { icon:"💵", label:"Revenus Totaux", value:fmt(totalRev), trend:"+18%", trendUp:true, color:"#1A56FF" },
+        { icon:"📉", label:"Dépenses", value:fmt(totalExp), trend:"+5%", trendUp:false, color:"#D42B3A" },
+        { icon:"✨", label:"Profit Net", value:fmt(netProfit), trend:"+23%", trendUp:true, color:"#16C55E" },
+        { icon:"📊", label:"Marge Nette", value:totalRev>0?((netProfit/totalRev)*100).toFixed(0)+"%":"0%", color:"#F5C518" },
+        { icon:"🧾", label:"Nb Dépenses", value:data.expenses.length, color:"#7B91C4" },
+        { icon:"✅", label:"Approuvées", value:data.expenses.filter(e=>e.status==="approved").length, color:"#16C55E" },
+      ]} />
       <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:20 }}>
         <h1 style={{ fontFamily:"'Bricolage Grotesque'", fontSize:22, fontWeight:800 }}>⊛ Comptabilité</h1>
         <div style={{ display:"flex", gap:10 }}>
           <button className="btn btn-ghost" onClick={() => showToast("Export comptable...", "info")}>📥 Export</button>
           <button className="btn btn-primary" onClick={() => setShowAdd(true)}>➕ Dépense</button>
         </div>
-      </div>
-
-      <div className="g3" style={{ marginBottom:20 }}>
-        <Kpi icon="💵" label="Revenus Totaux" value={fmt(totalRev)}  trend="+18%" trendUp color="#1A56FF" />
-        <Kpi icon="📉" label="Dépenses"        value={fmt(totalExp)}  trend="+5%"  trendUp={false} color="#D42B3A" />
-        <Kpi icon="✨" label="Profit Net"       value={fmt(netProfit)} trend="+23%" trendUp color="#16C55E" />
       </div>
 
       <div className="tabs" style={{ marginBottom:20 }}>
