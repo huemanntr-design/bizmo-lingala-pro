@@ -3036,7 +3036,7 @@ function AccountingPage({ data, setData, showToast, kpiGoals, updateGoal }) {
   ].sort((a,b) => new Date(b.date)-new Date(a.date));
 
   return (
-    <div className="page-bg page-content fade-in">
+    <div className="page-bg page-content fade-in" id="accounting-content">
       <HeroBanner
         label="PROFIT NET"
         value={fmt(netProfit)}
