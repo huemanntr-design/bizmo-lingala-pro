@@ -92,16 +92,16 @@ const statusMeta = {
 
 // ─── NAV ───────────────────────────────────────────────────────────────────────
 const NAV = [
-  { id: "home",       icon: "⊞",  label: "Tableau de Bord", short: "Accueil"  },
-  { id: "sales",      icon: "◈",  label: "Ventes & POS",    short: "Ventes"   },
-  { id: "products",   icon: "◻",  label: "Produits",         short: "Stock",   badge: "2" },
-  { id: "clients",    icon: "◎",  label: "Clients",          short: "Clients"  },
-  { id: "marketing",  icon: "◉",  label: "Marketing",        short: "Marketing"},
-  { id: "accounting", icon: "⊛",  label: "Comptabilité",     short: "Compta"   },
-  { id: "personal",   icon: "◷",  label: "Finance Perso",    short: "Finances" },
-  { id: "bizplan",    icon: "◇",  label: "Business Plan",     short: "Plan"     },
-  { id: "whatsapp",   icon: "◈",  label: "WhatsApp Bot",     short: "WA Bot"   },
-  { id: "settings",   icon: "◉",  label: "Paramètres",       short: "Config"   },
+  { id: "home",       icon: "🏠",  label: "Tableau de Bord", short: "Accueil"  },
+  { id: "sales",      icon: "🛍️",  label: "Ventes & POS",    short: "Ventes"   },
+  { id: "products",   icon: "📦",  label: "Produits",         short: "Stock",   badge: "2" },
+  { id: "clients",    icon: "👥",  label: "Clients",          short: "Clients"  },
+  { id: "marketing",  icon: "📣",  label: "Marketing",        short: "Marketing"},
+  { id: "accounting", icon: "💰",  label: "Comptabilité",     short: "Compta"   },
+  { id: "personal",   icon: "🏦",  label: "Finance Perso",    short: "Finances" },
+  { id: "bizplan",    icon: "📋",  label: "Business Plan",     short: "Plan"     },
+  { id: "whatsapp",   icon: "💬",  label: "WhatsApp Bot",     short: "WA Bot"   },
+  { id: "settings",   icon: "⚙️",  label: "Paramètres",       short: "Config"   },
 ];
 
 const DEFAULT_KPI_GOALS = {
