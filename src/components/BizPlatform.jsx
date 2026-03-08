@@ -4931,6 +4931,11 @@ export default function BizPlatform() {
               {["#1A56FF","#F5C518","#D42B3A"].map(c => <div key={c} style={{ width:7, height:7, borderRadius:"50%", background:c, boxShadow:`0 0 6px ${c}50` }} />)}
             </div>
 
+            {/* Currency toggle */}
+            <button className="theme-btn" onClick={() => setCurrency(c => c === "USD" ? "CDF" : "USD")} title={currency === "USD" ? "Afficher en Francs Congolais" : "Afficher en Dollars"} style={{ fontSize:12, fontWeight:700, letterSpacing:0.3 }}>
+              {currency === "USD" ? "🇺🇸$" : "🇨🇩FC"}
+            </button>
+
             {/* Theme toggle */}
             <button className="theme-btn" onClick={() => setDark(d => !d)} title={dark?"Mode Clair":"Mode Sombre"}>
               {dark ? "☀️" : "🌙"}
