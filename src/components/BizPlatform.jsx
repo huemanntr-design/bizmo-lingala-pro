@@ -2995,6 +2995,7 @@ function AccountingPage({ data, setData, showToast, kpiGoals, updateGoal }) {
   const [tab, setTab] = useState("cashbook");
   const [showAdd, setShowAdd] = useState(false);
   const [newExp, setNewExp] = useState({ description:"", amount:"", category:"Transport", expense_date:new Date().toISOString().split("T")[0], status:"pending" });
+  const [selectedTx, setSelectedTx] = useState(null);
 
   const totalRev  = data.sales.reduce((s,x) => s+x.total_amount, 0);
   const totalExp  = data.expenses.filter(e=>e.status==="approved").reduce((s,x) => s+x.amount, 0);
