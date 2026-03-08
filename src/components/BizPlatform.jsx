@@ -306,6 +306,46 @@ const buildStyles = (dark) => {
   .kpi-banner-arrow.right { right: -12px; }
   .kpi-banner-arrow.hidden { opacity: 0; pointer-events: none; }
 
+  /* ── HERO BANNER ── */
+  .hero-banner {
+    background: linear-gradient(135deg, ${dark ? "rgba(26,86,255,0.15)" : "rgba(26,86,255,0.08)"} 0%, ${dark ? "rgba(26,86,255,0.04)" : "rgba(26,86,255,0.02)"} 100%);
+    border: 1px solid ${dark ? "rgba(26,86,255,0.25)" : "rgba(26,86,255,0.18)"};
+    border-radius: 18px; padding: 24px 28px; position: relative; overflow: hidden;
+    margin-bottom: 16px;
+  }
+  .hero-banner::before {
+    content: ''; position: absolute; top: -40%; right: -10%; width: 260px; height: 260px;
+    border-radius: 50%; background: rgba(26,86,255,0.08); filter: blur(60px); pointer-events: none;
+  }
+  .hero-banner-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: ${t.text2}; margin-bottom: 8px; }
+  .hero-banner-value { font-family: 'Bricolage Grotesque', sans-serif; font-size: 42px; font-weight: 800; letter-spacing: -1px; line-height: 1; color: ${t.text}; }
+  .hero-banner-sub { font-size: 13px; color: ${t.text2}; margin-top: 8px; }
+  .hero-progress { height: 8px; background: ${dark ? "rgba(26,86,255,0.12)" : "rgba(26,86,255,0.08)"}; border-radius: 4px; overflow: hidden; margin-top: 16px; }
+  .hero-progress-fill { height: 100%; border-radius: 4px; transition: width 0.8s ease; background: linear-gradient(90deg, #1A56FF, #4B7BFF); }
+
+  /* ── MINI KPI GRID ── */
+  .mini-kpi-grid { display: flex; gap: 12px; margin-bottom: 20px; flex-wrap: wrap; }
+  .mini-kpi {
+    flex: 1; min-width: 140px; background: ${t.surface}; border: 1px solid ${t.border};
+    border-radius: 14px; padding: 16px; text-align: center; position: relative; overflow: hidden;
+    transition: transform 0.18s, box-shadow 0.18s;
+  }
+  .mini-kpi:hover { transform: translateY(-2px); box-shadow: ${t.shadow}; }
+  .mini-kpi-icon { font-size: 22px; margin-bottom: 8px; }
+  .mini-kpi-val { font-family: 'Bricolage Grotesque', sans-serif; font-size: 22px; font-weight: 700; line-height: 1; }
+  .mini-kpi-label { font-size: 11px; color: ${t.text2}; margin-top: 4px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.3px; }
+  .mini-kpi-trend { font-size: 10px; margin-top: 6px; font-weight: 700; }
+
+  /* ── INSIGHT CARD ── */
+  .insight-card {
+    background: ${dark ? "rgba(26,86,255,0.04)" : "rgba(26,86,255,0.02)"};
+    border: 1px solid ${t.border}; border-radius: 12px; padding: 14px 16px;
+    display: flex; align-items: flex-start; gap: 12px; margin-bottom: 8px;
+    transition: background 0.18s;
+  }
+  .insight-card:hover { background: ${dark ? "rgba(26,86,255,0.08)" : "rgba(26,86,255,0.05)"}; }
+  .insight-icon { width: 36px; height: 36px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 16px; flex-shrink: 0; }
+
   /* ── TABS ── */
   .tabs { display: flex; gap: 2px; background: ${t.glass3}; border-radius: 11px; padding: 4px; overflow-x: auto; flex-shrink: 0; }
   .tabs::-webkit-scrollbar { display: none; }
@@ -526,6 +566,121 @@ function Kpi({ icon, label, value, trend, trendUp = true, color = "#1A56FF" }) {
       {trend && <div className="kpi-trend" style={{ color: trendUp ? "#16C55E" : "#D42B3A" }}>
         {trendUp ? "▲" : "▼"} {trend}
       </div>}
+    </div>
+  );
+}
+
+// ─── HERO BANNER COMPONENT ─────────────────────────────────────────────────────
+function HeroBanner({ label, value, subtitle, progress, progressLabel, progressColor, trend, trendUp, icon, children }) {
+  return (
+    <div className="hero-banner fade-in">
+      <div style={{ position:"relative", zIndex:1 }}>
+        <div style={{ display:"flex", alignItems:"flex-start", justifyContent:"space-between" }}>
+          <div>
+            <div className="hero-banner-label">{label}</div>
+            <div className="hero-banner-value">{value}</div>
+            {subtitle && <div className="hero-banner-sub">{subtitle}</div>}
+          </div>
+          <div style={{ display:"flex", alignItems:"center", gap:8 }}>
+            {trend && (
+              <span style={{ padding:"4px 10px", borderRadius:20, fontSize:12, fontWeight:700, background: trendUp ? "rgba(22,197,94,0.12)" : "rgba(212,43,58,0.12)", color: trendUp ? "#16C55E" : "#D42B3A" }}>
+                {trendUp ? "↗" : "↘"} {trend}
+              </span>
+            )}
+            {icon && <div style={{ width:48, height:48, borderRadius:14, background:"rgba(26,86,255,0.12)", display:"flex", alignItems:"center", justifyContent:"center", fontSize:24 }}>{icon}</div>}
+          </div>
+        </div>
+        {progress !== undefined && (
+          <div>
+            <div className="hero-progress">
+              <div className="hero-progress-fill" style={{ width:`${Math.min(progress, 100)}%`, background: progressColor || undefined }} />
+            </div>
+            {progressLabel && <div style={{ display:"flex", justifyContent:"space-between", marginTop:6 }}>
+              <span style={{ fontSize:11, color:"#7B91C4" }}>{progressLabel}</span>
+              <span style={{ fontSize:12, fontWeight:700, color: progress >= 100 ? "#16C55E" : "#1A56FF" }}>● {progress.toFixed(0)}%</span>
+            </div>}
+          </div>
+        )}
+        {children}
+      </div>
+    </div>
+  );
+}
+
+function MiniKpiCard({ icon, label, value, trend, trendUp, color = "#1A56FF" }) {
+  return (
+    <div className="mini-kpi fade-in">
+      <div className="mini-kpi-icon">{icon}</div>
+      <div className="mini-kpi-val" style={{ color }}>{value}</div>
+      <div className="mini-kpi-label">{label}</div>
+      {trend && <div className="mini-kpi-trend" style={{ color: trendUp ? "#16C55E" : "#D42B3A" }}>{trendUp ? "↗" : "↘"} {trend}</div>}
+    </div>
+  );
+}
+
+// ─── SVG CHARTS ────────────────────────────────────────────────────────────────
+function DonutChart({ segments, size = 120, strokeWidth = 14, centerLabel, centerValue }) {
+  const r = (size - strokeWidth) / 2;
+  const circumference = 2 * Math.PI * r;
+  let offset = 0;
+  return (
+    <div style={{ position:"relative", width:size, height:size }}>
+      <svg width={size} height={size} style={{ transform:"rotate(-90deg)" }}>
+        <circle cx={size/2} cy={size/2} r={r} fill="none" stroke="rgba(26,86,255,0.08)" strokeWidth={strokeWidth} />
+        {segments.map((seg, i) => {
+          const dash = (seg.value / 100) * circumference;
+          const o = offset;
+          offset += dash;
+          return <circle key={i} cx={size/2} cy={size/2} r={r} fill="none" stroke={seg.color} strokeWidth={strokeWidth} strokeDasharray={`${dash} ${circumference - dash}`} strokeDashoffset={-o} strokeLinecap="round" style={{ transition:"stroke-dasharray 0.8s ease, stroke-dashoffset 0.8s ease" }} />;
+        })}
+      </svg>
+      {(centerLabel || centerValue) && (
+        <div style={{ position:"absolute", inset:0, display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center" }}>
+          {centerValue && <div style={{ fontFamily:"'Bricolage Grotesque'", fontWeight:800, fontSize:size*0.18, lineHeight:1 }}>{centerValue}</div>}
+          {centerLabel && <div style={{ fontSize:size*0.085, color:"#7B91C4", marginTop:2 }}>{centerLabel}</div>}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function SparkLine({ data, width = 100, height = 32, color = "#1A56FF", fill = true }) {
+  if (!data || data.length < 2) return null;
+  const max = Math.max(...data);
+  const min = Math.min(...data);
+  const range = max - min || 1;
+  const points = data.map((v, i) => `${(i / (data.length - 1)) * width},${height - ((v - min) / range) * (height - 4) - 2}`).join(" ");
+  return (
+    <svg width={width} height={height} style={{ display:"block" }}>
+      {fill && <polygon points={`0,${height} ${points} ${width},${height}`} fill={`${color}15`} />}
+      <polyline points={points} fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
+function MiniBarChartViz({ data, height = 48, barColor = "#1A56FF" }) {
+  const max = Math.max(...data.map(d => d.value));
+  return (
+    <div style={{ display:"flex", alignItems:"flex-end", gap:3, height }}>
+      {data.map((d, i) => (
+        <div key={i} style={{ flex:1, display:"flex", flexDirection:"column", alignItems:"center", gap:2 }}>
+          <div style={{ width:"100%", height:`${Math.max((d.value / max) * 100, 8)}%`, borderRadius:"3px 3px 0 0", background: d.highlight ? "#D42B3A" : barColor, opacity: d.highlight ? 1 : 0.7, transition:"height 0.5s ease" }} />
+          {d.label && <span style={{ fontSize:8, color:"#7B91C4" }}>{d.label}</span>}
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function InsightCard({ icon, iconBg, title, description, action, onAction }) {
+  return (
+    <div className="insight-card">
+      <div className="insight-icon" style={{ background: iconBg }}>{icon}</div>
+      <div style={{ flex:1 }}>
+        <div style={{ fontWeight:600, fontSize:13, marginBottom:2 }}>{title}</div>
+        <div style={{ fontSize:12, color:"#7B91C4", lineHeight:1.5 }}>{description}</div>
+      </div>
+      {action && <button className="btn btn-ghost" style={{ fontSize:11, padding:"5px 10px", flexShrink:0 }} onClick={onAction}>{action}</button>}
     </div>
   );
 }
@@ -801,16 +956,23 @@ function HomePage({ data, setData, showToast, dark }) {
         </div>
       </div>
 
-      {/* KPIs */}
-      <KpiBanner kpis={[
-        { icon:"💵", label:"Revenus Totaux", value:fmt(totalRevenue), trend:"+18.4%", trendUp:true, color:"#1A56FF" },
-        { icon:"📉", label:"Dépenses", value:fmt(totalExpenses), trend:"+5.1%", trendUp:false, color:"#D42B3A" },
-        { icon:"✨", label:"Profit Net", value:fmt(totalProfit), trend:"+23.7%", trendUp:true, color:"#16C55E" },
-        { icon:"🛍️", label:"Nb Transactions", value:data.sales.length, trend:"+12%", trendUp:true, color:"#F5C518" },
-        { icon:"👥", label:"Clients Actifs", value:data.clients.filter(c=>c.status!=="inactive").length, trend:"+3", trendUp:true, color:"#25D366" },
-        { icon:"📦", label:"Produits", value:data.products.length, color:"#7B91C4" },
-        { icon:"⚠️", label:"Stock Bas", value:lowStock.length, trendUp:false, color:lowStock.length>0?"#D42B3A":"#16C55E" },
-      ]} />
+      {/* Hero KPI */}
+      <HeroBanner
+        label="REVENUS TOTAUX"
+        value={fmt(totalRevenue)}
+        subtitle={`Objectif: ${fmt(2000)} · ${data.user.company}`}
+        progress={(totalRevenue / 2000) * 100}
+        progressLabel={`${fmt(totalRevenue)} sur ${fmt(2000)}`}
+        trend="+18.4%"
+        trendUp={true}
+        icon="📊"
+      />
+      <div className="mini-kpi-grid">
+        <MiniKpiCard icon="📉" label="Dépenses" value={fmt(totalExpenses)} trend="+5.1%" trendUp={false} color="#D42B3A" />
+        <MiniKpiCard icon="✨" label="Profit Net" value={fmt(totalProfit)} trend="+23.7%" trendUp={true} color="#16C55E" />
+        <MiniKpiCard icon="🛍️" label="Ventes" value={data.sales.length} trend="+12%" trendUp={true} color="#F5C518" />
+        <MiniKpiCard icon="⚠️" label="Stock Bas" value={lowStock.length} trendUp={false} color={lowStock.length>0?"#D42B3A":"#16C55E"} />
+      </div>
 
       <div style={{ display: "grid", gridTemplateColumns: "1fr 360px", gap: 16, marginBottom: 16 }}>
         {/* Chart */}
@@ -941,14 +1103,22 @@ function SalesPage({ data, setData, showToast }) {
 
   return (
     <div className="page-bg page-content fade-in">
-      <KpiBanner kpis={[
-        { icon:"🛒", label:"Ventes Aujourd'hui", value:fmt(data.sales.filter(s=>s.sale_date===new Date().toISOString().split("T")[0]).reduce((s,x)=>s+x.total_amount,0)), color:"#1A56FF" },
-        { icon:"💵", label:"Chiffre d'Affaires", value:fmt(data.sales.reduce((s,x)=>s+x.total_amount,0)), trend:"+18%", trendUp:true, color:"#16C55E" },
-        { icon:"✨", label:"Profit Total", value:fmt(data.sales.reduce((s,x)=>s+x.profit,0)), trend:"+23%", trendUp:true, color:"#F5C518" },
-        { icon:"🧾", label:"Nb Ventes", value:data.sales.length, trend:"+12%", trendUp:true, color:"#7B91C4" },
-        { icon:"📱", label:"Mobile Money", value:data.sales.filter(s=>s.payment_method==="mobile_money").length+" ventes", color:"#25D366" },
-        { icon:"💳", label:"Crédit", value:fmt(data.sales.filter(s=>s.payment_method==="credit").reduce((s,x)=>s+x.total_amount,0)), color:"#D42B3A" },
-      ]} />
+      <HeroBanner
+        label="OBJECTIF VENTES QUOTIDIEN"
+        value={fmt(data.sales.reduce((s,x)=>s+x.total_amount,0))}
+        subtitle={`Objectif: ${fmt(1500)}`}
+        progress={(data.sales.reduce((s,x)=>s+x.total_amount,0) / 1500) * 100}
+        progressLabel={`${fmt(data.sales.reduce((s,x)=>s+x.total_amount,0))} sur ${fmt(1500)}`}
+        trend="+18%"
+        trendUp={true}
+        icon="🛒"
+      />
+      <div className="mini-kpi-grid">
+        <MiniKpiCard icon="✨" label="Profit" value={fmt(data.sales.reduce((s,x)=>s+x.profit,0))} trend="+23%" trendUp={true} color="#16C55E" />
+        <MiniKpiCard icon="🧾" label="Ventes" value={data.sales.length} trend="+12%" trendUp={true} color="#F5C518" />
+        <MiniKpiCard icon="📱" label="Mobile Money" value={data.sales.filter(s=>s.payment_method==="mobile_money").length} color="#25D366" />
+        <MiniKpiCard icon="💳" label="Crédit" value={fmt(data.sales.filter(s=>s.payment_method==="credit").reduce((s,x)=>s+x.total_amount,0))} color="#D42B3A" />
+      </div>
       <div className="sec-head"><h1 style={{ fontFamily:"'Bricolage Grotesque'", fontSize:22, fontWeight:800 }}>◈ Ventes & POS</h1></div>
       <div className="tabs" style={{ marginBottom: 20 }}>
         {[["pos","🛒 Point de Vente"],["history","📋 Historique"],["invoices","🧾 Factures"]].map(([k,l]) => (
@@ -1082,14 +1252,20 @@ function ProductsPage({ data, setData, showToast }) {
 
   return (
     <div className="page-bg page-content fade-in">
-      <KpiBanner kpis={[
-        { icon:"📦", label:"Total Produits", value:data.products.length, color:"#1A56FF" },
-        { icon:"💰", label:"Valeur Stock", value:fmt(data.products.reduce((s,p)=>s+p.unit_price*p.stock_quantity,0)), color:"#16C55E" },
-        { icon:"⚠️", label:"Stock Bas", value:data.products.filter(p=>p.stock_quantity<=p.low_stock_alert).length+" produits", trendUp:false, color:"#D42B3A" },
-        { icon:"📈", label:"Marge Moyenne", value:(data.products.reduce((s,p)=>s+((p.unit_price-p.cogs)/p.unit_price*100),0)/data.products.length).toFixed(0)+"%", color:"#F5C518" },
-        { icon:"🏷️", label:"Catégories", value:[...new Set(data.products.map(p=>p.type))].length, color:"#7B91C4" },
-        { icon:"📊", label:"Unités Totales", value:data.products.reduce((s,p)=>s+p.stock_quantity,0), color:"#25D366" },
-      ]} />
+      <HeroBanner
+        label="VALEUR TOTALE DU STOCK"
+        value={fmt(data.products.reduce((s,p)=>s+p.unit_price*p.stock_quantity,0))}
+        subtitle={`${data.products.length} produits · ${[...new Set(data.products.map(p=>p.type))].length} catégories`}
+        progress={((data.products.length - data.products.filter(p=>p.stock_quantity<=p.low_stock_alert).length) / data.products.length) * 100}
+        progressLabel={`${data.products.filter(p=>p.stock_quantity>p.low_stock_alert).length}/${data.products.length} produits en stock normal`}
+        progressColor={data.products.filter(p=>p.stock_quantity<=p.low_stock_alert).length > 2 ? "linear-gradient(90deg, #F5C518, #D42B3A)" : undefined}
+        icon="📦"
+      />
+      <div className="mini-kpi-grid">
+        <MiniKpiCard icon="⚠️" label="Stock Bas" value={data.products.filter(p=>p.stock_quantity<=p.low_stock_alert).length} trendUp={false} color="#D42B3A" />
+        <MiniKpiCard icon="📈" label="Marge Moy." value={(data.products.reduce((s,p)=>s+((p.unit_price-p.cogs)/p.unit_price*100),0)/data.products.length).toFixed(0)+"%"} color="#F5C518" />
+        <MiniKpiCard icon="📊" label="Unités" value={data.products.reduce((s,p)=>s+p.stock_quantity,0)} color="#25D366" />
+      </div>
       <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:20, flexWrap:"wrap", gap:10 }}>
         <h1 style={{ fontFamily:"'Bricolage Grotesque'", fontSize:22, fontWeight:800 }}>◻ Produits & Stock</h1>
         <button className="btn btn-primary" onClick={() => setShowAdd(true)}>➕ Nouveau Produit</button>
@@ -1285,14 +1461,22 @@ function ClientsPage({ data, setData, showToast }) {
 
   return (
     <div className="page-bg page-content fade-in">
-      <KpiBanner kpis={[
-        { icon:"👥", label:"Total Clients", value:data.clients.length, color:"#1A56FF" },
-        { icon:"👑", label:"Clients VIP", value:data.clients.filter(c=>c.status==="vip").length, color:"#F5C518" },
-        { icon:"🟢", label:"Clients Actifs", value:data.clients.filter(c=>c.status==="active").length, color:"#16C55E" },
-        { icon:"💳", label:"Crédit Total", value:fmt(data.clients.reduce((s,c)=>s+c.credit_balance,0)), trendUp:false, color:"#D42B3A" },
-        { icon:"💵", label:"Revenus Clients", value:fmt(data.clients.reduce((s,c)=>s+c.total_revenue,0)), trend:"+15%", trendUp:true, color:"#25D366" },
-        { icon:"🎯", label:"Leads", value:data.clients.filter(c=>c.status==="lead").length, color:"#7B91C4" },
-      ]} />
+      <HeroBanner
+        label="REVENUS CLIENTS"
+        value={fmt(data.clients.reduce((s,c)=>s+c.total_revenue,0))}
+        subtitle={`${data.clients.length} clients · ${data.clients.filter(c=>c.status==="vip").length} VIP`}
+        progress={(data.clients.filter(c=>c.status!=="inactive").length / data.clients.length) * 100}
+        progressLabel={`${data.clients.filter(c=>c.status!=="inactive").length} clients actifs`}
+        trend="+15%"
+        trendUp={true}
+        icon="👥"
+      />
+      <div className="mini-kpi-grid">
+        <MiniKpiCard icon="👑" label="VIP" value={data.clients.filter(c=>c.status==="vip").length} color="#F5C518" />
+        <MiniKpiCard icon="🟢" label="Actifs" value={data.clients.filter(c=>c.status==="active").length} color="#16C55E" />
+        <MiniKpiCard icon="💳" label="Crédit Dû" value={fmt(data.clients.reduce((s,c)=>s+c.credit_balance,0))} trendUp={false} color="#D42B3A" />
+        <MiniKpiCard icon="🎯" label="Leads" value={data.clients.filter(c=>c.status==="lead").length} color="#1A56FF" />
+      </div>
       <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:20, flexWrap:"wrap", gap:10 }}>
         <h1 style={{ fontFamily:"'Bricolage Grotesque'", fontSize:22, fontWeight:800 }}>◎ Clients</h1>
         <button className="btn btn-primary" onClick={() => setShowAdd(true)}>➕ Nouveau Client</button>
@@ -1580,14 +1764,20 @@ function MarketingPage({ data, setData, showToast }) {
 
   return (
     <div className="page-bg page-content fade-in" style={{ position:"relative" }}>
-      <KpiBanner kpis={[
-        { icon:"📝", label:"Posts Totaux", value:data.posts.length + aiPosts.length, color:"#1A56FF" },
-        { icon:"✅", label:"Publiés", value:data.posts.filter(p=>p.status==="published").length, color:"#16C55E" },
-        { icon:"📅", label:"Programmés", value:data.posts.filter(p=>p.status==="scheduled").length + aiPosts.filter(p=>p.status==="scheduled").length, color:"#F5C518" },
-        { icon:"✨", label:"Propositions IA", value:aiPosts.filter(p=>p.status==="ai_proposed").length, color:"#E1306C" },
-        { icon:"👍", label:"Total Likes", value:data.posts.reduce((s,p)=>s+p.likes,0), trend:"+45%", trendUp:true, color:"#1877F2" },
-        { icon:"🔄", label:"Total Partages", value:data.posts.reduce((s,p)=>s+p.shares,0), color:"#69C9D0" },
-      ]} />
+      <HeroBanner
+        label="ENGAGEMENT MARKETING"
+        value={data.posts.reduce((s,p)=>s+p.likes,0) + " likes"}
+        subtitle={`${data.posts.length + aiPosts.length} posts · ${aiPosts.filter(p=>p.status==="ai_proposed").length} propositions IA`}
+        trend="+45%"
+        trendUp={true}
+        icon="📈"
+      />
+      <div className="mini-kpi-grid">
+        <MiniKpiCard icon="📝" label="Posts" value={data.posts.length + aiPosts.length} color="#1A56FF" />
+        <MiniKpiCard icon="✅" label="Publiés" value={data.posts.filter(p=>p.status==="published").length} color="#16C55E" />
+        <MiniKpiCard icon="✨" label="IA" value={aiPosts.filter(p=>p.status==="ai_proposed").length} color="#F5C518" />
+        <MiniKpiCard icon="🔄" label="Partages" value={data.posts.reduce((s,p)=>s+p.shares,0)} color="#69C9D0" />
+      </div>
       <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:20 }}>
         <h1 style={{ fontFamily:"'Bricolage Grotesque'", fontSize:22, fontWeight:800 }}>◉ Marketing Hub</h1>
         <button className="btn btn-primary" onClick={() => showToast("Analytics...", "info")}>📊 Analytics</button>
@@ -1846,14 +2036,22 @@ function AccountingPage({ data, setData, showToast }) {
 
   return (
     <div className="page-bg page-content fade-in">
-      <KpiBanner kpis={[
-        { icon:"💵", label:"Revenus Totaux", value:fmt(totalRev), trend:"+18%", trendUp:true, color:"#1A56FF" },
-        { icon:"📉", label:"Dépenses", value:fmt(totalExp), trend:"+5%", trendUp:false, color:"#D42B3A" },
-        { icon:"✨", label:"Profit Net", value:fmt(netProfit), trend:"+23%", trendUp:true, color:"#16C55E" },
-        { icon:"📊", label:"Marge Nette", value:totalRev>0?((netProfit/totalRev)*100).toFixed(0)+"%":"0%", color:"#F5C518" },
-        { icon:"🧾", label:"Nb Dépenses", value:data.expenses.length, color:"#7B91C4" },
-        { icon:"✅", label:"Approuvées", value:data.expenses.filter(e=>e.status==="approved").length, color:"#16C55E" },
-      ]} />
+      <HeroBanner
+        label="PROFIT NET"
+        value={fmt(netProfit)}
+        subtitle={`Revenus: ${fmt(totalRev)} · Dépenses: ${fmt(totalExp)}`}
+        progress={totalRev > 0 ? ((netProfit/totalRev)*100) : 0}
+        progressLabel={`Marge nette: ${totalRev>0?((netProfit/totalRev)*100).toFixed(0):0}%`}
+        trend="+23%"
+        trendUp={true}
+        icon="📊"
+      />
+      <div className="mini-kpi-grid">
+        <MiniKpiCard icon="💵" label="Revenus" value={fmt(totalRev)} trend="+18%" trendUp={true} color="#1A56FF" />
+        <MiniKpiCard icon="📉" label="Dépenses" value={fmt(totalExp)} trend="+5%" trendUp={false} color="#D42B3A" />
+        <MiniKpiCard icon="🧾" label="Nb Dépenses" value={data.expenses.length} color="#7B91C4" />
+        <MiniKpiCard icon="✅" label="Approuvées" value={data.expenses.filter(e=>e.status==="approved").length} color="#16C55E" />
+      </div>
       <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:20 }}>
         <h1 style={{ fontFamily:"'Bricolage Grotesque'", fontSize:22, fontWeight:800 }}>⊛ Comptabilité</h1>
         <div style={{ display:"flex", gap:10 }}>
@@ -1963,16 +2161,57 @@ function PersonalPage({ data, showToast }) {
   const totalPersonal = data.budget.spent;
   const savingsRate   = (((totalIncome-totalPersonal)/totalIncome)*100).toFixed(0);
 
+  const budgetUsed = (data.budget.spent / data.budget.monthly) * 100;
+  const remaining = data.budget.monthly - data.budget.spent;
+  const totalGoalsSaved = goals.reduce((s,g) => s + g.current, 0);
+  const totalGoalsTarget = goals.reduce((s,g) => s + g.target, 0);
+
+  // Budget donut segments
+  const budgetSegments = data.budget.categories.map((c, i) => {
+    const colors = ["#1A56FF","#D42B3A","#F5C518","#16C55E","#25D366","#7B91C4"];
+    return { value: (c.spent / data.budget.spent) * 100, color: colors[i % colors.length], label: c.name, amount: c.spent };
+  });
+
   return (
     <div className="page-bg page-content fade-in">
-      <KpiBanner kpis={[
-        { icon:"💵", label:"Revenus Mensuels", value:fmt(totalIncome), trend:"+8%", trendUp:true, color:"#1A56FF" },
-        { icon:"💸", label:"Dépenses Perso", value:fmt(totalPersonal), trend:"+3%", trendUp:false, color:"#D42B3A" },
-        { icon:"🏦", label:"Taux d'Épargne", value:savingsRate+"%", trend:"+2%", trendUp:true, color:"#16C55E" },
-        { icon:"📱", label:"M-PESA", value:"+$320", color:"#25D366" },
-        { icon:"🎯", label:"Budget Restant", value:fmt(data.budget.monthly-data.budget.spent), color:data.budget.spent>data.budget.monthly?"#D42B3A":"#F5C518" },
-        { icon:"📊", label:"Catégories", value:data.budget.categories.length, color:"#7B91C4" },
-      ]} />
+      {/* Hero: Budget Health */}
+      <HeroBanner
+        label="SANTÉ FINANCIÈRE DU MOIS"
+        value={fmt(remaining)}
+        subtitle={remaining >= 0 ? "💚 Il vous reste ce montant à dépenser ce mois" : "🔴 Vous avez dépassé votre budget!"}
+        progress={Math.min(budgetUsed, 100)}
+        progressLabel={`${fmt(data.budget.spent)} dépensés sur ${fmt(data.budget.monthly)}`}
+        progressColor={budgetUsed > 90 ? "linear-gradient(90deg, #F5C518, #D42B3A)" : budgetUsed > 70 ? "linear-gradient(90deg, #1A56FF, #F5C518)" : undefined}
+        trend={savingsRate + "% épargné"}
+        trendUp={Number(savingsRate) > 0}
+        icon="🏦"
+      >
+        {/* Pedagogic explanation */}
+        <div style={{ display:"flex", gap:16, marginTop:16, paddingTop:14, borderTop:"1px solid rgba(26,86,255,0.1)" }}>
+          <div style={{ flex:1, textAlign:"center" }}>
+            <div style={{ fontSize:10, color:"#7B91C4", textTransform:"uppercase", letterSpacing:0.5, marginBottom:2 }}>Revenus</div>
+            <div style={{ fontFamily:"'Bricolage Grotesque'", fontWeight:700, fontSize:18, color:"#16C55E" }}>{fmt(totalIncome)}</div>
+          </div>
+          <div style={{ fontSize:20, color:"#7B91C4", display:"flex", alignItems:"center" }}>→</div>
+          <div style={{ flex:1, textAlign:"center" }}>
+            <div style={{ fontSize:10, color:"#7B91C4", textTransform:"uppercase", letterSpacing:0.5, marginBottom:2 }}>Dépenses</div>
+            <div style={{ fontFamily:"'Bricolage Grotesque'", fontWeight:700, fontSize:18, color:"#D42B3A" }}>{fmt(totalPersonal)}</div>
+          </div>
+          <div style={{ fontSize:20, color:"#7B91C4", display:"flex", alignItems:"center" }}>→</div>
+          <div style={{ flex:1, textAlign:"center" }}>
+            <div style={{ fontSize:10, color:"#7B91C4", textTransform:"uppercase", letterSpacing:0.5, marginBottom:2 }}>Épargne</div>
+            <div style={{ fontFamily:"'Bricolage Grotesque'", fontWeight:700, fontSize:18, color:"#1A56FF" }}>{fmt(totalIncome - totalPersonal)}</div>
+          </div>
+        </div>
+      </HeroBanner>
+
+      <div className="mini-kpi-grid">
+        <MiniKpiCard icon="💵" label="Revenus" value={fmt(totalIncome)} trend="+8%" trendUp={true} color="#1A56FF" />
+        <MiniKpiCard icon="💸" label="Dépensé" value={fmt(totalPersonal)} trend="+3%" trendUp={false} color="#D42B3A" />
+        <MiniKpiCard icon="🏦" label="Épargne" value={savingsRate+"%"} trend="+2%" trendUp={true} color="#16C55E" />
+        <MiniKpiCard icon="📱" label="M-PESA" value="+$320" color="#25D366" />
+      </div>
+
       <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:20 }}>
         <h1 style={{ fontFamily:"'Bricolage Grotesque'", fontSize:22, fontWeight:800 }}>◷ Finance Personnelle</h1>
         <button className="btn btn-ghost" onClick={() => showToast("Synchronisation...", "info")}>🔄 Sync</button>
@@ -1986,24 +2225,72 @@ function PersonalPage({ data, showToast }) {
 
       {tab==="overview" && (
         <>
-          <div className="g2">
+          <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:16, marginBottom:16 }}>
+            {/* Budget Donut */}
             <div className="card card-pad">
-              <div className="sec-title" style={{ marginBottom:14 }}>💡 Conseils IA Budget</div>
-              {[["🔴","Dépenses Loisirs dépassées de $70. Réduisez les sorties."],["🟡",`Taux d'épargne de ${savingsRate}%. Objectif: 20%.`],["🟢","Excellent contrôle alimentaire ce mois! Continuez."]].map(([ico,tip],i) => (
-                <div key={i} style={{ display:"flex", alignItems:"flex-start", gap:8, padding:"10px 0", borderBottom: i<2?"1px solid rgba(26,86,255,0.08)":"none" }}>
-                  <span>{ico}</span><span style={{ fontSize:13, color:"#7B91C4" }}>{tip}</span>
+              <div className="sec-title" style={{ marginBottom:16 }}>📊 Où va votre argent?</div>
+              <div style={{ display:"flex", alignItems:"center", gap:24 }}>
+                <DonutChart
+                  segments={budgetSegments}
+                  size={140}
+                  strokeWidth={18}
+                  centerValue={budgetUsed.toFixed(0)+"%"}
+                  centerLabel="utilisé"
+                />
+                <div style={{ flex:1 }}>
+                  {data.budget.categories.map((c, i) => {
+                    const colors = ["#1A56FF","#D42B3A","#F5C518","#16C55E","#25D366","#7B91C4"];
+                    const over = c.spent > c.budget;
+                    return (
+                      <div key={c.name} style={{ display:"flex", alignItems:"center", gap:8, padding:"6px 0", borderBottom:"1px solid rgba(26,86,255,0.06)" }}>
+                        <div style={{ width:10, height:10, borderRadius:3, background:colors[i%colors.length], flexShrink:0 }} />
+                        <div style={{ flex:1, fontSize:12 }}>{c.name}</div>
+                        <div style={{ fontSize:12, fontWeight:700, color: over ? "#D42B3A" : "#7B91C4" }}>{fmt(c.spent)}</div>
+                      </div>
+                    );
+                  })}
                 </div>
-              ))}
+              </div>
+              <div style={{ marginTop:14, padding:"10px 14px", background:"rgba(26,86,255,0.04)", borderRadius:10, border:"1px solid rgba(26,86,255,0.08)" }}>
+                <div style={{ fontSize:11, color:"#7B91C4", lineHeight:1.6 }}>
+                  💡 <strong>Astuce:</strong> Les experts recommandent la règle <strong>50/30/20</strong> — 50% besoins, 30% envies, 20% épargne. Votre taux d'épargne est de <strong style={{ color: Number(savingsRate) >= 20 ? "#16C55E" : "#F5C518" }}>{savingsRate}%</strong>.
+                </div>
+              </div>
             </div>
+
+            {/* Income vs Expense trend */}
             <div className="card card-pad">
-              <div className="sec-title" style={{ marginBottom:14 }}>📱 Mobile Money</div>
-              {[["M-PESA","💚","#25D366","+$320"],["Airtel Money","🔴","#D42B3A","+$180"],["Orange Money","🟠","#F5C518","+$450"]].map(([n,ico,c,a]) => (
-                <div key={n} style={{ display:"flex", alignItems:"center", justifyContent:"space-between", padding:"10px 0", borderBottom:"1px solid rgba(26,86,255,0.08)" }}>
-                  <div style={{ display:"flex", alignItems:"center", gap:10 }}>
+              <div className="sec-title" style={{ marginBottom:16 }}>📈 Tendance Mensuelle</div>
+              <div style={{ marginBottom:16 }}>
+                <SparkLine data={[2800,2600,3000,2900,3100,3200,3200]} width={280} height={60} color="#16C55E" />
+                <div style={{ fontSize:11, color:"#7B91C4", marginTop:6 }}>↗ Revenus en hausse constante ces 7 derniers mois</div>
+              </div>
+              <div style={{ marginBottom:16 }}>
+                <SparkLine data={[1800,1900,1850,1700,1950,1920,1950]} width={280} height={40} color="#D42B3A" />
+                <div style={{ fontSize:11, color:"#7B91C4", marginTop:4 }}>⚡ Dépenses stables — bon signe!</div>
+              </div>
+
+              {/* AI Insights */}
+              <div className="sec-title" style={{ marginBottom:10, fontSize:13 }}>💡 Conseils Personnalisés</div>
+              <InsightCard icon="🔴" iconBg="rgba(212,43,58,0.12)" title="Loisirs: +$70 au-dessus du budget" description="Vous avez dépensé $220 au lieu de $150. Essayez de limiter les sorties la dernière semaine." />
+              <InsightCard icon="🟡" iconBg="rgba(245,197,24,0.12)" title={`Épargne: ${savingsRate}% — Objectif 20%`} description="Augmentez votre virement automatique de $50/mois pour atteindre l'objectif." action="Ajuster" onAction={() => showToast("Paramètres d'épargne ouverts", "info")} />
+              <InsightCard icon="🟢" iconBg="rgba(22,197,94,0.12)" title="Alimentation: Sous contrôle!" description="$350 dépensés sur un budget de $400. Excellent travail ce mois!" />
+            </div>
+          </div>
+
+          {/* Mobile Money */}
+          <div className="card card-pad">
+            <div className="sec-title" style={{ marginBottom:14 }}>📱 Comptes Mobile Money</div>
+            <div style={{ display:"grid", gridTemplateColumns:"repeat(3,1fr)", gap:12 }}>
+              {[["M-PESA","💚","#25D366",320,[280,310,290,320,300,350,320]],["Airtel Money","🔴","#D42B3A",180,[150,160,170,180,190,175,180]],["Orange Money","🟠","#F5C518",450,[400,380,420,430,440,460,450]]].map(([n,ico,c,a,trend]) => (
+                <div key={n} className="card card-pad-sm" style={{ borderColor:`${c}30` }}>
+                  <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom:10 }}>
                     <div style={{ width:32, height:32, borderRadius:"50%", background:`${c}20`, display:"flex", alignItems:"center", justifyContent:"center" }}>{ico}</div>
                     <span style={{ fontWeight:600, fontSize:13 }}>{n}</span>
                   </div>
-                  <span style={{ fontFamily:"'Bricolage Grotesque'", fontWeight:700, color:"#16C55E" }}>{a}</span>
+                  <div style={{ fontFamily:"'Bricolage Grotesque'", fontWeight:800, fontSize:22, color:c, marginBottom:4 }}>+{fmt(a)}</div>
+                  <SparkLine data={trend} width={120} height={28} color={c} />
+                  <div style={{ fontSize:10, color:"#7B91C4", marginTop:4 }}>Ce mois</div>
                 </div>
               ))}
             </div>
@@ -2012,73 +2299,180 @@ function PersonalPage({ data, showToast }) {
       )}
 
       {tab==="goals" && (
-        <div className="g2">
-          {goals.map(g => {
-            const p = Math.min((g.current/g.target)*100,100);
-            return (
-              <div key={g.id} className="card card-pad">
-                <div style={{ display:"flex", alignItems:"center", gap:12, marginBottom:16 }}>
-                  <div style={{ width:48, height:48, borderRadius:12, background:"rgba(26,86,255,0.1)", display:"flex", alignItems:"center", justifyContent:"center", fontSize:24 }}>{g.emoji}</div>
-                  <div><div style={{ fontWeight:700 }}>{g.name}</div><div style={{ fontSize:11, color:"#7B91C4" }}>Objectif: {fmt(g.target)}</div></div>
+        <>
+          {/* Goals progress overview */}
+          <div className="card card-pad" style={{ marginBottom:16 }}>
+            <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:16 }}>
+              <div className="sec-title">🎯 Progression Globale de vos Objectifs</div>
+              <div style={{ fontFamily:"'Bricolage Grotesque'", fontWeight:700, color:"#1A56FF" }}>{fmt(totalGoalsSaved)} / {fmt(totalGoalsTarget)}</div>
+            </div>
+            <div className="hero-progress" style={{ height:12 }}>
+              <div className="hero-progress-fill" style={{ width:`${(totalGoalsSaved/totalGoalsTarget*100)}%` }} />
+            </div>
+            <div style={{ fontSize:12, color:"#7B91C4", marginTop:8 }}>
+              💡 Vous avez épargné <strong style={{ color:"#16C55E" }}>{(totalGoalsSaved/totalGoalsTarget*100).toFixed(0)}%</strong> de vos objectifs totaux. {totalGoalsSaved/totalGoalsTarget < 0.5 ? "Continuez, chaque petit montant compte!" : "Excellent travail, vous y êtes presque!"}
+            </div>
+          </div>
+          <div className="g2">
+            {goals.map(g => {
+              const p = Math.min((g.current/g.target)*100,100);
+              const monthsLeft = Math.ceil((g.target - g.current) / (g.current > 0 ? g.current / 6 : 100));
+              return (
+                <div key={g.id} className="card card-pad">
+                  <div style={{ display:"flex", alignItems:"center", gap:12, marginBottom:16 }}>
+                    <div style={{ width:48, height:48, borderRadius:12, background:"rgba(26,86,255,0.1)", display:"flex", alignItems:"center", justifyContent:"center", fontSize:24 }}>{g.emoji}</div>
+                    <div style={{ flex:1 }}><div style={{ fontWeight:700 }}>{g.name}</div><div style={{ fontSize:11, color:"#7B91C4" }}>Objectif: {fmt(g.target)}</div></div>
+                    <DonutChart segments={[{ value: p, color: p>80?"#16C55E":p>50?"#1A56FF":"#F5C518" }]} size={56} strokeWidth={7} centerValue={p.toFixed(0)+"%"} />
+                  </div>
+                  <div style={{ fontFamily:"'Bricolage Grotesque'", fontSize:24, fontWeight:800, color:"#1A56FF", marginBottom:4 }}>{fmt(g.current)}</div>
+                  <div style={{ fontSize:11, color:"#7B91C4", marginBottom:10 }}>
+                    Il reste <strong>{fmt(g.target-g.current)}</strong> · ~{monthsLeft} mois au rythme actuel
+                  </div>
+                  <div className="progress" style={{ height:8, marginBottom:8 }}>
+                    <div className="progress-fill" style={{ width:`${p}%`, background:p>80?"#16C55E":p>50?"#1A56FF":"#F5C518" }} />
+                  </div>
+                  <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center" }}>
+                    <span style={{ fontSize:11, color:"#7B91C4" }}>{p.toFixed(0)}% atteint</span>
+                    <button style={{ background:"none", border:"none", color:"#1A56FF", cursor:"pointer", fontSize:11, fontWeight:700 }}
+                      onClick={() => { setGoals(prev => prev.map(x => x.id===g.id?{...x,current:Math.min(x.current+100,x.target)}:x)); showToast(`+$100 ajouté à "${g.name}"!`,"success"); }}>
+                      + Verser $100
+                    </button>
+                  </div>
                 </div>
-                <div style={{ fontFamily:"'Bricolage Grotesque'", fontSize:24, fontWeight:800, color:"#1A56FF", marginBottom:4 }}>{fmt(g.current)}</div>
-                <div style={{ fontSize:11, color:"#7B91C4", marginBottom:10 }}>Il reste {fmt(g.target-g.current)} à économiser</div>
-                <div className="progress" style={{ height:8, marginBottom:8 }}>
-                  <div className="progress-fill" style={{ width:`${p}%`, background:p>80?"#16C55E":p>50?"#1A56FF":"#F5C518" }} />
-                </div>
-                <div style={{ display:"flex", justifyContent:"space-between" }}>
-                  <span style={{ fontSize:11, color:"#7B91C4" }}>{p.toFixed(0)}% atteint</span>
-                  <button style={{ background:"none", border:"none", color:"#1A56FF", cursor:"pointer", fontSize:11, fontWeight:700 }}
-                    onClick={() => { setGoals(prev => prev.map(x => x.id===g.id?{...x,current:Math.min(x.current+100,x.target)}:x)); showToast(`+$100 ajouté à "${g.name}"!`,"success"); }}>
-                    + Verser $100
-                  </button>
-                </div>
-              </div>
-            );
-          })}
-        </div>
+              );
+            })}
+          </div>
+        </>
       )}
 
       {tab==="budget" && (
-        <div className="card card-pad">
-          <div className="sec-head">
-            <div className="sec-title">🎯 Budget Mensuel</div>
-            <div style={{ fontFamily:"'Bricolage Grotesque'", fontWeight:700, fontSize:16 }}>{fmt(data.budget.spent)} / {fmt(data.budget.monthly)}</div>
-          </div>
-          <div className="progress" style={{ height:10, marginBottom:24 }}>
-            <div className="progress-fill" style={{ width:`${(data.budget.spent/data.budget.monthly)*100}%`, background: data.budget.spent>data.budget.monthly*0.9?"#D42B3A":"#1A56FF" }} />
-          </div>
-          {data.budget.categories.map(c => {
-            const over = c.spent > c.budget;
-            return (
-              <div key={c.name} style={{ marginBottom:14 }}>
-                <div style={{ display:"flex", justifyContent:"space-between", marginBottom:5 }}>
-                  <span style={{ fontWeight:600, fontSize:13 }}>{c.name}</span>
-                  <span style={{ fontSize:12, color: over?"#D42B3A":"#7B91C4" }}>{fmt(c.spent)} / {fmt(c.budget)}</span>
+        <div style={{ display:"grid", gridTemplateColumns:"1fr 340px", gap:16 }}>
+          <div className="card card-pad">
+            <div className="sec-head">
+              <div className="sec-title">🎯 Budget Mensuel par Catégorie</div>
+            </div>
+            {data.budget.categories.map((c, i) => {
+              const over = c.spent > c.budget;
+              const pct2 = Math.min((c.spent/c.budget)*100, 100);
+              const colors = ["#1A56FF","#D42B3A","#F5C518","#16C55E","#25D366"];
+              const emojis = ["🍽️","🚗","🏠","🎮","💰"];
+              return (
+                <div key={c.name} style={{ marginBottom:18 }}>
+                  <div style={{ display:"flex", justifyContent:"space-between", marginBottom:6, alignItems:"center" }}>
+                    <div style={{ display:"flex", alignItems:"center", gap:8 }}>
+                      <span>{emojis[i] || "📋"}</span>
+                      <span style={{ fontWeight:600, fontSize:13 }}>{c.name}</span>
+                    </div>
+                    <div style={{ display:"flex", alignItems:"center", gap:8 }}>
+                      <span style={{ fontSize:12, fontWeight:700, color: over?"#D42B3A":"#7B91C4" }}>{fmt(c.spent)}</span>
+                      <span style={{ fontSize:11, color:"#7B91C4" }}>/ {fmt(c.budget)}</span>
+                    </div>
+                  </div>
+                  <div className="progress" style={{ height:8 }}>
+                    <div className="progress-fill" style={{ width:`${pct2}%`, background: over?"#D42B3A":pct2>80?colors[i%colors.length]+"CC":colors[i%colors.length] }} />
+                  </div>
+                  {over && (
+                    <div style={{ fontSize:10, color:"#D42B3A", marginTop:4, display:"flex", alignItems:"center", gap:4 }}>
+                      ⚠️ Dépassé de {fmt(c.spent-c.budget)} — {((c.spent/c.budget-1)*100).toFixed(0)}% au-dessus
+                    </div>
+                  )}
+                  {!over && pct2 > 80 && (
+                    <div style={{ fontSize:10, color:"#F5C518", marginTop:4 }}>
+                      ⚡ Attention: {(100-pct2).toFixed(0)}% restant ({fmt(c.budget-c.spent)})
+                    </div>
+                  )}
                 </div>
-                <div className="progress">
-                  <div className="progress-fill" style={{ width:`${Math.min((c.spent/c.budget)*100,100)}%`, background: over?"#D42B3A":c.spent>c.budget*0.8?"#F5C518":"#1A56FF" }} />
-                </div>
-                {over && <div style={{ fontSize:10, color:"#D42B3A", marginTop:3 }}>⚠️ Dépassé de {fmt(c.spent-c.budget)}</div>}
+              );
+            })}
+          </div>
+
+          {/* Right: Summary */}
+          <div style={{ display:"flex", flexDirection:"column", gap:14 }}>
+            <div className="card card-pad" style={{ textAlign:"center" }}>
+              <DonutChart
+                segments={[
+                  { value: (data.budget.spent/data.budget.monthly)*100, color: budgetUsed > 90 ? "#D42B3A" : "#1A56FF" },
+                ]}
+                size={160}
+                strokeWidth={20}
+                centerValue={fmt(remaining)}
+                centerLabel="restant"
+              />
+              <div style={{ marginTop:14, fontFamily:"'Bricolage Grotesque'", fontWeight:700, fontSize:16 }}>
+                {budgetUsed > 100 ? "🔴 Budget dépassé!" : budgetUsed > 90 ? "🟡 Presque épuisé" : budgetUsed > 70 ? "🟢 En bonne voie" : "✅ Excellent contrôle"}
               </div>
-            );
-          })}
+              <div style={{ fontSize:12, color:"#7B91C4", marginTop:4, lineHeight:1.6 }}>
+                {budgetUsed > 100
+                  ? `Vous avez dépensé ${fmt(data.budget.spent - data.budget.monthly)} de plus que prévu.`
+                  : `Il vous reste ${fmt(remaining)} pour les ${30 - new Date().getDate()} jours restants, soit ~${fmt(remaining / Math.max(30 - new Date().getDate(), 1))}/jour.`
+                }
+              </div>
+            </div>
+
+            <div className="card card-pad-sm" style={{ background:"rgba(26,86,255,0.04)", borderColor:"rgba(26,86,255,0.15)" }}>
+              <div style={{ fontSize:12, fontWeight:700, color:"#1A56FF", marginBottom:8 }}>📚 Le saviez-vous?</div>
+              <div style={{ fontSize:12, color:"#7B91C4", lineHeight:1.7 }}>
+                La <strong>règle 50/30/20</strong> est simple:<br/>
+                • <strong>50%</strong> pour les besoins (loyer, nourriture)<br/>
+                • <strong>30%</strong> pour les envies (loisirs, sorties)<br/>
+                • <strong>20%</strong> pour l'épargne et les dettes<br/><br/>
+                Sur vos {fmt(totalIncome)}, visez {fmt(totalIncome*0.2)} d'épargne minimum.
+              </div>
+            </div>
+          </div>
         </div>
       )}
 
       {tab==="debts" && (
-        <div style={{ display:"flex", flexDirection:"column", gap:14 }}>
-          {[{name:"Prêt Banque",total:5000,remaining:2800,monthly:250,rate:"12%",emoji:"🏦"},{name:"Crédit Fournisseur",total:1200,remaining:600,monthly:200,rate:"0%",emoji:"📦"}].map(d => (
-            <div key={d.name} className="card card-pad" style={{ borderColor:"rgba(212,43,58,0.2)" }}>
-              <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:12 }}>
-                <div style={{ display:"flex", alignItems:"center", gap:12 }}><span style={{ fontSize:28 }}>{d.emoji}</span><div><div style={{ fontWeight:700, fontSize:14 }}>{d.name}</div><div style={{ fontSize:11, color:"#7B91C4" }}>Taux: {d.rate} · {fmt(d.monthly)}/mois</div></div></div>
-                <div style={{ textAlign:"right" }}><div style={{ fontFamily:"'Bricolage Grotesque'", fontWeight:800, fontSize:20, color:"#D42B3A" }}>{fmt(d.remaining)}</div><div style={{ fontSize:10, color:"#7B91C4" }}>/ {fmt(d.total)}</div></div>
-              </div>
-              <div className="progress"><div className="progress-fill" style={{ width:`${((d.total-d.remaining)/d.total)*100}%`, background:"#16C55E" }} /></div>
-              <div style={{ fontSize:11, color:"#16C55E", marginTop:4 }}>{((d.total-d.remaining)/d.total*100).toFixed(0)}% remboursé</div>
+        <>
+          <div className="card card-pad" style={{ marginBottom:16 }}>
+            <div className="sec-title" style={{ marginBottom:8 }}>📊 Vue d'ensemble de vos Dettes</div>
+            <div style={{ fontSize:12, color:"#7B91C4", marginBottom:14, lineHeight:1.6 }}>
+              💡 <strong>Stratégie avalanche:</strong> Remboursez d'abord la dette au taux le plus élevé pour économiser sur les intérêts. Ou utilisez la <strong>stratégie boule de neige:</strong> commencez par la plus petite dette pour la satisfaction rapide.
             </div>
-          ))}
-        </div>
+            <div style={{ display:"flex", gap:12 }}>
+              <div style={{ flex:1, padding:14, background:"rgba(212,43,58,0.06)", borderRadius:10, border:"1px solid rgba(212,43,58,0.15)", textAlign:"center" }}>
+                <div style={{ fontSize:11, color:"#7B91C4", marginBottom:4 }}>Total Restant</div>
+                <div style={{ fontFamily:"'Bricolage Grotesque'", fontWeight:800, fontSize:24, color:"#D42B3A" }}>{fmt(3400)}</div>
+              </div>
+              <div style={{ flex:1, padding:14, background:"rgba(22,197,94,0.06)", borderRadius:10, border:"1px solid rgba(22,197,94,0.15)", textAlign:"center" }}>
+                <div style={{ fontSize:11, color:"#7B91C4", marginBottom:4 }}>Déjà Remboursé</div>
+                <div style={{ fontFamily:"'Bricolage Grotesque'", fontWeight:800, fontSize:24, color:"#16C55E" }}>{fmt(2800)}</div>
+              </div>
+              <div style={{ flex:1, padding:14, background:"rgba(26,86,255,0.06)", borderRadius:10, border:"1px solid rgba(26,86,255,0.15)", textAlign:"center" }}>
+                <div style={{ fontSize:11, color:"#7B91C4", marginBottom:4 }}>Paiement/Mois</div>
+                <div style={{ fontFamily:"'Bricolage Grotesque'", fontWeight:800, fontSize:24, color:"#1A56FF" }}>{fmt(450)}</div>
+              </div>
+            </div>
+          </div>
+          <div style={{ display:"flex", flexDirection:"column", gap:14 }}>
+            {[{name:"Prêt Banque",total:5000,remaining:2800,monthly:250,rate:"12%",emoji:"🏦",tip:"Priorité #1 — taux élevé. Envisagez un paiement supplémentaire."},{name:"Crédit Fournisseur",total:1200,remaining:600,monthly:200,rate:"0%",emoji:"📦",tip:"Pas d'intérêts! Maintenez les paiements réguliers."}].map(d => (
+              <div key={d.name} className="card card-pad" style={{ borderColor:"rgba(212,43,58,0.2)" }}>
+                <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:12 }}>
+                  <div style={{ display:"flex", alignItems:"center", gap:12 }}>
+                    <span style={{ fontSize:28 }}>{d.emoji}</span>
+                    <div>
+                      <div style={{ fontWeight:700, fontSize:14 }}>{d.name}</div>
+                      <div style={{ fontSize:11, color:"#7B91C4" }}>Taux: {d.rate} · {fmt(d.monthly)}/mois</div>
+                    </div>
+                  </div>
+                  <div style={{ textAlign:"right" }}>
+                    <div style={{ fontFamily:"'Bricolage Grotesque'", fontWeight:800, fontSize:20, color:"#D42B3A" }}>{fmt(d.remaining)}</div>
+                    <div style={{ fontSize:10, color:"#7B91C4" }}>/ {fmt(d.total)}</div>
+                  </div>
+                </div>
+                <div className="progress" style={{ height:8 }}><div className="progress-fill" style={{ width:`${((d.total-d.remaining)/d.total)*100}%`, background:"#16C55E" }} /></div>
+                <div style={{ display:"flex", justifyContent:"space-between", marginTop:6 }}>
+                  <span style={{ fontSize:11, color:"#16C55E", fontWeight:600 }}>{((d.total-d.remaining)/d.total*100).toFixed(0)}% remboursé</span>
+                  <span style={{ fontSize:11, color:"#7B91C4" }}>~{Math.ceil(d.remaining / d.monthly)} mois restants</span>
+                </div>
+                <div style={{ marginTop:8, padding:"8px 12px", background:"rgba(245,197,24,0.06)", borderRadius:8, border:"1px solid rgba(245,197,24,0.12)" }}>
+                  <div style={{ fontSize:11, color:"#F5C518" }}>💡 {d.tip}</div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </>
       )}
     </div>
   );
@@ -2236,14 +2630,22 @@ function WhatsAppPage({ data, showToast }) {
 
   return (
     <div className="page-bg page-content fade-in">
-      <KpiBanner kpis={[
-        { icon:"💬", label:"Messages", value:messages.length, color:"#25D366" },
-        { icon:"👥", label:"Contacts", value:contacts.length, color:"#1A56FF" },
-        { icon:"📢", label:"Diffusions", value:broadcastResults.length, color:"#F5C518" },
-        { icon:"🤖", label:"Commandes Bot", value:"8 actives", color:"#16C55E" },
-        { icon:"📊", label:"Taux Réponse", value:"94%", trend:"+2%", trendUp:true, color:"#1877F2" },
-        { icon:"🔗", label:"Statut", value:status==="connected"?"Connecté":"Déconnecté", color:status==="connected"?"#16C55E":"#D42B3A" },
-      ]} />
+      <HeroBanner
+        label="TAUX DE RÉPONSE BOT"
+        value="94%"
+        subtitle={`${messages.length} messages · ${contacts.length} contacts`}
+        progress={94}
+        progressLabel="Réponse automatique"
+        trend="+2%"
+        trendUp={true}
+        icon="🤖"
+      />
+      <div className="mini-kpi-grid">
+        <MiniKpiCard icon="💬" label="Messages" value={messages.length} color="#25D366" />
+        <MiniKpiCard icon="👥" label="Contacts" value={contacts.length} color="#1A56FF" />
+        <MiniKpiCard icon="📢" label="Diffusions" value={broadcastResults.length} color="#F5C518" />
+        <MiniKpiCard icon="🔗" label="Statut" value={status==="connected"?"✅":"⭕"} color={status==="connected"?"#16C55E":"#D42B3A"} />
+      </div>
       {/* Header */}
       <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:20, flexWrap:"wrap", gap:12 }}>
         <div style={{ display:"flex", alignItems:"center", gap:14 }}>
@@ -2655,13 +3057,17 @@ function SettingsPage({ data, setData, showToast, dark, setDark }) {
   const [tab, setTab] = useState("profile");
   return (
     <div className="page-bg page-content fade-in">
-      <KpiBanner kpis={[
-        { icon:"👤", label:"Utilisateur", value:data.user.name.split(" ")[0], color:"#1A56FF" },
-        { icon:"🏢", label:"Entreprise", value:data.user.company.split(" ")[0], color:"#16C55E" },
-        { icon:"👨‍💼", label:"Employés", value:data.staff?.length||3, color:"#F5C518" },
-        { icon:"🔌", label:"Intégrations", value:"4 actives", color:"#25D366" },
-        { icon:dark?"🌙":"☀️", label:"Thème", value:dark?"Sombre":"Clair", color:"#7B91C4" },
-      ]} />
+      <HeroBanner
+        label="CONFIGURATION SYSTÈME"
+        value={data.user.company}
+        subtitle={`${data.user.name} · ${data.user.role}`}
+        icon="⚙️"
+      />
+      <div className="mini-kpi-grid">
+        <MiniKpiCard icon="👨‍💼" label="Employés" value={data.staff?.length||3} color="#F5C518" />
+        <MiniKpiCard icon="🔌" label="Intégrations" value="4" color="#25D366" />
+        <MiniKpiCard icon={dark?"🌙":"☀️"} label="Thème" value={dark?"Sombre":"Clair"} color="#7B91C4" />
+      </div>
       <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:20 }}>
         <h1 style={{ fontFamily:"'Bricolage Grotesque'", fontSize:22, fontWeight:800 }}>◉ Paramètres</h1>
       </div>
