@@ -1,6 +1,8 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import logoDrc from "@/assets/logo-drc.png";
 import { supabase } from "@/integrations/supabase/client";
+import { jsPDF } from "jspdf";
+import html2canvas from "html2canvas";
 
 // ─── TWILIO WHATSAPP HELPER ────────────────────────────────────────────────────
 const sendWhatsApp = async (to, message) => {
