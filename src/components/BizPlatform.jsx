@@ -192,11 +192,17 @@ const buildStyles = (dark) => {
   }
   .logo-mark {
     width: 40px; height: 40px; min-width: 40px; border-radius: 10px;
-    background: linear-gradient(135deg, #1A56FF 0%, #D42B3A 100%);
+    background: linear-gradient(180deg, #007FFF 0%, #007FFF 40%, #CE1126 40%, #CE1126 60%, #F7D618 60%, #F7D618 100%);
     display: flex; align-items: center; justify-content: center;
     font-family: 'Bricolage Grotesque', sans-serif; font-weight: 800;
     font-size: 17px; color: white; letter-spacing: -0.5px;
-    box-shadow: 0 4px 14px rgba(26,86,255,0.35);
+    box-shadow: 0 4px 14px rgba(0,127,255,0.35);
+    position: relative; overflow: hidden;
+  }
+  .logo-mark::before {
+    content: ''; position: absolute; top: 0; left: -2px; right: -2px; bottom: 0;
+    background: linear-gradient(135deg, transparent 35%, #F7D618 35%, #F7D618 42%, transparent 42%);
+    pointer-events: none;
   }
   .logo-text { font-family: 'Bricolage Grotesque', sans-serif; font-weight: 800; font-size: 15px; white-space: nowrap; color: ${t.text}; letter-spacing: -0.3px; }
   .logo-sub { font-size: 10px; color: ${t.text3}; margin-top: 1px; }
@@ -435,7 +441,19 @@ const buildStyles = (dark) => {
   .g4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
   @media (max-width: 1200px) { .g4 { grid-template-columns: repeat(2,1fr); } }
   @media (max-width: 900px)  { .g3 { grid-template-columns: repeat(2,1fr); } }
-  @media (max-width: 640px)  { .g4,.g3,.g2 { grid-template-columns: 1fr; } .hero-banner-value { font-size: 28px; } .mini-kpi-grid { gap:8px; } .mini-kpi { min-width:120px; padding:12px; } .mini-kpi-val { font-size:18px; } }
+  @media (max-width: 640px)  {
+    .g4,.g3,.g2 { grid-template-columns: 1fr; }
+    .hero-banner-value { font-size: 28px; }
+    .mini-kpi-grid { gap:8px; }
+    .mini-kpi { min-width:120px; padding:12px; }
+    .mini-kpi-val { font-size:18px; }
+    [style*="grid-template-columns: 1fr 360px"],
+    [style*="grid-template-columns: 1fr 330px"],
+    [style*="grid-template-columns: 200px 1fr"],
+    [style*="grid-template-columns: 240px 1fr"],
+    [style*="grid-template-columns: 1fr 300px"],
+    [style*="gridTemplateColumns"] { grid-template-columns: 1fr !important; }
+  }
 
   /* ── MOBILE NAV ── */
   @media (max-width: 768px) {
@@ -644,7 +662,7 @@ function DonutChart({ segments, size = 120, strokeWidth = 14, centerLabel, cente
   );
 }
 
-function SparkLine({ data, width = 100, height = 32, color = "#1A56FF", fill = true }) {
+const SparkLine = ({ data, width = 100, height = 32, color = "#1A56FF", fill = true }) => {
   if (!data || data.length < 2) return null;
   const max = Math.max(...data);
   const min = Math.min(...data);
@@ -656,7 +674,7 @@ function SparkLine({ data, width = 100, height = 32, color = "#1A56FF", fill = t
       <polyline points={points} fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
   );
-}
+};
 
 function MiniBarChartViz({ data, height = 48, barColor = "#1A56FF" }) {
   const max = Math.max(...data.map(d => d.value));
@@ -913,7 +931,7 @@ function Toast({ message, type, onClose }) {
   );
 }
 
-function RevenueChart({ data: chartData, dark }) {
+const RevenueChart = ({ data: chartData, dark }) => {
   const max = Math.max(...chartData.map(d => d.amount));
   return (
     <div style={{ display: "flex", alignItems: "flex-end", gap: 6, height: 120, paddingTop: 10 }}>
@@ -931,7 +949,7 @@ function RevenueChart({ data: chartData, dark }) {
       })}
     </div>
   );
-}
+};
 
 // ─── HOME PAGE ─────────────────────────────────────────────────────────────────
 function HomePage({ data, setData, showToast, dark }) {
@@ -975,7 +993,7 @@ function HomePage({ data, setData, showToast, dark }) {
       </div>
 
       {/* ── VISUAL ANALYTICS ROW ── */}
-      <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr 1fr", gap:16, marginBottom:16 }}>
+      <div className="g3" style={{ marginBottom:16 }}>
         {/* Profit Breakdown Donut */}
         <div className="card card-pad">
           <div className="sec-title" style={{ marginBottom:14 }}>💰 Répartition Profit</div>
