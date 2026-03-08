@@ -995,7 +995,8 @@ function ProductsPage({ data, setData, showToast }) {
   const [search, setSearch] = useState("");
   const [showAdd, setShowAdd] = useState(false);
   const [selected, setSelected] = useState(null);
-  const [newProd, setNewProd] = useState({ name:"", type:"Alimentaire", unit_price:"", cogs:"", stock_quantity:"", low_stock_alert:10, has_expiry:false, emoji:"📦" });
+  const [editing, setEditing] = useState(null); // full edit mode
+  const [newProd, setNewProd] = useState({ name:"", type:"Alimentaire", unit_price:"", cogs:"", stock_quantity:"", low_stock_alert:10, has_expiry:false, emoji:"📦", image:null });
 
   const filtered = data.products.filter(p => p.name.toLowerCase().includes(search.toLowerCase()) || p.type.toLowerCase().includes(search.toLowerCase()));
 
