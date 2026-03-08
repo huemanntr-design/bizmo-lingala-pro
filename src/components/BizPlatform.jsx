@@ -3657,7 +3657,362 @@ function WhatsAppPage({ data, showToast }) {
   );
 }
 
-// ─── SETTINGS PAGE ─────────────────────────────────────────────────────────────
+// ─── BUSINESS PLAN PAGE ────────────────────────────────────────────────────────
+function BusinessPlanPage({ data, showToast, dark }) {
+  const [step, setStep] = useState(0); // 0=intro, 1-5=onboarding, 6=generating, 7=plan
+  const [answers, setAnswers] = useState({
+    businessType: "", sector: "", targetMarket: "", uniqueValue: "",
+    shortTermGoal: "", longTermGoal: "", challenges: "", teamSize: "",
+    monthlyBudget: "", fundingNeeded: false, fundingAmount: "",
+  });
+  const [plan, setPlan] = useState(null);
+  const [generating, setGenerating] = useState(false);
+
+  const totalRevenue = data.sales.reduce((s,x)=>s+x.total_amount,0);
+  const totalProfit  = data.sales.reduce((s,x)=>s+x.profit,0);
+  const totalExpenses = data.expenses.filter(e=>e.status==="approved").reduce((s,x)=>s+x.amount,0);
+  const avgMargin = data.products.reduce((s,p)=>s+((p.unit_price-p.cogs)/p.unit_price*100),0)/data.products.length;
+  const topProduct = [...data.products].sort((a,b) => {
+    const revA = data.sales.filter(s=>s.product_name===a.name).reduce((s,x)=>s+x.total_amount,0);
+    const revB = data.sales.filter(s=>s.product_name===b.name).reduce((s,x)=>s+x.total_amount,0);
+    return revB - revA;
+  })[0];
+  const topClient = [...data.clients].sort((a,b) => b.total_revenue - a.total_revenue)[0];
+
+  const questions = [
+    {
+      title: "🏢 Type d'Entreprise",
+      subtitle: "Décrivez votre activité principale",
+      fields: [
+        { key:"businessType", label:"Type de business", placeholder:"Ex: Commerce de détail, Distribution, Import-Export...", type:"text" },
+        { key:"sector", label:"Secteur d'activité", placeholder:"Ex: Alimentation, Boissons, Hygiène, Multi-produits...", type:"select", options:["Commerce Général","Alimentation & Boissons","Hygiène & Cosmétiques","Électronique","Distribution","Import-Export","Restauration","Autre"] },
+      ]
+    },
+    {
+      title: "🎯 Marché Cible",
+      subtitle: "Qui sont vos clients?",
+      fields: [
+        { key:"targetMarket", label:"Marché cible", placeholder:"Ex: Ménages de Kinshasa, Restaurants, Hôtels...", type:"text" },
+        { key:"uniqueValue", label:"Avantage compétitif", placeholder:"Qu'est-ce qui vous différencie? Prix, qualité, livraison...", type:"textarea" },
+      ]
+    },
+    {
+      title: "📈 Objectifs",
+      subtitle: "Vos ambitions à court et long terme",
+      fields: [
+        { key:"shortTermGoal", label:"Objectif 6 mois", placeholder:"Ex: Doubler les ventes, ouvrir un 2e point de vente...", type:"text" },
+        { key:"longTermGoal", label:"Vision 3 ans", placeholder:"Ex: Leader régional, franchise, export...", type:"textarea" },
+      ]
+    },
+    {
+      title: "⚡ Défis & Équipe",
+      subtitle: "Vos obstacles et ressources humaines",
+      fields: [
+        { key:"challenges", label:"Principaux défis", placeholder:"Ex: Concurrence, trésorerie, logistique, stock...", type:"textarea" },
+        { key:"teamSize", label:"Taille de l'équipe", placeholder:"Nombre d'employés", type:"select", options:["1 (solo)","2-5","6-10","11-25","26-50","50+"] },
+      ]
+    },
+    {
+      title: "💰 Financement",
+      subtitle: "Budget et besoins de financement",
+      fields: [
+        { key:"monthlyBudget", label:"Budget opérationnel mensuel ($)", placeholder:"Ex: 2000", type:"number" },
+        { key:"fundingNeeded", label:"Cherchez-vous un financement?", type:"toggle" },
+        ...(answers.fundingNeeded ? [{ key:"fundingAmount", label:"Montant recherché ($)", placeholder:"Ex: 10000", type:"number" }] : []),
+      ]
+    },
+  ];
+
+  const generatePlan = () => {
+    setStep(6);
+    setGenerating(true);
+    // Simulate AI generation (in production, this calls Lovable AI edge function)
+    setTimeout(() => {
+      const projectedRevenue = totalRevenue * 12 * 1.5;
+      const projectedProfit = totalProfit * 12 * 1.4;
+
+      setPlan({
+        title: `Plan d'Affaires — ${data.user.company}`,
+        date: new Date().toLocaleDateString("fr-FR", { day:"numeric", month:"long", year:"numeric" }),
+        sections: [
+          {
+            title: "1. Résumé Exécutif",
+            icon: "📋",
+            content: [
+              `**${data.user.company}** est une entreprise de ${answers.sector || "commerce"} basée à Kinshasa, République Démocratique du Congo, dirigée par ${data.user.name}.`,
+              `L'entreprise propose ${data.products.length} produits dans les catégories: ${[...new Set(data.products.map(p=>p.type))].join(", ")}.`,
+              `Avec un chiffre d'affaires actuel de **${fmt(totalRevenue)}** et une marge brute moyenne de **${avgMargin.toFixed(0)}%**, l'entreprise démontre une solide capacité commerciale.`,
+              answers.uniqueValue ? `**Avantage compétitif:** ${answers.uniqueValue}` : "",
+            ].filter(Boolean)
+          },
+          {
+            title: "2. Analyse du Marché",
+            icon: "🎯",
+            content: [
+              `**Marché cible:** ${answers.targetMarket || "Consommateurs et entreprises de Kinshasa"}`,
+              `**Base clients actuelle:** ${data.clients.length} clients dont ${data.clients.filter(c=>c.status==="vip").length} VIP et ${data.clients.filter(c=>c.status==="active").length} actifs.`,
+              `**Client principal:** ${topClient?.name || "N/A"} (${fmt(topClient?.total_revenue || 0)} de revenus).`,
+              `**Opportunité:** La RDC, avec plus de 100 millions d'habitants et une urbanisation croissante à Kinshasa, offre un marché en expansion pour le commerce de détail.`,
+              `**Concurrence:** ${answers.challenges || "Marché compétitif avec des défis logistiques à surmonter."}`
+            ]
+          },
+          {
+            title: "3. Produits & Services",
+            icon: "📦",
+            content: [
+              `**Catalogue:** ${data.products.length} produits actifs.`,
+              `**Produit phare:** ${topProduct?.emoji} ${topProduct?.name} — ${fmt(data.sales.filter(s=>s.product_name===topProduct?.name).reduce((a,s)=>a+s.total_amount,0))} de revenus.`,
+              `**Marge moyenne:** ${avgMargin.toFixed(1)}%`,
+              `**Structure de prix:**`,
+              ...data.products.map(p => `  • ${p.emoji} ${p.name}: ${fmt(p.unit_price)} (marge: ${((p.unit_price-p.cogs)/p.unit_price*100).toFixed(0)}%)`),
+            ]
+          },
+          {
+            title: "4. Stratégie Commerciale",
+            icon: "🚀",
+            content: [
+              `**Modes de paiement:** Cash, Mobile Money (M-PESA, Airtel, Orange), Crédit, Banque.`,
+              `**Canaux de vente:** Point de vente physique, commandes WhatsApp, livraison.`,
+              `**Marketing:** ${data.posts.length} publications social media programmées (Instagram, Facebook, TikTok).`,
+              `**CRM:** Gestion client intégrée avec suivi des crédits (${fmt(data.clients.reduce((s,c)=>s+c.credit_balance,0))} en créances).`,
+              answers.shortTermGoal ? `**Objectif 6 mois:** ${answers.shortTermGoal}` : "",
+            ].filter(Boolean)
+          },
+          {
+            title: "5. Projections Financières",
+            icon: "💹",
+            content: [
+              `**Revenus actuels (période):** ${fmt(totalRevenue)}`,
+              `**Dépenses opérationnelles:** ${fmt(totalExpenses)}`,
+              `**Profit net actuel:** ${fmt(totalProfit)} (marge nette: ${totalRevenue > 0 ? ((totalProfit/totalRevenue)*100).toFixed(1) : 0}%)`,
+              `**Projection annuelle (croissance 50%):** ${fmt(projectedRevenue)}`,
+              `**Profit projeté:** ${fmt(projectedProfit)}`,
+              `**Budget mensuel:** ${answers.monthlyBudget ? fmt(Number(answers.monthlyBudget)) : fmt(totalExpenses)}`,
+              `**Seuil de rentabilité estimé:** ${fmt(totalExpenses * 12 / (avgMargin/100))} /an`,
+              answers.fundingNeeded ? `**Financement recherché:** ${fmt(Number(answers.fundingAmount || 0))}` : "",
+            ].filter(Boolean)
+          },
+          {
+            title: "6. Équipe & Organisation",
+            icon: "👥",
+            content: [
+              `**Dirigeant:** ${data.user.name} — ${data.user.role}`,
+              `**Effectif:** ${answers.teamSize || `${data.staff?.length || 3} employés`}`,
+              ...(data.staff || []).map(s => `  • ${s.full_name} — ${s.role} (commission: ${s.commission_rate}%)`),
+              `**Rôles clés:** Caissier, Gestionnaire de stock, Comptable.`,
+            ]
+          },
+          {
+            title: "7. Plan d'Action",
+            icon: "✅",
+            content: [
+              `**Mois 1-2:** Optimiser la gestion des stocks (${data.products.filter(p=>p.stock_quantity<=p.low_stock_alert).length} produits en rupture).`,
+              `**Mois 3-4:** Intensifier le marketing digital et les campagnes WhatsApp.`,
+              `**Mois 5-6:** ${answers.shortTermGoal || "Développer la base clients et augmenter le panier moyen."}`,
+              `**Année 2:** ${answers.longTermGoal || "Consolider la position sur le marché de Kinshasa."}`,
+              `**Année 3:** Expansion géographique et diversification des produits.`,
+            ]
+          },
+          {
+            title: "8. Risques & Mitigation",
+            icon: "⚠️",
+            content: [
+              `**Risque de trésorerie:** ${fmt(data.clients.reduce((s,c)=>s+c.credit_balance,0))} en créances clients. Mitigation: resserrer les conditions de crédit.`,
+              `**Rupture de stock:** ${data.products.filter(p=>p.stock_quantity<=p.low_stock_alert).length} produits à risque. Mitigation: automatiser les réapprovisionnements.`,
+              `**Volatilité du marché:** Fluctuation des prix de gros. Mitigation: contrats fournisseurs à terme.`,
+              `**Concurrence:** ${answers.challenges || "Pression concurrentielle sur les prix. Différenciation par la qualité et le service."}`,
+            ]
+          },
+        ]
+      });
+      setGenerating(false);
+      setStep(7);
+    }, 3000);
+  };
+
+  if (step === 0) {
+    return (
+      <div className="page-bg page-content fade-in">
+        <div style={{ maxWidth:700, margin:"0 auto", textAlign:"center", padding:"40px 0" }}>
+          <div style={{ fontSize:64, marginBottom:20 }}>📋</div>
+          <h1 style={{ fontFamily:"'Bricolage Grotesque'", fontSize:32, fontWeight:800, letterSpacing:"-0.5px", marginBottom:12 }}>Créateur de Business Plan</h1>
+          <div style={{ fontSize:15, color:"#7B91C4", lineHeight:1.8, marginBottom:32, maxWidth:500, margin:"0 auto 32px" }}>
+            Générez un plan d'affaires professionnel et complet basé sur vos <strong style={{ color:"#1A56FF" }}>données réelles</strong> — produits, ventes, clients, et finances. L'IA analyse votre activité et crée un document prêt pour investisseurs et partenaires.
+          </div>
+
+          <div className="g3" style={{ marginBottom:32 }}>
+            {[
+              ["📊","Données Réelles","Utilise vos ventes, produits, clients et finances existants"],
+              ["🧠","Analyse IA","L'IA structure un plan professionnel avec projections"],
+              ["📥","Export PDF","Document prêt pour banques et investisseurs"],
+            ].map(([ico,t,d]) => (
+              <div key={t} className="card card-pad" style={{ textAlign:"center" }}>
+                <div style={{ fontSize:32, marginBottom:10 }}>{ico}</div>
+                <div style={{ fontWeight:700, fontSize:14, marginBottom:4 }}>{t}</div>
+                <div style={{ fontSize:12, color:"#7B91C4", lineHeight:1.5 }}>{d}</div>
+              </div>
+            ))}
+          </div>
+
+          <div className="card card-pad" style={{ textAlign:"left", marginBottom:24 }}>
+            <div className="sec-title" style={{ marginBottom:12 }}>📈 Données disponibles pour votre plan</div>
+            <div className="g4">
+              {[
+                ["🛍️","Produits",data.products.length,"#1A56FF"],
+                ["💰","Revenus",fmt(totalRevenue),"#16C55E"],
+                ["👥","Clients",data.clients.length,"#F5C518"],
+                ["📊","Marge moy.",avgMargin.toFixed(0)+"%","#25D366"],
+              ].map(([ico,l,v,c]) => (
+                <div key={l} style={{ padding:12, background:`${c}0A`, borderRadius:10, border:`1px solid ${c}22`, textAlign:"center" }}>
+                  <div style={{ fontSize:18 }}>{ico}</div>
+                  <div style={{ fontFamily:"'Bricolage Grotesque'", fontWeight:700, fontSize:18, color:c }}>{v}</div>
+                  <div style={{ fontSize:10, color:"#7B91C4" }}>{l}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <button className="btn btn-primary" style={{ fontSize:16, padding:"14px 40px" }} onClick={() => setStep(1)}>
+            🚀 Commencer
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  if (step >= 1 && step <= 5) {
+    const q = questions[step - 1];
+    const canNext = q.fields.filter(f=>f.type!=="toggle").every(f => answers[f.key] !== "" && answers[f.key] !== undefined);
+    return (
+      <div className="page-bg page-content fade-in">
+        <div style={{ maxWidth:600, margin:"0 auto" }}>
+          {/* Progress */}
+          <div style={{ display:"flex", alignItems:"center", gap:12, marginBottom:24 }}>
+            <button className="btn btn-ghost btn-icon" onClick={() => setStep(s => s-1)}>←</button>
+            <div style={{ flex:1 }}>
+              <div className="progress" style={{ height:8 }}>
+                <div className="progress-fill" style={{ width:`${(step/5)*100}%`, background:"linear-gradient(90deg, #1A56FF, #16C55E)" }} />
+              </div>
+            </div>
+            <span style={{ fontSize:12, fontWeight:700, color:"#7B91C4" }}>Étape {step}/5</span>
+          </div>
+
+          <div className="card card-pad">
+            <div style={{ fontSize:32, marginBottom:12 }}>{q.title.slice(0,2)}</div>
+            <h2 style={{ fontFamily:"'Bricolage Grotesque'", fontSize:22, fontWeight:800, marginBottom:4 }}>{q.title.slice(3)}</h2>
+            <div style={{ fontSize:13, color:"#7B91C4", marginBottom:24 }}>{q.subtitle}</div>
+
+            {q.fields.map(f => (
+              <div className="form-group" key={f.key}>
+                <label className="form-label">{f.label}</label>
+                {f.type === "text" && <input value={answers[f.key]} onChange={e => setAnswers(a=>({...a,[f.key]:e.target.value}))} placeholder={f.placeholder} />}
+                {f.type === "number" && <input type="number" value={answers[f.key]} onChange={e => setAnswers(a=>({...a,[f.key]:e.target.value}))} placeholder={f.placeholder} />}
+                {f.type === "textarea" && <textarea value={answers[f.key]} onChange={e => setAnswers(a=>({...a,[f.key]:e.target.value}))} placeholder={f.placeholder} rows={3} style={{ resize:"vertical" }} />}
+                {f.type === "select" && (
+                  <select value={answers[f.key]} onChange={e => setAnswers(a=>({...a,[f.key]:e.target.value}))}>
+                    <option value="">Sélectionner...</option>
+                    {f.options.map(o => <option key={o} value={o}>{o}</option>)}
+                  </select>
+                )}
+                {f.type === "toggle" && (
+                  <label className="toggle" style={{ marginTop:4 }}>
+                    <input type="checkbox" checked={!!answers[f.key]} onChange={() => setAnswers(a=>({...a,[f.key]:!a[f.key]}))} />
+                    <span className="toggle-track" />
+                  </label>
+                )}
+              </div>
+            ))}
+
+            <div style={{ display:"flex", gap:10, marginTop:20 }}>
+              <button className="btn btn-ghost" style={{ flex:1, justifyContent:"center" }} onClick={() => setStep(s => s-1)}>← Retour</button>
+              {step < 5 ? (
+                <button className="btn btn-primary" style={{ flex:2, justifyContent:"center" }} onClick={() => setStep(s => s+1)}>Suivant →</button>
+              ) : (
+                <button className="btn btn-primary" style={{ flex:2, justifyContent:"center" }} onClick={generatePlan}>🧠 Générer le Business Plan</button>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (step === 6) {
+    return (
+      <div className="page-bg page-content fade-in">
+        <div style={{ maxWidth:500, margin:"60px auto", textAlign:"center" }}>
+          <div style={{ width:80, height:80, borderRadius:"50%", background:"rgba(26,86,255,0.12)", border:"2px solid rgba(26,86,255,0.25)", display:"flex", alignItems:"center", justifyContent:"center", fontSize:36, margin:"0 auto 24px", animation:"pulse 2s infinite" }}>🧠</div>
+          <h2 style={{ fontFamily:"'Bricolage Grotesque'", fontSize:24, fontWeight:800, marginBottom:12 }}>Génération en cours...</h2>
+          <div style={{ fontSize:13, color:"#7B91C4", lineHeight:1.8, marginBottom:24 }}>
+            L'IA analyse vos <strong>{data.products.length} produits</strong>, <strong>{data.sales.length} ventes</strong>, <strong>{data.clients.length} clients</strong> et vos finances pour créer un plan d'affaires complet.
+          </div>
+          <Spinner />
+          <div style={{ marginTop:16 }}>
+            {["📊 Analyse des données financières...", "📦 Évaluation du catalogue produits...", "👥 Étude de la base clients...", "📈 Calcul des projections...", "📋 Rédaction du plan..."].map((t,i) => (
+              <div key={i} style={{ fontSize:12, color: i < 3 ? "#16C55E" : "#7B91C4", padding:"4px 0", animation:`fadeIn 0.5s ease ${i*0.6}s both` }}>
+                {i < 3 ? "✅" : "⏳"} {t}
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (step === 7 && plan) {
+    return (
+      <div className="page-bg page-content fade-in">
+        <div style={{ maxWidth:800, margin:"0 auto" }}>
+          {/* Plan Header */}
+          <div className="hero-banner" style={{ marginBottom:24, textAlign:"center" }}>
+            <div style={{ position:"relative", zIndex:1 }}>
+              <div style={{ fontSize:11, fontWeight:700, textTransform:"uppercase", letterSpacing:1, color:"#7B91C4", marginBottom:8 }}>📋 BUSINESS PLAN GÉNÉRÉ</div>
+              <h1 style={{ fontFamily:"'Bricolage Grotesque'", fontSize:28, fontWeight:800, letterSpacing:"-0.5px", marginBottom:8 }}>{plan.title}</h1>
+              <div style={{ fontSize:13, color:"#7B91C4" }}>{plan.date} · Kinshasa, RDC 🇨🇩</div>
+              <div style={{ display:"flex", gap:10, justifyContent:"center", marginTop:20 }}>
+                <button className="btn btn-primary" onClick={() => showToast("📥 Export PDF en cours...", "info")}>📥 Télécharger PDF</button>
+                <button className="btn btn-wa" onClick={() => showToast("📤 Envoyé via WhatsApp!", "whatsapp")}>💬 Envoyer WA</button>
+                <button className="btn btn-ghost" onClick={() => { setStep(0); setPlan(null); setAnswers({businessType:"",sector:"",targetMarket:"",uniqueValue:"",shortTermGoal:"",longTermGoal:"",challenges:"",teamSize:"",monthlyBudget:"",fundingNeeded:false,fundingAmount:""}); }}>🔄 Recommencer</button>
+              </div>
+            </div>
+          </div>
+
+          {/* Plan Sections */}
+          {plan.sections.map((section, idx) => (
+            <div key={idx} className="card card-pad" style={{ marginBottom:16 }}>
+              <div style={{ display:"flex", alignItems:"center", gap:12, marginBottom:16 }}>
+                <div style={{ width:40, height:40, borderRadius:10, background:"rgba(26,86,255,0.1)", display:"flex", alignItems:"center", justifyContent:"center", fontSize:20 }}>{section.icon}</div>
+                <h2 style={{ fontFamily:"'Bricolage Grotesque'", fontSize:18, fontWeight:800 }}>{section.title}</h2>
+              </div>
+              {section.content.map((line, li) => {
+                const isBold = line.startsWith("**");
+                const isBullet = line.startsWith("  •");
+                const rendered = line.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+                return (
+                  <div key={li} style={{ fontSize:13, color: isBold ? undefined : "#7B91C4", lineHeight:1.8, marginBottom: isBullet ? 2 : 8, paddingLeft: isBullet ? 12 : 0 }}
+                    dangerouslySetInnerHTML={{ __html: rendered }} />
+                );
+              })}
+            </div>
+          ))}
+
+          {/* Footer */}
+          <div className="card card-pad" style={{ textAlign:"center", marginBottom:40, background:"rgba(26,86,255,0.04)", borderColor:"rgba(26,86,255,0.15)" }}>
+            <div style={{ fontSize:14, fontWeight:700, color:"#1A56FF", marginBottom:8 }}>📋 Document généré par BizPlatform DRC</div>
+            <div style={{ fontSize:12, color:"#7B91C4", lineHeight:1.7 }}>
+              Ce business plan a été créé automatiquement à partir de vos données réelles.<br/>
+              Pour un plan plus détaillé avec analyse de marché approfondie, connectez Lovable Cloud.
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  return null;
+}
+
+
 function SettingsPage({ data, setData, showToast, dark, setDark }) {
   const [tab, setTab] = useState("profile");
   return (
