@@ -424,32 +424,6 @@ const buildStyles = (dark) => {
   }
   .theme-btn:hover { background: ${t.glass3}; color: ${t.text}; }
 
-  /* ── KPI BANNER ── */
-  .kpi-banner { position: relative; margin-bottom: 20px; }
-  .kpi-banner-track { display: flex; gap: 14px; overflow-x: auto; scroll-behavior: smooth; scrollbar-width: none; padding: 2px 0; }
-  .kpi-banner-track::-webkit-scrollbar { display: none; }
-  .kpi-banner-item {
-    min-width: 200px; max-width: 220px; flex-shrink: 0;
-    background: ${t.surface}; border: 1px solid ${t.border};
-    border-radius: 14px; padding: 16px; position: relative; overflow: hidden;
-    transition: transform 0.18s, box-shadow 0.18s;
-  }
-  .kpi-banner-item:hover { transform: translateY(-2px); box-shadow: ${t.shadow}; }
-  .kpi-banner-glow { position: absolute; top: -15px; right: -15px; width: 70px; height: 70px; border-radius: 50%; filter: blur(25px); opacity: 0.25; }
-  .kpi-banner-arrow {
-    position: absolute; top: 50%; transform: translateY(-50%); z-index: 5;
-    width: 34px; height: 34px; border-radius: 50%;
-    background: ${t.surface}; border: 1px solid ${t.border2};
-    display: flex; align-items: center; justify-content: center;
-    cursor: pointer; font-size: 16px; color: ${t.text2};
-    box-shadow: 0 4px 16px rgba(0,0,0,${dark?0.4:0.12});
-    transition: all 0.18s;
-  }
-  .kpi-banner-arrow:hover { background: #1A56FF; color: white; border-color: #1A56FF; box-shadow: 0 4px 20px rgba(26,86,255,0.35); }
-  .kpi-banner-arrow.left { left: -6px; }
-  .kpi-banner-arrow.right { right: -6px; }
-  .kpi-banner-arrow:disabled { opacity: 0.3; pointer-events: none; }
-
   /* ── KEYFRAMES ── */
   @keyframes fadeIn    { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
   @keyframes scaleIn   { from { opacity: 0; transform: scale(0.95);     } to { opacity: 1; transform: scale(1);     } }
@@ -742,62 +716,6 @@ function RevenueChart({ data: chartData, dark }) {
   );
 }
 
-// ─── KPI BANNER COMPONENT ───────────────────────────────────────────────────
-function KpiBanner({ kpis }) {
-  const trackRef = useRef(null);
-  const [canLeft, setCanLeft] = useState(false);
-  const [canRight, setCanRight] = useState(true);
-
-  const checkScroll = useCallback(() => {
-    const el = trackRef.current;
-    if (!el) return;
-    setCanLeft(el.scrollLeft > 4);
-    setCanRight(el.scrollLeft < el.scrollWidth - el.clientWidth - 4);
-  }, []);
-
-  useEffect(() => {
-    const el = trackRef.current;
-    if (!el) return;
-    checkScroll();
-    el.addEventListener("scroll", checkScroll, { passive: true });
-    window.addEventListener("resize", checkScroll);
-    return () => { el.removeEventListener("scroll", checkScroll); window.removeEventListener("resize", checkScroll); };
-  }, [checkScroll]);
-
-  const scroll = (dir) => {
-    const el = trackRef.current;
-    if (!el) return;
-    el.scrollBy({ left: dir * 240, behavior: "smooth" });
-  };
-
-  if (!kpis || !kpis.length) return null;
-
-  return (
-    <div className="kpi-banner fade-in">
-      {canLeft && <button className="kpi-banner-arrow left" onClick={() => scroll(-1)}>‹</button>}
-      {canRight && <button className="kpi-banner-arrow right" onClick={() => scroll(1)}>›</button>}
-      <div className="kpi-banner-track" ref={trackRef}>
-        {kpis.map((k, i) => (
-          <div className="kpi-banner-item" key={i}>
-            <div className="kpi-banner-glow" style={{ background: k.color || "#1A56FF" }} />
-            <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 10 }}>
-              <div style={{ width: 36, height: 36, borderRadius: 9, background: `${k.color || "#1A56FF"}18`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 16 }}>{k.icon}</div>
-              <div style={{ fontSize: 11, color: "#7B91C4", fontWeight: 600 }}>{k.label}</div>
-            </div>
-            <div style={{ fontFamily: "'Bricolage Grotesque'", fontSize: 22, fontWeight: 700, lineHeight: 1, letterSpacing: "-0.4px" }}>{k.value}</div>
-            {k.trend && (
-              <div style={{ fontSize: 11, marginTop: 8, display: "flex", alignItems: "center", gap: 4, fontWeight: 600, color: k.trendUp ? "#16C55E" : "#D42B3A" }}>
-                {k.trendUp ? "▲" : "▼"} {k.trend}
-              </div>
-            )}
-            {k.sub && <div style={{ fontSize: 10, color: "#7B91C4", marginTop: 4 }}>{k.sub}</div>}
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-}
-
 // ─── HOME PAGE ─────────────────────────────────────────────────────────────────
 function HomePage({ data, setData, showToast, dark }) {
   const [showWAModal, setShowWAModal] = useState(false);
@@ -808,16 +726,6 @@ function HomePage({ data, setData, showToast, dark }) {
 
   return (
     <div className="page-bg page-content fade-in">
-      <KpiBanner kpis={[
-        { icon:"💵", label:"Revenus Totaux", value:fmt(totalRevenue), trend:"+18.4%", trendUp:true, color:"#1A56FF" },
-        { icon:"📉", label:"Dépenses", value:fmt(totalExpenses), trend:"+5.1%", trendUp:false, color:"#D42B3A" },
-        { icon:"✨", label:"Profit Net", value:fmt(totalProfit), trend:"+23.7%", trendUp:true, color:"#16C55E" },
-        { icon:"🛍️", label:"Nb Transactions", value:String(data.sales.length), trend:"+12%", trendUp:true, color:"#F5C518" },
-        { icon:"📦", label:"Produits", value:String(data.products.length), sub:"dans le catalogue", color:"#1A56FF" },
-        { icon:"👥", label:"Clients Actifs", value:String(data.clients.filter(c=>c.status!=="inactive").length), sub:`dont ${data.clients.filter(c=>c.status==="vip").length} VIP`, color:"#F5C518" },
-        { icon:"⚠️", label:"Stock Bas", value:String(lowStock.length)+" articles", sub:"sous le seuil d'alerte", color:"#D42B3A" },
-        { icon:"📱", label:"Mobile Money", value:fmt(data.sales.filter(s=>s.payment_method==="mobile_money").reduce((a,s)=>a+s.total_amount,0)), sub:"via M-PESA & Airtel", color:"#25D366" },
-      ]} />
       {/* Greeting */}
       <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 24, flexWrap: "wrap", gap: 12 }}>
         <div>
@@ -831,8 +739,13 @@ function HomePage({ data, setData, showToast, dark }) {
         </div>
       </div>
 
-
-
+      {/* KPIs */}
+      <div className="g4" style={{ marginBottom: 20 }}>
+        <Kpi icon="💵" label="Revenus Totaux"  value={fmt(totalRevenue)}  trend="+18.4%" trendUp color="#1A56FF" />
+        <Kpi icon="📉" label="Dépenses"         value={fmt(totalExpenses)} trend="+5.1%"  trendUp={false} color="#D42B3A" />
+        <Kpi icon="✨" label="Profit Net"        value={fmt(totalProfit)}   trend="+23.7%" trendUp color="#16C55E" />
+        <Kpi icon="🛍️" label="Nb Transactions"  value={data.sales.length}  trend="+12%"   trendUp color="#F5C518" />
+      </div>
 
       <div style={{ display: "grid", gridTemplateColumns: "1fr 360px", gap: 16, marginBottom: 16 }}>
         {/* Chart */}
@@ -963,15 +876,6 @@ function SalesPage({ data, setData, showToast }) {
 
   return (
     <div className="page-bg page-content fade-in">
-      <KpiBanner kpis={[
-        { icon:"💰", label:"Ventes Aujourd'hui", value:fmt(data.sales.filter(s=>s.sale_date===new Date().toISOString().split("T")[0]).reduce((a,s)=>a+s.total_amount,0)), color:"#1A56FF" },
-        { icon:"🛒", label:"Total Ventes", value:fmt(data.sales.reduce((a,s)=>a+s.total_amount,0)), trend:"+18%", trendUp:true, color:"#16C55E" },
-        { icon:"✨", label:"Profit Total", value:fmt(data.sales.reduce((a,s)=>a+s.profit,0)), trend:"+23%", trendUp:true, color:"#F5C518" },
-        { icon:"📊", label:"Panier Moyen", value:fmt(data.sales.reduce((a,s)=>a+s.total_amount,0)/Math.max(data.sales.length,1)), color:"#1A56FF" },
-        { icon:"💵", label:"Cash", value:fmt(data.sales.filter(s=>s.payment_method==="cash").reduce((a,s)=>a+s.total_amount,0)), sub:`${data.sales.filter(s=>s.payment_method==="cash").length} trans.`, color:"#16C55E" },
-        { icon:"📱", label:"Mobile Money", value:fmt(data.sales.filter(s=>s.payment_method==="mobile_money").reduce((a,s)=>a+s.total_amount,0)), sub:`${data.sales.filter(s=>s.payment_method==="mobile_money").length} trans.`, color:"#25D366" },
-        { icon:"🏦", label:"Crédit", value:fmt(data.sales.filter(s=>s.payment_method==="credit").reduce((a,s)=>a+s.total_amount,0)), sub:`${data.sales.filter(s=>s.payment_method==="credit").length} trans.`, color:"#D42B3A" },
-      ]} />
       <div className="sec-head"><h1 style={{ fontFamily:"'Bricolage Grotesque'", fontSize:22, fontWeight:800 }}>◈ Ventes & POS</h1></div>
       <div className="tabs" style={{ marginBottom: 20 }}>
         {[["pos","🛒 Point de Vente"],["history","📋 Historique"],["invoices","🧾 Factures"]].map(([k,l]) => (
@@ -1105,15 +1009,6 @@ function ProductsPage({ data, setData, showToast }) {
 
   return (
     <div className="page-bg page-content fade-in">
-      <KpiBanner kpis={[
-        { icon:"📦", label:"Total Produits", value:String(data.products.length), color:"#1A56FF" },
-        { icon:"💰", label:"Valeur Stock", value:fmt(data.products.reduce((a,p)=>a+p.unit_price*p.stock_quantity,0)), color:"#16C55E" },
-        { icon:"⚠️", label:"Stock Bas", value:String(data.products.filter(p=>p.stock_quantity<=p.low_stock_alert).length), sub:"articles en alerte", color:"#D42B3A" },
-        { icon:"📊", label:"Coût Stock", value:fmt(data.products.reduce((a,p)=>a+p.cogs*p.stock_quantity,0)), sub:"valeur d'achat", color:"#F5C518" },
-        { icon:"🔄", label:"Unités Totales", value:String(data.products.reduce((a,p)=>a+p.stock_quantity,0)), color:"#1A56FF" },
-        { icon:"📈", label:"Marge Moyenne", value:pct(data.products.reduce((a,p)=>a+(p.unit_price-p.cogs),0), data.products.reduce((a,p)=>a+p.unit_price,0)), color:"#16C55E" },
-        { icon:"🏷️", label:"Catégories", value:String(new Set(data.products.map(p=>p.type)).size), sub:"types de produits", color:"#F5C518" },
-      ]} />
       <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:20, flexWrap:"wrap", gap:10 }}>
         <h1 style={{ fontFamily:"'Bricolage Grotesque'", fontSize:22, fontWeight:800 }}>◻ Produits & Stock</h1>
         <button className="btn btn-primary" onClick={() => setShowAdd(true)}>➕ Nouveau Produit</button>
@@ -1309,15 +1204,6 @@ function ClientsPage({ data, setData, showToast }) {
 
   return (
     <div className="page-bg page-content fade-in">
-      <KpiBanner kpis={[
-        { icon:"👥", label:"Total Clients", value:String(data.clients.length), color:"#1A56FF" },
-        { icon:"👑", label:"Clients VIP", value:String(data.clients.filter(c=>c.status==="vip").length), color:"#F5C518" },
-        { icon:"🟢", label:"Clients Actifs", value:String(data.clients.filter(c=>c.status==="active").length), color:"#16C55E" },
-        { icon:"💳", label:"Crédit Total", value:fmt(data.clients.reduce((a,c)=>a+c.credit_balance,0)), sub:"en cours", color:"#D42B3A" },
-        { icon:"💰", label:"Revenus Clients", value:fmt(data.clients.reduce((a,c)=>a+c.total_revenue,0)), trend:"+15%", trendUp:true, color:"#1A56FF" },
-        { icon:"🎯", label:"Leads", value:String(data.clients.filter(c=>c.status==="lead").length), sub:"à convertir", color:"#F5C518" },
-        { icon:"🏦", label:"Limite Crédit", value:fmt(data.clients.reduce((a,c)=>a+c.credit_limit,0)), sub:"total autorisé", color:"#16C55E" },
-      ]} />
       <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:20, flexWrap:"wrap", gap:10 }}>
         <h1 style={{ fontFamily:"'Bricolage Grotesque'", fontSize:22, fontWeight:800 }}>◎ Clients</h1>
         <button className="btn btn-primary" onClick={() => setShowAdd(true)}>➕ Nouveau Client</button>
@@ -1615,14 +1501,6 @@ function MarketingPage({ data, setData, showToast }) {
 
   return (
     <div className="page-bg page-content fade-in" style={{ position:"relative" }}>
-      <KpiBanner kpis={[
-        { icon:"📱", label:"Posts Publiés", value:String(data.posts.filter(p=>p.status==="published").length), color:"#16C55E" },
-        { icon:"📅", label:"Posts Programmés", value:String(data.posts.filter(p=>p.status==="scheduled").length), color:"#1A56FF" },
-        { icon:"🤖", label:"Propositions IA", value:String(aiPosts.filter(p=>p.status==="ai_proposed").length), sub:"en attente de validation", color:"#F5C518" },
-        { icon:"👍", label:"Total Likes", value:String(data.posts.reduce((a,p)=>a+(p.likes||0),0)), color:"#E1306C" },
-        { icon:"🔄", label:"Total Partages", value:String(data.posts.reduce((a,p)=>a+(p.shares||0),0)), color:"#1877F2" },
-        { icon:"📊", label:"Taux Engagement", value:"5.4%", trend:"+1.2%", trendUp:true, color:"#16C55E" },
-      ]} />
       <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:20 }}>
         <h1 style={{ fontFamily:"'Bricolage Grotesque'", fontSize:22, fontWeight:800 }}>◉ Marketing Hub</h1>
         <button className="btn btn-primary" onClick={() => showToast("Analytics...", "info")}>📊 Analytics</button>
@@ -1881,15 +1759,6 @@ function AccountingPage({ data, setData, showToast }) {
 
   return (
     <div className="page-bg page-content fade-in">
-      <KpiBanner kpis={[
-        { icon:"💵", label:"Revenus Totaux", value:fmt(totalRev), trend:"+18%", trendUp:true, color:"#1A56FF" },
-        { icon:"📉", label:"Dépenses Totales", value:fmt(totalExp), trend:"+5%", trendUp:false, color:"#D42B3A" },
-        { icon:"✨", label:"Profit Net", value:fmt(netProfit), trend:"+23%", trendUp:true, color:"#16C55E" },
-        { icon:"📊", label:"Marge Nette", value:pct(netProfit, totalRev), color:"#F5C518" },
-        { icon:"🧾", label:"Nb Dépenses", value:String(data.expenses.length), sub:`${data.expenses.filter(e=>e.status==="pending").length} en attente`, color:"#1A56FF" },
-        { icon:"💸", label:"Dépense Moyenne", value:fmt(totalExp/Math.max(data.expenses.filter(e=>e.status==="approved").length,1)), color:"#D42B3A" },
-        { icon:"🏛️", label:"TVA Estimée", value:fmt(totalRev*0.16), sub:"16% sur revenus", color:"#F5C518" },
-      ]} />
       <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:20 }}>
         <h1 style={{ fontFamily:"'Bricolage Grotesque'", fontSize:22, fontWeight:800 }}>⊛ Comptabilité</h1>
         <div style={{ display:"flex", gap:10 }}>
@@ -2007,14 +1876,6 @@ function PersonalPage({ data, showToast }) {
 
   return (
     <div className="page-bg page-content fade-in">
-      <KpiBanner kpis={[
-        { icon:"💵", label:"Revenus Mensuels", value:fmt(totalIncome), trend:"+8%", trendUp:true, color:"#1A56FF" },
-        { icon:"💸", label:"Dépenses Perso", value:fmt(totalPersonal), trend:"+3%", trendUp:false, color:"#D42B3A" },
-        { icon:"🏦", label:"Taux d'Épargne", value:savingsRate+"%", trend:"+2%", trendUp:true, color:"#16C55E" },
-        { icon:"🎯", label:"Budget Restant", value:fmt(data.budget.monthly-data.budget.spent), color: data.budget.spent>data.budget.monthly?"#D42B3A":"#16C55E" },
-        { icon:"🛡️", label:"Objectifs Épargne", value:String(goals.length), sub:"en cours", color:"#F5C518" },
-        { icon:"📱", label:"Mobile Money", value:fmt(950), sub:"M-PESA + Airtel + Orange", color:"#25D366" },
-      ]} />
       <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:20 }}>
         <h1 style={{ fontFamily:"'Bricolage Grotesque'", fontSize:22, fontWeight:800 }}>◷ Finance Personnelle</h1>
         <button className="btn btn-ghost" onClick={() => showToast("Synchronisation...", "info")}>🔄 Sync</button>
@@ -2283,13 +2144,6 @@ function WhatsAppPage({ data, showToast }) {
 
   return (
     <div className="page-bg page-content fade-in">
-      <KpiBanner kpis={[
-        { icon:"💬", label:"Messages Totaux", value:String(messages.length), color:"#25D366" },
-        { icon:"👥", label:"Contacts", value:String(contacts.length), color:"#1A56FF" },
-        { icon:"🤖", label:"Réponses Auto", value:String(messages.filter(m=>m.fromMe).length), sub:"par le bot", color:"#16C55E" },
-        { icon:"📢", label:"Diffusions", value:String(broadcastResults.length), sub:"envoyées", color:"#F5C518" },
-        { icon:"🔗", label:"Statut", value:status==="connected"?"Connecté":"Déconnecté", color:status==="connected"?"#16C55E":"#D42B3A" },
-      ]} />
       {/* Header */}
       <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:20, flexWrap:"wrap", gap:12 }}>
         <div style={{ display:"flex", alignItems:"center", gap:14 }}>
@@ -2701,14 +2555,6 @@ function SettingsPage({ data, setData, showToast, dark, setDark }) {
   const [tab, setTab] = useState("profile");
   return (
     <div className="page-bg page-content fade-in">
-      <KpiBanner kpis={[
-        { icon:"👤", label:"Utilisateur", value:data.user.name.split(" ").slice(0,2).join(" "), color:"#1A56FF" },
-        { icon:"🏢", label:"Entreprise", value:data.user.company, color:"#F5C518" },
-        { icon:"👥", label:"Employés", value:String(data.staff?.length||0), sub:"dans l'équipe", color:"#16C55E" },
-        { icon:"🔌", label:"Intégrations", value:"3 actives", sub:"M-PESA · WhatsApp · IA", color:"#25D366" },
-        { icon:"🔐", label:"Sécurité", value:"Élevée", sub:"2FA activé", color:"#16C55E" },
-        { icon:"🌙", label:"Thème", value:dark?"Sombre":"Clair", color:"#1A56FF" },
-      ]} />
       <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:20 }}>
         <h1 style={{ fontFamily:"'Bricolage Grotesque'", fontSize:22, fontWeight:800 }}>◉ Paramètres</h1>
       </div>
