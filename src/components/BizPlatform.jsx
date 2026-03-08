@@ -1315,7 +1315,7 @@ function ClientsPage({ data, setData, showToast }) {
         </div>
       )}
 
-      {selected && (
+      {selected && !editingClient && (
         <Modal title={`${selected.name}`} onClose={() => setSelected(null)}>
           <div style={{ display:"flex", alignItems:"center", gap:14, marginBottom:20 }}>
             <Avatar name={selected.name} size={52} color={statusColors[selected.status]||"#1A56FF"} />
@@ -1335,6 +1335,35 @@ function ClientsPage({ data, setData, showToast }) {
             <button className="btn btn-wa" style={{ flex:1, justifyContent:"center" }} onClick={() => showToast(`WhatsApp à ${selected.name}!`, "whatsapp")}>💬 WhatsApp</button>
             <button className="btn btn-red" onClick={() => showToast("Rappel de paiement envoyé!", "whatsapp")}>⚠️ Rappel</button>
           </div>
+          <div style={{ display:"flex", gap:8, marginTop:12 }}>
+            <button className="btn btn-ghost" style={{ flex:1, justifyContent:"center" }} onClick={() => setEditingClient({...selected})}>✏️ Modifier</button>
+            <button className="btn btn-red" style={{ justifyContent:"center" }} onClick={() => {
+              setData(d => ({ ...d, clients: d.clients.filter(c => c.id!==selected.id) }));
+              showToast("Client supprimé!", "info"); setSelected(null);
+            }}>🗑️ Supprimer</button>
+          </div>
+        </Modal>
+      )}
+
+      {/* Edit client modal */}
+      {editingClient && (
+        <Modal title={`✏️ Modifier: ${editingClient.name}`} onClose={() => setEditingClient(null)}>
+          {[["Nom complet","name"],["Email","email"],["Téléphone","phone"],["Adresse","address"]].map(([l,k]) => (
+            <div className="form-group" key={k}><label className="form-label">{l}</label><input value={editingClient[k]} onChange={e => setEditingClient(p => ({...p,[k]:e.target.value}))} /></div>
+          ))}
+          <div className="form-group"><label className="form-label">Statut</label>
+            <select value={editingClient.status} onChange={e => setEditingClient(p => ({...p,status:e.target.value}))}>
+              {["lead","active","vip","inactive"].map(s => <option key={s}>{s}</option>)}
+            </select>
+          </div>
+          <div className="g2">
+            <div className="form-group"><label className="form-label">Limite Crédit ($)</label><input type="number" value={editingClient.credit_limit} onChange={e => setEditingClient(p => ({...p,credit_limit:Number(e.target.value)}))} /></div>
+            <div className="form-group"><label className="form-label">Solde Crédit ($)</label><input type="number" value={editingClient.credit_balance} onChange={e => setEditingClient(p => ({...p,credit_balance:Number(e.target.value)}))} /></div>
+          </div>
+          <button className="btn btn-primary" style={{ width:"100%", justifyContent:"center" }} onClick={() => {
+            setData(d => ({ ...d, clients: d.clients.map(c => c.id===editingClient.id ? {...editingClient} : c) }));
+            showToast("✅ Client mis à jour!", "success"); setEditingClient(null); setSelected(null);
+          }}>💾 Sauvegarder les modifications</button>
         </Modal>
       )}
 
