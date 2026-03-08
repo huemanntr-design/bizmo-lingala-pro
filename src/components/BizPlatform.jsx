@@ -1105,8 +1105,17 @@ function ProductsPage({ data, setData, showToast }) {
       )}
 
       {/* Product detail modal */}
-      {selected && (
-        <Modal title={`${selected.emoji} ${selected.name}`} onClose={() => setSelected(null)}>
+      {selected && !editing && (
+        <Modal title={`${selected.emoji} ${selected.name}`} onClose={() => setSelected(null)} maxWidth={620}>
+          {/* Image editor */}
+          <ProductImageEditor
+            product={selected}
+            showToast={showToast}
+            onImageUpdate={(img) => {
+              setData(d => ({ ...d, products: d.products.map(p => p.id===selected.id ? {...p, image:img} : p) }));
+              setSelected(s => ({...s, image:img}));
+            }}
+          />
           <div className="g2" style={{ marginBottom:14 }}>
             {[["Prix Vente",fmt(selected.unit_price),"#1A56FF"],["Coût",fmt(selected.cogs),"#D42B3A"],["Marge",((selected.unit_price-selected.cogs)/selected.unit_price*100).toFixed(0)+"%","#16C55E"],["Stock",selected.stock_quantity+"u",selected.stock_quantity<=selected.low_stock_alert?"#D42B3A":"#16C55E"]].map(([k,v,c]) => (
               <div key={k} style={{ padding:14, background:`${c}0A`, borderRadius:10, border:`1px solid ${c}22` }}>
@@ -1121,6 +1130,43 @@ function ProductsPage({ data, setData, showToast }) {
               <button className="btn btn-primary" onClick={() => { showToast("Stock mis à jour!", "success"); setSelected(null); }}>Sauvegarder</button>
             </div>
           </div>
+          <div style={{ display:"flex", gap:8, marginTop:10 }}>
+            <button className="btn btn-ghost" style={{ flex:1, justifyContent:"center" }} onClick={() => { setEditing({...selected}); }}>✏️ Modifier tout</button>
+            <button className="btn btn-red" style={{ justifyContent:"center" }} onClick={() => {
+              setData(d => ({ ...d, products: d.products.filter(p => p.id!==selected.id) }));
+              showToast("Produit supprimé!", "info"); setSelected(null);
+            }}>🗑️ Supprimer</button>
+          </div>
+        </Modal>
+      )}
+
+      {/* Full product edit modal */}
+      {editing && (
+        <Modal title={`✏️ Modifier: ${editing.name}`} onClose={() => setEditing(null)} maxWidth={620}>
+          <ProductImageEditor
+            product={editing}
+            showToast={showToast}
+            onImageUpdate={(img) => {
+              setEditing(e => ({...e, image:img}));
+              setData(d => ({ ...d, products: d.products.map(p => p.id===editing.id ? {...p, image:img} : p) }));
+            }}
+          />
+          {[["Nom","name","text"],["Prix de vente ($)","unit_price","number"],["Coût d'achat ($)","cogs","number"],["Stock","stock_quantity","number"],["Alerte stock bas","low_stock_alert","number"],["Emoji","emoji","text"]].map(([l,k,t]) => (
+            <div className="form-group" key={k}><label className="form-label">{l}</label><input type={t} value={editing[k]} onChange={e => setEditing(p => ({...p,[k]:t==="number"?Number(e.target.value):e.target.value}))} /></div>
+          ))}
+          <div className="form-group"><label className="form-label">Catégorie</label>
+            <select value={editing.type} onChange={e => setEditing(p => ({...p,type:e.target.value}))}>
+              {["Alimentaire","Boisson","Hygiène","Électronique","Textile","Autre"].map(t => <option key={t}>{t}</option>)}
+            </select>
+          </div>
+          <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom:14 }}>
+            <label className="form-label" style={{ margin:0 }}>Date d'expiration ?</label>
+            <label className="toggle"><input type="checkbox" checked={editing.has_expiry} onChange={() => setEditing(p => ({...p, has_expiry:!p.has_expiry}))} /><span className="toggle-track" /></label>
+          </div>
+          <button className="btn btn-primary" style={{ width:"100%", justifyContent:"center" }} onClick={() => {
+            setData(d => ({ ...d, products: d.products.map(p => p.id===editing.id ? {...editing} : p) }));
+            showToast("✅ Produit mis à jour!", "success"); setEditing(null); setSelected(null);
+          }}>💾 Sauvegarder les modifications</button>
         </Modal>
       )}
 
