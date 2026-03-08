@@ -1482,6 +1482,10 @@ function SalesPage({ data, setData, showToast, kpiGoals, updateGoal }) {
     setCart(prev => { const ex = prev.find(i => i.id === p.id); return ex ? prev.map(i => i.id === p.id ? { ...i, qty: i.qty + 1 } : i) : [...prev, { ...p, qty: 1 }]; });
   };
   const changeQty = (id, d) => setCart(prev => prev.map(i => i.id === id ? { ...i, qty: Math.max(1, i.qty + d) } : i).filter(i => i.qty > 0));
+  const changePrice = (id, newPrice) => {
+    const val = parseFloat(newPrice);
+    if (!isNaN(val) && val >= 0) setCart(prev => prev.map(i => i.id === id ? { ...i, unit_price: val } : i));
+  };
   const clearCart = () => setCart([]);
 
   const printReceipt = () => {
