@@ -1984,7 +1984,7 @@ function ClientsPage({ data, setData, showToast, kpiGoals, updateGoal }) {
 }
 
 // ─── MARKETING PAGE ─────────────────────────────────────────────────────────────
-function MarketingPage({ data, setData, showToast }) {
+function MarketingPage({ data, setData, showToast, kpiGoals, updateGoal }) {
   const [tab, setTab] = useState("content");
   const [calView, setCalView] = useState("calendar");
   const [month, setMonth] = useState({ m:3, y:2025 });
