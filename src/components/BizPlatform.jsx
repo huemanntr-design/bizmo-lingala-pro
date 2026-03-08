@@ -4156,7 +4156,7 @@ function BusinessPlanPage({ data, showToast, dark }) {
   if (step === 7 && plan) {
     return (
       <div className="page-bg page-content fade-in">
-        <div style={{ maxWidth:800, margin:"0 auto" }}>
+        <div id="business-plan-content" style={{ maxWidth:800, margin:"0 auto", padding: "20px", background: "inherit" }}>
           {/* Plan Header */}
           <div className="hero-banner" style={{ marginBottom:24, textAlign:"center" }}>
             <div style={{ position:"relative", zIndex:1 }}>
