@@ -72,7 +72,9 @@ const initialData = {
 };
 
 // ─── UTILS ─────────────────────────────────────────────────────────────────────
-const fmt = (v, c = "USD") => c === "CDF" ? `${(v * 2800).toLocaleString()} FC` : `$${Number(v).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+let _globalCurrency = "USD";
+const setGlobalCurrency = (c) => { _globalCurrency = c; };
+const fmt = (v, c) => { const cur = c || _globalCurrency; return cur === "CDF" ? `${(v * 2800).toLocaleString()} FC` : `$${Number(v).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`; };
 const pct = (a, b) => b > 0 ? ((a / b) * 100).toFixed(0) + "%" : "0%";
 const initials = (name) => name.split(" ").map(w => w[0]).join("").slice(0, 2).toUpperCase();
 const payIcons = { cash: "💵", mobile_money: "📱", credit: "🏦", bank: "🏛️" };
