@@ -1965,6 +1965,14 @@ function PersonalPage({ data, showToast }) {
 
   return (
     <div className="page-bg page-content fade-in">
+      <KpiBanner kpis={[
+        { icon:"💵", label:"Revenus Mensuels", value:fmt(totalIncome), trend:"+8%", trendUp:true, color:"#1A56FF" },
+        { icon:"💸", label:"Dépenses Perso", value:fmt(totalPersonal), trend:"+3%", trendUp:false, color:"#D42B3A" },
+        { icon:"🏦", label:"Taux d'Épargne", value:savingsRate+"%", trend:"+2%", trendUp:true, color:"#16C55E" },
+        { icon:"📱", label:"M-PESA", value:"+$320", color:"#25D366" },
+        { icon:"🎯", label:"Budget Restant", value:fmt(data.budget.monthly-data.budget.spent), color:data.budget.spent>data.budget.monthly?"#D42B3A":"#F5C518" },
+        { icon:"📊", label:"Catégories", value:data.budget.categories.length, color:"#7B91C4" },
+      ]} />
       <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:20 }}>
         <h1 style={{ fontFamily:"'Bricolage Grotesque'", fontSize:22, fontWeight:800 }}>◷ Finance Personnelle</h1>
         <button className="btn btn-ghost" onClick={() => showToast("Synchronisation...", "info")}>🔄 Sync</button>
@@ -1978,11 +1986,6 @@ function PersonalPage({ data, showToast }) {
 
       {tab==="overview" && (
         <>
-          <div className="g3" style={{ marginBottom:20 }}>
-            <Kpi icon="💵" label="Revenus Mensuels" value={fmt(totalIncome)}   trend="+8%" trendUp color="#1A56FF" />
-            <Kpi icon="💸" label="Dépenses"          value={fmt(totalPersonal)} trend="+3%" trendUp={false} color="#D42B3A" />
-            <Kpi icon="🏦" label="Taux d'épargne"    value={savingsRate+"%"}    trend="+2%" trendUp color="#16C55E" />
-          </div>
           <div className="g2">
             <div className="card card-pad">
               <div className="sec-title" style={{ marginBottom:14 }}>💡 Conseils IA Budget</div>
