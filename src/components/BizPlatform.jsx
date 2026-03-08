@@ -2012,6 +2012,14 @@ function PersonalPage({ data, showToast }) {
 
   return (
     <div className="page-bg page-content fade-in">
+      <KpiBanner kpis={[
+        { icon:"💵", label:"Revenus Mensuels", value:fmt(totalIncome), trend:"+8%", trendUp:true, color:"#1A56FF" },
+        { icon:"💸", label:"Dépenses Perso", value:fmt(totalPersonal), trend:"+3%", trendUp:false, color:"#D42B3A" },
+        { icon:"🏦", label:"Taux d'Épargne", value:savingsRate+"%", trend:"+2%", trendUp:true, color:"#16C55E" },
+        { icon:"🎯", label:"Budget Restant", value:fmt(data.budget.monthly-data.budget.spent), color: data.budget.spent>data.budget.monthly?"#D42B3A":"#16C55E" },
+        { icon:"🛡️", label:"Objectifs Épargne", value:String(goals.length), sub:"en cours", color:"#F5C518" },
+        { icon:"📱", label:"Mobile Money", value:fmt(950), sub:"M-PESA + Airtel + Orange", color:"#25D366" },
+      ]} />
       <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:20 }}>
         <h1 style={{ fontFamily:"'Bricolage Grotesque'", fontSize:22, fontWeight:800 }}>◷ Finance Personnelle</h1>
         <button className="btn btn-ghost" onClick={() => showToast("Synchronisation...", "info")}>🔄 Sync</button>
