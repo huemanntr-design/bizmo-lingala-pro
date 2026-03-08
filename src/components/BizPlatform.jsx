@@ -808,6 +808,16 @@ function HomePage({ data, setData, showToast, dark }) {
 
   return (
     <div className="page-bg page-content fade-in">
+      <KpiBanner kpis={[
+        { icon:"💵", label:"Revenus Totaux", value:fmt(totalRevenue), trend:"+18.4%", trendUp:true, color:"#1A56FF" },
+        { icon:"📉", label:"Dépenses", value:fmt(totalExpenses), trend:"+5.1%", trendUp:false, color:"#D42B3A" },
+        { icon:"✨", label:"Profit Net", value:fmt(totalProfit), trend:"+23.7%", trendUp:true, color:"#16C55E" },
+        { icon:"🛍️", label:"Nb Transactions", value:String(data.sales.length), trend:"+12%", trendUp:true, color:"#F5C518" },
+        { icon:"📦", label:"Produits", value:String(data.products.length), sub:"dans le catalogue", color:"#1A56FF" },
+        { icon:"👥", label:"Clients Actifs", value:String(data.clients.filter(c=>c.status!=="inactive").length), sub:`dont ${data.clients.filter(c=>c.status==="vip").length} VIP`, color:"#F5C518" },
+        { icon:"⚠️", label:"Stock Bas", value:String(lowStock.length)+" articles", sub:"sous le seuil d'alerte", color:"#D42B3A" },
+        { icon:"📱", label:"Mobile Money", value:fmt(data.sales.filter(s=>s.payment_method==="mobile_money").reduce((a,s)=>a+s.total_amount,0)), sub:"via M-PESA & Airtel", color:"#25D366" },
+      ]} />
       {/* Greeting */}
       <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 24, flexWrap: "wrap", gap: 12 }}>
         <div>
