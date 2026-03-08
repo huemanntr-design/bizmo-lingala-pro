@@ -1291,24 +1291,57 @@ function SalesPage({ data, setData, showToast }) {
       )}
 
       {tab === "history" && (
-        <div className="card card-pad">
-          <table className="data-table">
-            <thead><tr><th>Produit</th><th>Client</th><th>Qté</th><th>Montant</th><th>Profit</th><th>Paiement</th><th>Date</th></tr></thead>
-            <tbody>
-              {data.sales.map(s => (
-                <tr key={s.id}>
-                  <td style={{ fontWeight:500 }}>{s.product_name}</td>
-                  <td style={{ color:"#7B91C4" }}>{s.client_name}</td>
-                  <td>{s.quantity}</td>
-                  <td style={{ color:"#1A56FF", fontWeight:600 }}>{fmt(s.total_amount)}</td>
-                  <td style={{ color:"#16C55E", fontWeight:600 }}>{fmt(s.profit)}</td>
-                  <td>{payIcons[s.payment_method]}</td>
-                  <td style={{ color:"#7B91C4", fontSize:12 }}>{s.sale_date}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+        <>
+          {/* Sales Analytics Row */}
+          <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:16, marginBottom:16 }}>
+            {/* Sales by Product Bar Chart */}
+            <div className="card card-pad">
+              <div className="sec-title" style={{ marginBottom:14 }}>📊 Ventes par Produit</div>
+              <MiniBarChartViz
+                data={data.products.map(p => ({
+                  value: data.sales.filter(s=>s.product_name===p.name).reduce((a,s)=>a+s.total_amount,0),
+                  label: p.emoji,
+                  highlight: data.sales.filter(s=>s.product_name===p.name).reduce((a,s)=>a+s.total_amount,0) === Math.max(...data.products.map(pr=>data.sales.filter(s=>s.product_name===pr.name).reduce((a,s)=>a+s.total_amount,0)))
+                }))}
+                height={80}
+              />
+              <div style={{ display:"flex", gap:6, marginTop:10, flexWrap:"wrap" }}>
+                {data.products.map(p => {
+                  const rev = data.sales.filter(s=>s.product_name===p.name).reduce((a,s)=>a+s.total_amount,0);
+                  return <span key={p.id} style={{ fontSize:10, color:"#7B91C4" }}>{p.emoji} {fmt(rev)}</span>;
+                })}
+              </div>
+            </div>
+            {/* Profit Trend Sparkline */}
+            <div className="card card-pad">
+              <div className="sec-title" style={{ marginBottom:14 }}>📈 Tendance des Profits</div>
+              <SparkLine data={data.sales.map(s=>s.profit)} width={260} height={70} color="#16C55E" />
+              <div style={{ display:"flex", gap:14, marginTop:12 }}>
+                <div><div style={{ fontSize:10, color:"#7B91C4" }}>Profit total</div><div style={{ fontSize:14, fontWeight:700, color:"#16C55E" }}>{fmt(data.sales.reduce((s,x)=>s+x.profit,0))}</div></div>
+                <div><div style={{ fontSize:10, color:"#7B91C4" }}>Moy/vente</div><div style={{ fontSize:14, fontWeight:700, color:"#1A56FF" }}>{fmt(data.sales.reduce((s,x)=>s+x.profit,0)/data.sales.length)}</div></div>
+                <div><div style={{ fontSize:10, color:"#7B91C4" }}>Meilleur</div><div style={{ fontSize:14, fontWeight:700, color:"#F5C518" }}>{fmt(Math.max(...data.sales.map(s=>s.profit)))}</div></div>
+              </div>
+            </div>
+          </div>
+          <div className="card card-pad">
+            <table className="data-table">
+              <thead><tr><th>Produit</th><th>Client</th><th>Qté</th><th>Montant</th><th>Profit</th><th>Paiement</th><th>Date</th></tr></thead>
+              <tbody>
+                {data.sales.map(s => (
+                  <tr key={s.id}>
+                    <td style={{ fontWeight:500 }}>{s.product_name}</td>
+                    <td style={{ color:"#7B91C4" }}>{s.client_name}</td>
+                    <td>{s.quantity}</td>
+                    <td style={{ color:"#1A56FF", fontWeight:600 }}>{fmt(s.total_amount)}</td>
+                    <td style={{ color:"#16C55E", fontWeight:600 }}>{fmt(s.profit)}</td>
+                    <td>{payIcons[s.payment_method]}</td>
+                    <td style={{ color:"#7B91C4", fontSize:12 }}>{s.sale_date}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </>
       )}
 
       {tab === "invoices" && (
