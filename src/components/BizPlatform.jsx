@@ -831,13 +831,8 @@ function HomePage({ data, setData, showToast, dark }) {
         </div>
       </div>
 
-      {/* KPIs */}
-      <div className="g4" style={{ marginBottom: 20 }}>
-        <Kpi icon="💵" label="Revenus Totaux"  value={fmt(totalRevenue)}  trend="+18.4%" trendUp color="#1A56FF" />
-        <Kpi icon="📉" label="Dépenses"         value={fmt(totalExpenses)} trend="+5.1%"  trendUp={false} color="#D42B3A" />
-        <Kpi icon="✨" label="Profit Net"        value={fmt(totalProfit)}   trend="+23.7%" trendUp color="#16C55E" />
-        <Kpi icon="🛍️" label="Nb Transactions"  value={data.sales.length}  trend="+12%"   trendUp color="#F5C518" />
-      </div>
+
+
 
       <div style={{ display: "grid", gridTemplateColumns: "1fr 360px", gap: 16, marginBottom: 16 }}>
         {/* Chart */}
