@@ -2706,6 +2706,14 @@ function SettingsPage({ data, setData, showToast, dark, setDark }) {
   const [tab, setTab] = useState("profile");
   return (
     <div className="page-bg page-content fade-in">
+      <KpiBanner kpis={[
+        { icon:"👤", label:"Utilisateur", value:data.user.name.split(" ").slice(0,2).join(" "), color:"#1A56FF" },
+        { icon:"🏢", label:"Entreprise", value:data.user.company, color:"#F5C518" },
+        { icon:"👥", label:"Employés", value:String(data.staff?.length||0), sub:"dans l'équipe", color:"#16C55E" },
+        { icon:"🔌", label:"Intégrations", value:"3 actives", sub:"M-PESA · WhatsApp · IA", color:"#25D366" },
+        { icon:"🔐", label:"Sécurité", value:"Élevée", sub:"2FA activé", color:"#16C55E" },
+        { icon:"🌙", label:"Thème", value:dark?"Sombre":"Clair", color:"#1A56FF" },
+      ]} />
       <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:20 }}>
         <h1 style={{ fontFamily:"'Bricolage Grotesque'", fontSize:22, fontWeight:800 }}>◉ Paramètres</h1>
       </div>
