@@ -277,6 +277,7 @@ const buildStyles = (dark) => {
     background: ${t.surface}; border: 1px solid ${t.border};
     border-radius: 14px; padding: 20px; position: relative; overflow: hidden;
     transition: transform 0.18s, box-shadow 0.18s;
+    min-width: 200px; flex-shrink: 0;
   }
   .kpi:hover { transform: translateY(-2px); box-shadow: ${t.shadow}; }
   .kpi-glow { position: absolute; top: -20px; right: -20px; width: 100px; height: 100px; border-radius: 50%; filter: blur(30px); opacity: 0.3; }
@@ -284,6 +285,26 @@ const buildStyles = (dark) => {
   .kpi-val { font-family: 'Bricolage Grotesque', sans-serif; font-size: 26px; font-weight: 700; line-height: 1; letter-spacing: -0.5px; }
   .kpi-label { font-size: 12px; color: ${t.text2}; margin-top: 4px; font-weight: 500; }
   .kpi-trend { font-size: 11px; margin-top: 10px; display: flex; align-items: center; gap: 4px; font-weight: 600; }
+
+  /* ── KPI BANNER ── */
+  .kpi-banner { position: relative; margin-bottom: 20px; }
+  .kpi-banner-scroll {
+    display: flex; gap: 12px; overflow-x: auto; scroll-behavior: smooth;
+    scrollbar-width: none; -ms-overflow-style: none; padding: 4px 0;
+  }
+  .kpi-banner-scroll::-webkit-scrollbar { display: none; }
+  .kpi-banner-arrow {
+    position: absolute; top: 50%; transform: translateY(-50%); z-index: 10;
+    width: 32px; height: 32px; border-radius: 50%;
+    background: ${t.surface}; border: 1px solid ${t.border2};
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer; font-size: 14px; color: ${t.text};
+    box-shadow: ${t.shadow}; transition: opacity 0.2s, background 0.2s;
+  }
+  .kpi-banner-arrow:hover { background: ${t.surface2}; }
+  .kpi-banner-arrow.left { left: -12px; }
+  .kpi-banner-arrow.right { right: -12px; }
+  .kpi-banner-arrow.hidden { opacity: 0; pointer-events: none; }
 
   /* ── TABS ── */
   .tabs { display: flex; gap: 2px; background: ${t.glass3}; border-radius: 11px; padding: 4px; overflow-x: auto; flex-shrink: 0; }
@@ -443,6 +464,47 @@ function Tag({ status }) {
   const m = statusMeta[status] || statusMeta.inactive;
   return <span className="tag" style={{ background: m.bg, color: m.color }}>{m.label}</span>;
 }
+
+function KpiBanner({ kpis }) {
+  const scrollRef = useRef(null);
+  const [canLeft, setCanLeft] = useState(false);
+  const [canRight, setCanRight] = useState(false);
+
+  const checkScroll = useCallback(() => {
+    const el = scrollRef.current;
+    if (!el) return;
+    setCanLeft(el.scrollLeft > 4);
+    setCanRight(el.scrollLeft < el.scrollWidth - el.clientWidth - 4);
+  }, []);
+
+  useEffect(() => {
+    const el = scrollRef.current;
+    if (!el) return;
+    checkScroll();
+    el.addEventListener("scroll", checkScroll, { passive: true });
+    const ro = new ResizeObserver(checkScroll);
+    ro.observe(el);
+    return () => { el.removeEventListener("scroll", checkScroll); ro.disconnect(); };
+  }, [checkScroll, kpis]);
+
+  const scroll = (dir) => {
+    const el = scrollRef.current;
+    if (!el) return;
+    el.scrollBy({ left: dir * 240, behavior: "smooth" });
+  };
+
+  return (
+    <div className="kpi-banner">
+      <div className={`kpi-banner-arrow left ${!canLeft ? "hidden" : ""}`} onClick={() => scroll(-1)}>◀</div>
+      <div className="kpi-banner-scroll" ref={scrollRef}>
+        {kpis.map((k, i) => (
+          <Kpi key={i} icon={k.icon} label={k.label} value={k.value} trend={k.trend} trendUp={k.trendUp} color={k.color} />
+        ))}
+      </div>
+      <div className={`kpi-banner-arrow right ${!canRight ? "hidden" : ""}`} onClick={() => scroll(1)}>▶</div>
+    </div>
+  );
+
 
 function Spinner() { return <span className="spinner" />; }
 
@@ -740,12 +802,15 @@ function HomePage({ data, setData, showToast, dark }) {
       </div>
 
       {/* KPIs */}
-      <div className="g4" style={{ marginBottom: 20 }}>
-        <Kpi icon="💵" label="Revenus Totaux"  value={fmt(totalRevenue)}  trend="+18.4%" trendUp color="#1A56FF" />
-        <Kpi icon="📉" label="Dépenses"         value={fmt(totalExpenses)} trend="+5.1%"  trendUp={false} color="#D42B3A" />
-        <Kpi icon="✨" label="Profit Net"        value={fmt(totalProfit)}   trend="+23.7%" trendUp color="#16C55E" />
-        <Kpi icon="🛍️" label="Nb Transactions"  value={data.sales.length}  trend="+12%"   trendUp color="#F5C518" />
-      </div>
+      <KpiBanner kpis={[
+        { icon:"💵", label:"Revenus Totaux", value:fmt(totalRevenue), trend:"+18.4%", trendUp:true, color:"#1A56FF" },
+        { icon:"📉", label:"Dépenses", value:fmt(totalExpenses), trend:"+5.1%", trendUp:false, color:"#D42B3A" },
+        { icon:"✨", label:"Profit Net", value:fmt(totalProfit), trend:"+23.7%", trendUp:true, color:"#16C55E" },
+        { icon:"🛍️", label:"Nb Transactions", value:data.sales.length, trend:"+12%", trendUp:true, color:"#F5C518" },
+        { icon:"👥", label:"Clients Actifs", value:data.clients.filter(c=>c.status!=="inactive").length, trend:"+3", trendUp:true, color:"#25D366" },
+        { icon:"📦", label:"Produits", value:data.products.length, color:"#7B91C4" },
+        { icon:"⚠️", label:"Stock Bas", value:lowStock.length, trendUp:false, color:lowStock.length>0?"#D42B3A":"#16C55E" },
+      ]} />
 
       <div style={{ display: "grid", gridTemplateColumns: "1fr 360px", gap: 16, marginBottom: 16 }}>
         {/* Chart */}
@@ -876,6 +941,14 @@ function SalesPage({ data, setData, showToast }) {
 
   return (
     <div className="page-bg page-content fade-in">
+      <KpiBanner kpis={[
+        { icon:"🛒", label:"Ventes Aujourd'hui", value:fmt(data.sales.filter(s=>s.sale_date===new Date().toISOString().split("T")[0]).reduce((s,x)=>s+x.total_amount,0)), color:"#1A56FF" },
+        { icon:"💵", label:"Chiffre d'Affaires", value:fmt(data.sales.reduce((s,x)=>s+x.total_amount,0)), trend:"+18%", trendUp:true, color:"#16C55E" },
+        { icon:"✨", label:"Profit Total", value:fmt(data.sales.reduce((s,x)=>s+x.profit,0)), trend:"+23%", trendUp:true, color:"#F5C518" },
+        { icon:"🧾", label:"Nb Ventes", value:data.sales.length, trend:"+12%", trendUp:true, color:"#7B91C4" },
+        { icon:"📱", label:"Mobile Money", value:data.sales.filter(s=>s.payment_method==="mobile_money").length+" ventes", color:"#25D366" },
+        { icon:"💳", label:"Crédit", value:fmt(data.sales.filter(s=>s.payment_method==="credit").reduce((s,x)=>s+x.total_amount,0)), color:"#D42B3A" },
+      ]} />
       <div className="sec-head"><h1 style={{ fontFamily:"'Bricolage Grotesque'", fontSize:22, fontWeight:800 }}>◈ Ventes & POS</h1></div>
       <div className="tabs" style={{ marginBottom: 20 }}>
         {[["pos","🛒 Point de Vente"],["history","📋 Historique"],["invoices","🧾 Factures"]].map(([k,l]) => (
@@ -1009,6 +1082,14 @@ function ProductsPage({ data, setData, showToast }) {
 
   return (
     <div className="page-bg page-content fade-in">
+      <KpiBanner kpis={[
+        { icon:"📦", label:"Total Produits", value:data.products.length, color:"#1A56FF" },
+        { icon:"💰", label:"Valeur Stock", value:fmt(data.products.reduce((s,p)=>s+p.unit_price*p.stock_quantity,0)), color:"#16C55E" },
+        { icon:"⚠️", label:"Stock Bas", value:data.products.filter(p=>p.stock_quantity<=p.low_stock_alert).length+" produits", trendUp:false, color:"#D42B3A" },
+        { icon:"📈", label:"Marge Moyenne", value:(data.products.reduce((s,p)=>s+((p.unit_price-p.cogs)/p.unit_price*100),0)/data.products.length).toFixed(0)+"%", color:"#F5C518" },
+        { icon:"🏷️", label:"Catégories", value:[...new Set(data.products.map(p=>p.type))].length, color:"#7B91C4" },
+        { icon:"📊", label:"Unités Totales", value:data.products.reduce((s,p)=>s+p.stock_quantity,0), color:"#25D366" },
+      ]} />
       <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:20, flexWrap:"wrap", gap:10 }}>
         <h1 style={{ fontFamily:"'Bricolage Grotesque'", fontSize:22, fontWeight:800 }}>◻ Produits & Stock</h1>
         <button className="btn btn-primary" onClick={() => setShowAdd(true)}>➕ Nouveau Produit</button>
@@ -1204,19 +1285,17 @@ function ClientsPage({ data, setData, showToast }) {
 
   return (
     <div className="page-bg page-content fade-in">
+      <KpiBanner kpis={[
+        { icon:"👥", label:"Total Clients", value:data.clients.length, color:"#1A56FF" },
+        { icon:"👑", label:"Clients VIP", value:data.clients.filter(c=>c.status==="vip").length, color:"#F5C518" },
+        { icon:"🟢", label:"Clients Actifs", value:data.clients.filter(c=>c.status==="active").length, color:"#16C55E" },
+        { icon:"💳", label:"Crédit Total", value:fmt(data.clients.reduce((s,c)=>s+c.credit_balance,0)), trendUp:false, color:"#D42B3A" },
+        { icon:"💵", label:"Revenus Clients", value:fmt(data.clients.reduce((s,c)=>s+c.total_revenue,0)), trend:"+15%", trendUp:true, color:"#25D366" },
+        { icon:"🎯", label:"Leads", value:data.clients.filter(c=>c.status==="lead").length, color:"#7B91C4" },
+      ]} />
       <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:20, flexWrap:"wrap", gap:10 }}>
         <h1 style={{ fontFamily:"'Bricolage Grotesque'", fontSize:22, fontWeight:800 }}>◎ Clients</h1>
         <button className="btn btn-primary" onClick={() => setShowAdd(true)}>➕ Nouveau Client</button>
-      </div>
-
-      {/* Stats row */}
-      <div className="g4" style={{ marginBottom:20 }}>
-        {[["👥","Total",data.clients.length,"#1A56FF"],["👑","VIP",data.clients.filter(c=>c.status==="vip").length,"#F5C518"],["🟢","Actifs",data.clients.filter(c=>c.status==="active").length,"#16C55E"],["💳","Crédit total",fmt(data.clients.reduce((s,c)=>s+c.credit_balance,0)),"#D42B3A"]].map(([ico,lbl,val,col]) => (
-          <div key={lbl} className="card card-pad-sm" style={{ display:"flex", alignItems:"center", gap:12 }}>
-            <div style={{ width:40, height:40, borderRadius:10, background:`${col}15`, display:"flex", alignItems:"center", justifyContent:"center", fontSize:18 }}>{ico}</div>
-            <div><div style={{ fontSize:11, color:"#7B91C4" }}>{lbl}</div><div style={{ fontFamily:"'Bricolage Grotesque'", fontWeight:800, fontSize:20, color:col }}>{val}</div></div>
-          </div>
-        ))}
       </div>
 
       <div className="tabs" style={{ marginBottom:16 }}>
@@ -1501,6 +1580,14 @@ function MarketingPage({ data, setData, showToast }) {
 
   return (
     <div className="page-bg page-content fade-in" style={{ position:"relative" }}>
+      <KpiBanner kpis={[
+        { icon:"📝", label:"Posts Totaux", value:data.posts.length + aiPosts.length, color:"#1A56FF" },
+        { icon:"✅", label:"Publiés", value:data.posts.filter(p=>p.status==="published").length, color:"#16C55E" },
+        { icon:"📅", label:"Programmés", value:data.posts.filter(p=>p.status==="scheduled").length + aiPosts.filter(p=>p.status==="scheduled").length, color:"#F5C518" },
+        { icon:"✨", label:"Propositions IA", value:aiPosts.filter(p=>p.status==="ai_proposed").length, color:"#E1306C" },
+        { icon:"👍", label:"Total Likes", value:data.posts.reduce((s,p)=>s+p.likes,0), trend:"+45%", trendUp:true, color:"#1877F2" },
+        { icon:"🔄", label:"Total Partages", value:data.posts.reduce((s,p)=>s+p.shares,0), color:"#69C9D0" },
+      ]} />
       <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:20 }}>
         <h1 style={{ fontFamily:"'Bricolage Grotesque'", fontSize:22, fontWeight:800 }}>◉ Marketing Hub</h1>
         <button className="btn btn-primary" onClick={() => showToast("Analytics...", "info")}>📊 Analytics</button>
@@ -1759,18 +1846,20 @@ function AccountingPage({ data, setData, showToast }) {
 
   return (
     <div className="page-bg page-content fade-in">
+      <KpiBanner kpis={[
+        { icon:"💵", label:"Revenus Totaux", value:fmt(totalRev), trend:"+18%", trendUp:true, color:"#1A56FF" },
+        { icon:"📉", label:"Dépenses", value:fmt(totalExp), trend:"+5%", trendUp:false, color:"#D42B3A" },
+        { icon:"✨", label:"Profit Net", value:fmt(netProfit), trend:"+23%", trendUp:true, color:"#16C55E" },
+        { icon:"📊", label:"Marge Nette", value:totalRev>0?((netProfit/totalRev)*100).toFixed(0)+"%":"0%", color:"#F5C518" },
+        { icon:"🧾", label:"Nb Dépenses", value:data.expenses.length, color:"#7B91C4" },
+        { icon:"✅", label:"Approuvées", value:data.expenses.filter(e=>e.status==="approved").length, color:"#16C55E" },
+      ]} />
       <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:20 }}>
         <h1 style={{ fontFamily:"'Bricolage Grotesque'", fontSize:22, fontWeight:800 }}>⊛ Comptabilité</h1>
         <div style={{ display:"flex", gap:10 }}>
           <button className="btn btn-ghost" onClick={() => showToast("Export comptable...", "info")}>📥 Export</button>
           <button className="btn btn-primary" onClick={() => setShowAdd(true)}>➕ Dépense</button>
         </div>
-      </div>
-
-      <div className="g3" style={{ marginBottom:20 }}>
-        <Kpi icon="💵" label="Revenus Totaux" value={fmt(totalRev)}  trend="+18%" trendUp color="#1A56FF" />
-        <Kpi icon="📉" label="Dépenses"        value={fmt(totalExp)}  trend="+5%"  trendUp={false} color="#D42B3A" />
-        <Kpi icon="✨" label="Profit Net"       value={fmt(netProfit)} trend="+23%" trendUp color="#16C55E" />
       </div>
 
       <div className="tabs" style={{ marginBottom:20 }}>
@@ -1876,6 +1965,14 @@ function PersonalPage({ data, showToast }) {
 
   return (
     <div className="page-bg page-content fade-in">
+      <KpiBanner kpis={[
+        { icon:"💵", label:"Revenus Mensuels", value:fmt(totalIncome), trend:"+8%", trendUp:true, color:"#1A56FF" },
+        { icon:"💸", label:"Dépenses Perso", value:fmt(totalPersonal), trend:"+3%", trendUp:false, color:"#D42B3A" },
+        { icon:"🏦", label:"Taux d'Épargne", value:savingsRate+"%", trend:"+2%", trendUp:true, color:"#16C55E" },
+        { icon:"📱", label:"M-PESA", value:"+$320", color:"#25D366" },
+        { icon:"🎯", label:"Budget Restant", value:fmt(data.budget.monthly-data.budget.spent), color:data.budget.spent>data.budget.monthly?"#D42B3A":"#F5C518" },
+        { icon:"📊", label:"Catégories", value:data.budget.categories.length, color:"#7B91C4" },
+      ]} />
       <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:20 }}>
         <h1 style={{ fontFamily:"'Bricolage Grotesque'", fontSize:22, fontWeight:800 }}>◷ Finance Personnelle</h1>
         <button className="btn btn-ghost" onClick={() => showToast("Synchronisation...", "info")}>🔄 Sync</button>
@@ -1889,11 +1986,6 @@ function PersonalPage({ data, showToast }) {
 
       {tab==="overview" && (
         <>
-          <div className="g3" style={{ marginBottom:20 }}>
-            <Kpi icon="💵" label="Revenus Mensuels" value={fmt(totalIncome)}   trend="+8%" trendUp color="#1A56FF" />
-            <Kpi icon="💸" label="Dépenses"          value={fmt(totalPersonal)} trend="+3%" trendUp={false} color="#D42B3A" />
-            <Kpi icon="🏦" label="Taux d'épargne"    value={savingsRate+"%"}    trend="+2%" trendUp color="#16C55E" />
-          </div>
           <div className="g2">
             <div className="card card-pad">
               <div className="sec-title" style={{ marginBottom:14 }}>💡 Conseils IA Budget</div>
@@ -2144,6 +2236,14 @@ function WhatsAppPage({ data, showToast }) {
 
   return (
     <div className="page-bg page-content fade-in">
+      <KpiBanner kpis={[
+        { icon:"💬", label:"Messages", value:messages.length, color:"#25D366" },
+        { icon:"👥", label:"Contacts", value:contacts.length, color:"#1A56FF" },
+        { icon:"📢", label:"Diffusions", value:broadcastResults.length, color:"#F5C518" },
+        { icon:"🤖", label:"Commandes Bot", value:"8 actives", color:"#16C55E" },
+        { icon:"📊", label:"Taux Réponse", value:"94%", trend:"+2%", trendUp:true, color:"#1877F2" },
+        { icon:"🔗", label:"Statut", value:status==="connected"?"Connecté":"Déconnecté", color:status==="connected"?"#16C55E":"#D42B3A" },
+      ]} />
       {/* Header */}
       <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:20, flexWrap:"wrap", gap:12 }}>
         <div style={{ display:"flex", alignItems:"center", gap:14 }}>
@@ -2555,6 +2655,13 @@ function SettingsPage({ data, setData, showToast, dark, setDark }) {
   const [tab, setTab] = useState("profile");
   return (
     <div className="page-bg page-content fade-in">
+      <KpiBanner kpis={[
+        { icon:"👤", label:"Utilisateur", value:data.user.name.split(" ")[0], color:"#1A56FF" },
+        { icon:"🏢", label:"Entreprise", value:data.user.company.split(" ")[0], color:"#16C55E" },
+        { icon:"👨‍💼", label:"Employés", value:data.staff?.length||3, color:"#F5C518" },
+        { icon:"🔌", label:"Intégrations", value:"4 actives", color:"#25D366" },
+        { icon:dark?"🌙":"☀️", label:"Thème", value:dark?"Sombre":"Clair", color:"#7B91C4" },
+      ]} />
       <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:20 }}>
         <h1 style={{ fontFamily:"'Bricolage Grotesque'", fontSize:22, fontWeight:800 }}>◉ Paramètres</h1>
       </div>
