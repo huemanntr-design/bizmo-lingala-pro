@@ -570,6 +570,121 @@ function Kpi({ icon, label, value, trend, trendUp = true, color = "#1A56FF" }) {
   );
 }
 
+// ─── HERO BANNER COMPONENT ─────────────────────────────────────────────────────
+function HeroBanner({ label, value, subtitle, progress, progressLabel, progressColor, trend, trendUp, icon, children }) {
+  return (
+    <div className="hero-banner fade-in">
+      <div style={{ position:"relative", zIndex:1 }}>
+        <div style={{ display:"flex", alignItems:"flex-start", justifyContent:"space-between" }}>
+          <div>
+            <div className="hero-banner-label">{label}</div>
+            <div className="hero-banner-value">{value}</div>
+            {subtitle && <div className="hero-banner-sub">{subtitle}</div>}
+          </div>
+          <div style={{ display:"flex", alignItems:"center", gap:8 }}>
+            {trend && (
+              <span style={{ padding:"4px 10px", borderRadius:20, fontSize:12, fontWeight:700, background: trendUp ? "rgba(22,197,94,0.12)" : "rgba(212,43,58,0.12)", color: trendUp ? "#16C55E" : "#D42B3A" }}>
+                {trendUp ? "↗" : "↘"} {trend}
+              </span>
+            )}
+            {icon && <div style={{ width:48, height:48, borderRadius:14, background:"rgba(26,86,255,0.12)", display:"flex", alignItems:"center", justifyContent:"center", fontSize:24 }}>{icon}</div>}
+          </div>
+        </div>
+        {progress !== undefined && (
+          <div>
+            <div className="hero-progress">
+              <div className="hero-progress-fill" style={{ width:`${Math.min(progress, 100)}%`, background: progressColor || undefined }} />
+            </div>
+            {progressLabel && <div style={{ display:"flex", justifyContent:"space-between", marginTop:6 }}>
+              <span style={{ fontSize:11, color:"#7B91C4" }}>{progressLabel}</span>
+              <span style={{ fontSize:12, fontWeight:700, color: progress >= 100 ? "#16C55E" : "#1A56FF" }}>● {progress.toFixed(0)}%</span>
+            </div>}
+          </div>
+        )}
+        {children}
+      </div>
+    </div>
+  );
+}
+
+function MiniKpiCard({ icon, label, value, trend, trendUp, color = "#1A56FF" }) {
+  return (
+    <div className="mini-kpi fade-in">
+      <div className="mini-kpi-icon">{icon}</div>
+      <div className="mini-kpi-val" style={{ color }}>{value}</div>
+      <div className="mini-kpi-label">{label}</div>
+      {trend && <div className="mini-kpi-trend" style={{ color: trendUp ? "#16C55E" : "#D42B3A" }}>{trendUp ? "↗" : "↘"} {trend}</div>}
+    </div>
+  );
+}
+
+// ─── SVG CHARTS ────────────────────────────────────────────────────────────────
+function DonutChart({ segments, size = 120, strokeWidth = 14, centerLabel, centerValue }) {
+  const r = (size - strokeWidth) / 2;
+  const circumference = 2 * Math.PI * r;
+  let offset = 0;
+  return (
+    <div style={{ position:"relative", width:size, height:size }}>
+      <svg width={size} height={size} style={{ transform:"rotate(-90deg)" }}>
+        <circle cx={size/2} cy={size/2} r={r} fill="none" stroke="rgba(26,86,255,0.08)" strokeWidth={strokeWidth} />
+        {segments.map((seg, i) => {
+          const dash = (seg.value / 100) * circumference;
+          const o = offset;
+          offset += dash;
+          return <circle key={i} cx={size/2} cy={size/2} r={r} fill="none" stroke={seg.color} strokeWidth={strokeWidth} strokeDasharray={`${dash} ${circumference - dash}`} strokeDashoffset={-o} strokeLinecap="round" style={{ transition:"stroke-dasharray 0.8s ease, stroke-dashoffset 0.8s ease" }} />;
+        })}
+      </svg>
+      {(centerLabel || centerValue) && (
+        <div style={{ position:"absolute", inset:0, display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center" }}>
+          {centerValue && <div style={{ fontFamily:"'Bricolage Grotesque'", fontWeight:800, fontSize:size*0.18, lineHeight:1 }}>{centerValue}</div>}
+          {centerLabel && <div style={{ fontSize:size*0.085, color:"#7B91C4", marginTop:2 }}>{centerLabel}</div>}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function SparkLine({ data, width = 100, height = 32, color = "#1A56FF", fill = true }) {
+  if (!data || data.length < 2) return null;
+  const max = Math.max(...data);
+  const min = Math.min(...data);
+  const range = max - min || 1;
+  const points = data.map((v, i) => `${(i / (data.length - 1)) * width},${height - ((v - min) / range) * (height - 4) - 2}`).join(" ");
+  return (
+    <svg width={width} height={height} style={{ display:"block" }}>
+      {fill && <polygon points={`0,${height} ${points} ${width},${height}`} fill={`${color}15`} />}
+      <polyline points={points} fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
+function MiniBarChartViz({ data, height = 48, barColor = "#1A56FF" }) {
+  const max = Math.max(...data.map(d => d.value));
+  return (
+    <div style={{ display:"flex", alignItems:"flex-end", gap:3, height }}>
+      {data.map((d, i) => (
+        <div key={i} style={{ flex:1, display:"flex", flexDirection:"column", alignItems:"center", gap:2 }}>
+          <div style={{ width:"100%", height:`${Math.max((d.value / max) * 100, 8)}%`, borderRadius:"3px 3px 0 0", background: d.highlight ? "#D42B3A" : barColor, opacity: d.highlight ? 1 : 0.7, transition:"height 0.5s ease" }} />
+          {d.label && <span style={{ fontSize:8, color:"#7B91C4" }}>{d.label}</span>}
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function InsightCard({ icon, iconBg, title, description, action, onAction }) {
+  return (
+    <div className="insight-card">
+      <div className="insight-icon" style={{ background: iconBg }}>{icon}</div>
+      <div style={{ flex:1 }}>
+        <div style={{ fontWeight:600, fontSize:13, marginBottom:2 }}>{title}</div>
+        <div style={{ fontSize:12, color:"#7B91C4", lineHeight:1.5 }}>{description}</div>
+      </div>
+      {action && <button className="btn btn-ghost" style={{ fontSize:11, padding:"5px 10px", flexShrink:0 }} onClick={onAction}>{action}</button>}
+    </div>
+  );
+}
+
 function Modal({ title, onClose, children, maxWidth = 560 }) {
   return (
     <div className="modal-overlay" onClick={e => e.target === e.currentTarget && onClose()}>
