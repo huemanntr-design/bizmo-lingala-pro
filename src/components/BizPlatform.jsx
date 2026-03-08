@@ -1991,6 +1991,7 @@ function SalesPage({ data, setData, showToast, kpiGoals, updateGoal, exchangeRat
             </div>
             {/* Actions */}
             <div style={{ display:"flex", gap:8, padding:"0 20px 20px", flexWrap:"wrap" }}>
+              <button onClick={() => generatePDF("receipt-content", `Recu_${receipt?.id || 'bizmo'}.pdf`)} style={{ flex:1, padding:"10px", background:"#D42B3A", color:"#fff", border:"none", borderRadius:10, fontWeight:700, fontSize:13, cursor:"pointer", fontFamily:"'DM Sans'" }}>📥 PDF</button>
               <button onClick={printReceipt} style={{ flex:1, padding:"10px", background:"#1A56FF", color:"#fff", border:"none", borderRadius:10, fontWeight:700, fontSize:13, cursor:"pointer", fontFamily:"'DM Sans'" }}>🖨️ Imprimer</button>
               <button onClick={async () => {
                 const client = data.clients.find(c => c.name === receipt.client_name);
