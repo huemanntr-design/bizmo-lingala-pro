@@ -984,12 +984,13 @@ const RevenueChart = ({ data: chartData, dark }) => {
 };
 
 // ─── HOME PAGE ─────────────────────────────────────────────────────────────────
-function HomePage({ data, setData, showToast, dark }) {
+function HomePage({ data, setData, showToast, dark, kpiGoals, updateGoal }) {
   const [showWAModal, setShowWAModal] = useState(false);
   const totalRevenue  = data.sales.reduce((s, x) => s + x.total_amount, 0);
   const totalExpenses = data.expenses.filter(e => e.status === "approved").reduce((s, x) => s + x.amount, 0);
   const totalProfit   = data.sales.reduce((s, x) => s + x.profit, 0);
   const lowStock      = data.products.filter(p => p.stock_quantity <= p.low_stock_alert);
+  const revenueGoal   = kpiGoals.home_revenue;
 
   return (
     <div className="page-bg page-content fade-in">
@@ -1010,12 +1011,14 @@ function HomePage({ data, setData, showToast, dark }) {
       <HeroBanner
         label="REVENUS TOTAUX"
         value={fmt(totalRevenue)}
-        subtitle={`Objectif: ${fmt(2000)} · ${data.user.company}`}
-        progress={(totalRevenue / 2000) * 100}
-        progressLabel={`${fmt(totalRevenue)} sur ${fmt(2000)}`}
-        trend="+18.4%"
+        subtitle={`Objectif: ${fmt(revenueGoal)} · ${data.user.company}`}
+        progress={(totalRevenue / revenueGoal) * 100}
+        progressLabel={`${fmt(totalRevenue)} sur ${fmt(revenueGoal)}`}
+        trend={kpiGoals.home_revenue_trend}
         trendUp={true}
         icon="📊"
+        onEditGoal={(v) => { updateGoal("home_revenue", v); showToast(`🎯 Objectif revenus mis à jour: ${fmt(v)}`, "success"); }}
+        goalLabel="Objectif de revenus ($)"
       />
       <div className="mini-kpi-grid">
         <MiniKpiCard icon="📉" label="Dépenses" value={fmt(totalExpenses)} trend="+5.1%" trendUp={false} color="#D42B3A" />
