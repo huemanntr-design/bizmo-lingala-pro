@@ -1229,6 +1229,8 @@ function SalesPage({ data, setData, showToast, kpiGoals, updateGoal }) {
   const [showInvoice, setShowInvoice] = useState(false);
   const [selectedClient, setSelectedClient] = useState("");
   const [payMethod, setPayMethod] = useState("cash");
+  const [receipt, setReceipt] = useState(null);
+  const receiptRef = useRef(null);
 
   const filtered = data.products.filter(p => p.name.toLowerCase().includes(search.toLowerCase()));
   const cartTotal = cart.reduce((s, i) => s + i.unit_price * i.qty, 0);
@@ -1241,12 +1243,38 @@ function SalesPage({ data, setData, showToast, kpiGoals, updateGoal }) {
   const changeQty = (id, d) => setCart(prev => prev.map(i => i.id === id ? { ...i, qty: Math.max(1, i.qty + d) } : i).filter(i => i.qty > 0));
   const clearCart = () => setCart([]);
 
+  const printReceipt = () => {
+    if (!receiptRef.current) return;
+    const printWin = window.open("", "_blank", "width=320,height=600");
+    printWin.document.write(`<html><head><title>Reçu</title><style>body{font-family:'Courier New',monospace;font-size:12px;padding:10px;margin:0;color:#000}h2,h3{margin:4px 0;text-align:center}.line{border-top:1px dashed #000;margin:6px 0}.row{display:flex;justify-content:space-between}.total{font-weight:bold;font-size:14px}.center{text-align:center}</style></head><body>`);
+    printWin.document.write(receiptRef.current.innerHTML);
+    printWin.document.write(`</body></html>`);
+    printWin.document.close();
+    printWin.focus();
+    printWin.print();
+  };
+
   const completeSale = () => {
     if (!cart.length) return showToast("Ajoutez des produits au panier", "error");
+    const receiptItems = cart.map(item => ({
+      name: item.name, emoji: item.emoji, qty: item.qty, unit_price: item.unit_price, total: item.unit_price * item.qty
+    }));
+    const receiptData = {
+      id: `REC-${Date.now().toString(36).toUpperCase()}`,
+      date: new Date().toLocaleString("fr-CD", { dateStyle: "medium", timeStyle: "short" }),
+      client: selectedClient || "Client comptoir",
+      items: receiptItems,
+      subtotal: cartTotal,
+      payment_method: payMethod,
+      company: data.user.company,
+      seller: data.user.name,
+      phone: data.user.phone,
+    };
     cart.forEach(item => {
       const newSale = { id: Date.now() + item.id, product_name: item.name, client_name: selectedClient || "Client comptoir", quantity: item.qty, unit_price: item.unit_price, total_amount: item.unit_price * item.qty, profit: (item.unit_price - item.cogs) * item.qty, payment_method: payMethod, sale_date: new Date().toISOString().split("T")[0] };
       setData(d => ({ ...d, sales: [newSale, ...d.sales], products: d.products.map(p => p.id === item.id ? { ...p, stock_quantity: p.stock_quantity - item.qty } : p) }));
     });
+    setReceipt(receiptData);
     showToast(`✅ Vente enregistrée — ${fmt(cartTotal)}`, "success"); clearCart(); setShowInvoice(false);
   };
 
