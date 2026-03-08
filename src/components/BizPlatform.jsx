@@ -1519,7 +1519,7 @@ function SalesPage({ data, setData, showToast, kpiGoals, updateGoal, exchangeRat
       phone: data.user.phone,
     };
     cart.forEach(item => {
-      const newSale = { id: Date.now() + item.id, product_name: item.name, client_name: selectedClient || "Client comptoir", quantity: item.qty, unit_price: item.unit_price, total_amount: item.unit_price * item.qty, profit: (item.unit_price - item.cogs) * item.qty, payment_method: payMethod, sale_date: new Date().toISOString().split("T")[0] };
+      const newSale = { id: Date.now() + item.id, product_name: item.name, client_name: selectedClient || "Client comptoir", quantity: item.qty, unit_price: item.unit_price, total_amount: item.unit_price * item.qty, profit: (item.unit_price - item.cogs) * item.qty, payment_method: payMethod, sale_date: new Date().toISOString().split("T")[0], exchange_rate: exchangeRate, total_cdf: Math.round(item.unit_price * item.qty * exchangeRate) };
       setData(d => ({ ...d, sales: [newSale, ...d.sales], products: d.products.map(p => p.id === item.id ? { ...p, stock_quantity: p.stock_quantity - item.qty } : p) }));
     });
     setReceipt(receiptData);
