@@ -1992,6 +1992,7 @@ function MarketingPage({ data, setData, showToast, kpiGoals, updateGoal }) {
   const [hovPost, setHovPost] = useState(null);
   const [weekOff, setWeekOff] = useState(0);
   const [composer, setComposer] = useState({ title:"", content:"", platform:"instagram", scheduled_date:"" });
+  const [editPost, setEditPost] = useState(null); // { ...post, isAI:bool }
   const tooltipRef = useRef(null);
 
   const PLATFORMS = [
@@ -2013,6 +2014,22 @@ function MarketingPage({ data, setData, showToast, kpiGoals, updateGoal }) {
 
   const validate = (id) => { setAiPosts(p => p.map(x => x.id===id ? {...x,status:"scheduled"} : x)); setHovPost(null); showToast("✅ Post validé!", "success"); };
   const reject   = (id) => { setAiPosts(p => p.map(x => x.id===id ? {...x,status:"rejected"} : x)); setHovPost(null); showToast("Post rejeté", "info"); };
+
+  const startEdit = (post, isAI) => {
+    setEditPost({ ...post, isAI });
+    setHovPost(null);
+  };
+  const saveEdit = () => {
+    if (!editPost) return;
+    const { isAI, ...updated } = editPost;
+    if (isAI) {
+      setAiPosts(p => p.map(x => x.id===updated.id ? { ...x, title:updated.title, content:updated.content, platform:updated.platform, time:updated.time } : x));
+    } else {
+      setData(d => ({ ...d, posts: d.posts.map(x => x.id===updated.id ? { ...x, title:updated.title, content:updated.content, platform:updated.platform, scheduled_date:updated.scheduled_date } : x) }));
+    }
+    setEditPost(null);
+    showToast("✅ Post modifié!", "success");
+  };
 
   const postColor = (p) => {
     if (p.status==="rejected") return "#4a5678";
@@ -2067,9 +2084,15 @@ function MarketingPage({ data, setData, showToast, kpiGoals, updateGoal }) {
           {isAI && !isRej ? (
             <>
               <button onClick={() => validate(post.id)} style={{ flex:1, padding:"8px", background:"#16A34A", border:"none", borderRadius:8, color:"white", fontFamily:"'DM Sans'", fontSize:12, fontWeight:700, cursor:"pointer" }}>✅ Valider</button>
+              <button onClick={() => startEdit(post, true)} style={{ flex:1, padding:"8px", background:"rgba(26,86,255,0.12)", border:"1px solid rgba(26,86,255,0.3)", borderRadius:8, color:"#1A56FF", fontFamily:"'DM Sans'", fontSize:12, fontWeight:700, cursor:"pointer" }}>✏️ Modifier</button>
               <button onClick={() => reject(post.id)}   style={{ flex:1, padding:"8px", background:"rgba(212,43,58,0.12)", border:"1px solid rgba(212,43,58,0.3)", borderRadius:8, color:"#D42B3A", fontFamily:"'DM Sans'", fontSize:12, fontWeight:700, cursor:"pointer" }}>✕ Rejeter</button>
             </>
-          ) : <div style={{ fontSize:11, color: isRej?"#4a5678":"#16C55E", fontWeight:600 }}>{isRej?"✕ Rejeté":"✅ Programmé"}</div>}
+          ) : !isRej && post.status!=="published" ? (
+            <>
+              <button onClick={() => startEdit(post, false)} style={{ flex:1, padding:"8px", background:"rgba(26,86,255,0.12)", border:"1px solid rgba(26,86,255,0.3)", borderRadius:8, color:"#1A56FF", fontFamily:"'DM Sans'", fontSize:12, fontWeight:700, cursor:"pointer" }}>✏️ Modifier</button>
+              <div style={{ fontSize:11, color:"#16C55E", fontWeight:600, display:"flex", alignItems:"center" }}>✅ Programmé</div>
+            </>
+          ) : <div style={{ fontSize:11, color: isRej?"#4a5678":"#16C55E", fontWeight:600 }}>{isRej?"✕ Rejeté":"✅ Publié"}</div>}
         </div>
       </div>
     );
@@ -2323,10 +2346,11 @@ function MarketingPage({ data, setData, showToast, kpiGoals, updateGoal }) {
                 </div>
                 {p.title && <div style={{ fontWeight:700, marginBottom:6, fontSize:13 }}>{p.title}</div>}
                 <div style={{ fontSize:11, color:"#7B91C4", lineHeight:1.6, marginBottom:10 }}>{p.content?.slice(0,100)}…</div>
-                {isAI && (
+                {p.status !== "published" && (
                   <div style={{ display:"flex", gap:8 }}>
-                    <button onClick={() => validate(p.id)} className="btn btn-success" style={{ flex:1, justifyContent:"center", fontSize:11 }}>✅ Valider</button>
-                    <button onClick={() => reject(p.id)}   className="btn btn-red"     style={{ flex:1, justifyContent:"center", fontSize:11 }}>✕ Rejeter</button>
+                    {isAI && <button onClick={() => validate(p.id)} className="btn btn-success" style={{ flex:1, justifyContent:"center", fontSize:11 }}>✅ Valider</button>}
+                    <button onClick={() => startEdit(p, isAI)} className="btn btn-primary" style={{ flex:1, justifyContent:"center", fontSize:11 }}>✏️ Modifier</button>
+                    {isAI && <button onClick={() => reject(p.id)} className="btn btn-red" style={{ flex:1, justifyContent:"center", fontSize:11 }}>✕ Rejeter</button>}
                   </div>
                 )}
               </div>
@@ -2345,6 +2369,51 @@ function MarketingPage({ data, setData, showToast, kpiGoals, updateGoal }) {
       )}
 
       {hovPost && <Tooltip post={hovPost.post} rect={hovPost.rect} />}
+
+      {/* ─ EDIT POST MODAL ─ */}
+      {editPost && (
+        <div style={{ position:"fixed", inset:0, zIndex:5000, display:"flex", alignItems:"center", justifyContent:"center", background:"rgba(0,0,0,0.7)", backdropFilter:"blur(6px)" }} onClick={() => setEditPost(null)}>
+          <div onClick={e => e.stopPropagation()} style={{ width:"100%", maxWidth:520, background:"#0A0F1E", border:"1px solid rgba(26,86,255,0.2)", borderRadius:16, padding:24, animation:"scaleIn 0.2s ease" }}>
+            <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:18 }}>
+              <div style={{ fontFamily:"'Bricolage Grotesque'", fontSize:18, fontWeight:800 }}>✏️ Modifier le Post</div>
+              <button onClick={() => setEditPost(null)} style={{ background:"none", border:"none", color:"#7B91C4", fontSize:20, cursor:"pointer" }}>✕</button>
+            </div>
+            <div className="form-group"><label className="form-label">Plateforme</label>
+              <div style={{ display:"flex", gap:8 }}>
+                {PLATFORMS.map(p => (
+                  <div key={p.id} onClick={() => setEditPost(ep => ({...ep, platform:p.id}))}
+                    style={{ flex:1, padding:"10px 6px", borderRadius:9, textAlign:"center", cursor:"pointer", background:editPost.platform===p.id?`${p.color}18`:"transparent", border:`1px solid ${editPost.platform===p.id?p.color:"rgba(26,86,255,0.12)"}` }}>
+                    <div style={{ fontSize:20 }}>{p.icon}</div>
+                    <div style={{ fontSize:9, marginTop:2, fontWeight:600, color:editPost.platform===p.id?p.color:"#7B91C4" }}>{p.name}</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+            <div className="form-group"><label className="form-label">Titre</label>
+              <input value={editPost.title||""} onChange={e => setEditPost(ep => ({...ep, title:e.target.value}))} placeholder="Titre du post..." />
+            </div>
+            <div className="form-group"><label className="form-label">Contenu</label>
+              <div style={{ position:"relative" }}>
+                <textarea value={editPost.content||""} onChange={e => setEditPost(ep => ({...ep, content:e.target.value}))} rows={6} style={{ resize:"vertical", paddingBottom:28 }} placeholder="Contenu du post..." />
+                <div style={{ position:"absolute", bottom:8, right:10, fontSize:10, color:"#7B91C4" }}>{(editPost.content||"").length}/2200</div>
+              </div>
+            </div>
+            {editPost.isAI ? (
+              <div className="form-group"><label className="form-label">Heure</label>
+                <input type="time" value={editPost.time||""} onChange={e => setEditPost(ep => ({...ep, time:e.target.value}))} />
+              </div>
+            ) : (
+              <div className="form-group"><label className="form-label">Date programmée</label>
+                <input type="datetime-local" value={editPost.scheduled_date||""} onChange={e => setEditPost(ep => ({...ep, scheduled_date:e.target.value}))} />
+              </div>
+            )}
+            <div style={{ display:"flex", gap:10, marginTop:16 }}>
+              <button className="btn btn-primary" style={{ flex:1, justifyContent:"center" }} onClick={saveEdit}>💾 Enregistrer</button>
+              <button className="btn btn-ghost" style={{ flex:1, justifyContent:"center" }} onClick={() => setEditPost(null)}>Annuler</button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
