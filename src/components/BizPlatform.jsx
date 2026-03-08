@@ -1884,6 +1884,7 @@ function ClientsPage({ data, setData, showToast, kpiGoals, updateGoal }) {
         <MiniKpiCard icon="💳" label="Crédit Dû" value={fmt(data.clients.reduce((s,c)=>s+c.credit_balance,0))} trendUp={false} color="#D42B3A" />
         <MiniKpiCard icon="🎯" label="Leads" value={data.clients.filter(c=>c.status==="lead").length} color="#1A56FF" />
       </div>
+      <HelpText icon="👥">Vos clients — les gens et entreprises qui achètent chez vous. Les clients «VIP» 👑 sont ceux qui achètent beaucoup. Le «crédit» c'est l'argent qu'un client vous doit encore. Le «CRM» est un outil pour organiser et suivre vos relations avec chaque client.</HelpText>
       <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:20, flexWrap:"wrap", gap:10 }}>
         <h1 style={{ fontFamily:"'Bricolage Grotesque'", fontSize:22, fontWeight:800 }}>◎ Clients</h1>
         <button className="btn btn-primary" onClick={() => setShowAdd(true)}>➕ Nouveau Client</button>
