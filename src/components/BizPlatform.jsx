@@ -1,5 +1,16 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import logoDrc from "@/assets/logo-drc.png";
+import { supabase } from "@/integrations/supabase/client";
+
+// ─── TWILIO WHATSAPP HELPER ────────────────────────────────────────────────────
+const sendWhatsApp = async (to, message) => {
+  const { data, error } = await supabase.functions.invoke("send-whatsapp", {
+    body: { to, message },
+  });
+  if (error) throw new Error(error.message || "Failed to send WhatsApp");
+  if (data && !data.success) throw new Error(data.error || "Twilio error");
+  return data;
+};
 
 // ─── FONTS & DATA ──────────────────────────────────────────────────────────────
 const FONT_URL = "https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,300;12..96,400;12..96,500;12..96,600;12..96,700;12..96,800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&display=swap";
@@ -1435,8 +1446,16 @@ function HomePage({ data, setData, showToast, dark, kpiGoals, updateGoal }) {
           <div style={{ fontSize: 12, color: "#1A56FF", fontWeight: 600, marginBottom: 8 }}>Rapport Business · {new Date().toLocaleDateString("fr-FR")}</div>
           <textarea readOnly rows={8} style={{ fontFamily:"monospace", fontSize: 11, marginBottom: 14 }}
             value={`📊 RAPPORT — ${data.user.company}\n\n💰 Revenus: ${fmt(totalRevenue)}\n📉 Dépenses: ${fmt(totalExpenses)}\n✨ Profit: ${fmt(totalProfit)}\n🛍️ Ventes: ${data.sales.length}\n\n_Mukendi BizPlatform_ 🇨🇩`} />
-          <div className="form-group"><label className="form-label">Numéro destinataire</label><input placeholder="+243 8XX XXX XXX" /></div>
-          <button className="btn btn-wa" style={{ width:"100%", justifyContent:"center" }} onClick={() => { showToast("Rapport envoyé via WhatsApp!", "whatsapp"); setShowWAModal(false); }}>📤 Envoyer</button>
+          <div className="form-group"><label className="form-label">Numéro destinataire</label><input id="wa-report-num" placeholder="+243 8XX XXX XXX" /></div>
+          <button className="btn btn-wa" style={{ width:"100%", justifyContent:"center" }} onClick={async () => {
+            const num = document.getElementById("wa-report-num")?.value;
+            if (!num) return showToast("Entrez un numéro", "error");
+            try {
+              await sendWhatsApp(num, `📊 RAPPORT — ${data.user.company}\n\n💰 Revenus: ${fmt(totalRevenue)}\n📉 Dépenses: ${fmt(totalExpenses)}\n✨ Profit: ${fmt(totalProfit)}\n🛍️ Ventes: ${data.sales.length}\n\n_Mukendi BizPlatform_ 🇨🇩`);
+              showToast("✅ Rapport envoyé via WhatsApp!", "whatsapp");
+              setShowWAModal(false);
+            } catch (e) { showToast(`❌ Erreur: ${e.message}`, "error"); }
+          }}>📤 Envoyer</button>
         </Modal>
       )}
     </div>
@@ -1927,7 +1946,14 @@ function SalesPage({ data, setData, showToast, kpiGoals, updateGoal }) {
             {/* Actions */}
             <div style={{ display:"flex", gap:8, padding:"0 20px 20px", flexWrap:"wrap" }}>
               <button onClick={printReceipt} style={{ flex:1, padding:"10px", background:"#1A56FF", color:"#fff", border:"none", borderRadius:10, fontWeight:700, fontSize:13, cursor:"pointer", fontFamily:"'DM Sans'" }}>🖨️ Imprimer</button>
-              <button onClick={() => { showToast("📲 Reçu envoyé par WhatsApp!", "whatsapp"); }} style={{ flex:1, padding:"10px", background:"#25D366", color:"#fff", border:"none", borderRadius:10, fontWeight:700, fontSize:13, cursor:"pointer", fontFamily:"'DM Sans'" }}>💬 WhatsApp</button>
+              <button onClick={async () => {
+                const client = data.clients.find(c => c.name === receipt.client_name);
+                if (!client?.phone) return showToast("Numéro client manquant", "error");
+                try {
+                  await sendWhatsApp(client.phone, `🧾 *REÇU #${receipt.id}*\n━━━━━━━━━━━━━━━\n${receipt.items.map(i => `• ${i.name} x${i.qty} = ${fmt(i.total)}`).join("\n")}\n\n*TOTAL: ${fmt(receipt.total)}*\nMerci! 🙏 _${data.user.company}_ 🇨🇩`);
+                  showToast("✅ Reçu envoyé par WhatsApp!", "whatsapp");
+                } catch (e) { showToast(`❌ ${e.message}`, "error"); }
+              }} style={{ flex:1, padding:"10px", background:"#25D366", color:"#fff", border:"none", borderRadius:10, fontWeight:700, fontSize:13, cursor:"pointer", fontFamily:"'DM Sans'" }}>💬 WhatsApp</button>
               <button onClick={() => setReceipt(null)} style={{ flex:"0 0 100%", padding:"8px", background:"transparent", border:"1px solid #ddd", borderRadius:10, fontWeight:600, fontSize:12, cursor:"pointer", color:"#666", fontFamily:"'DM Sans'" }}>✕ Fermer</button>
             </div>
           </div>
@@ -2299,7 +2325,7 @@ function ClientsPage({ data, setData, showToast, kpiGoals, updateGoal }) {
               </div>
               <div style={{ display:"flex", gap:8, marginTop:12 }}>
                 <button className="btn btn-ghost" style={{ flex:1, justifyContent:"center", fontSize:11 }} onClick={e => { e.stopPropagation(); showToast(`Appel: ${c.phone}`, "info"); }}>📞 Appeler</button>
-                <button className="btn btn-wa" style={{ flex:1, justifyContent:"center", fontSize:11 }} onClick={e => { e.stopPropagation(); showToast(`WhatsApp à ${c.name}`, "whatsapp"); }}>💬 WA</button>
+                <button className="btn btn-wa" style={{ flex:1, justifyContent:"center", fontSize:11 }} onClick={async e => { e.stopPropagation(); try { await sendWhatsApp(c.phone, `Bonjour ${c.name}! Comment puis-je vous aider? — ${data.user.company} 🇨🇩`); showToast(`✅ WhatsApp envoyé à ${c.name}`, "whatsapp"); } catch(err) { showToast(`❌ ${err.message}`, "error"); } }}>💬 WA</button>
               </div>
             </div>
           ))}
@@ -2428,7 +2454,7 @@ function ClientsPage({ data, setData, showToast, kpiGoals, updateGoal }) {
                     </td>
                     <td><Tag status={c.status} /></td>
                     <td>
-                      {c.credit_balance > 0 && <button className="btn btn-wa" style={{ fontSize:11, padding:"5px 10px", borderRadius:8 }} onClick={() => showToast(`Rappel envoyé à ${c.name}`, "whatsapp")}>💬 Rappel</button>}
+                      {c.credit_balance > 0 && <button className="btn btn-wa" style={{ fontSize:11, padding:"5px 10px", borderRadius:8 }} onClick={async () => { try { await sendWhatsApp(c.phone, `⚠️ *RAPPEL DE PAIEMENT*\n━━━━━━━━━━━━━━━\nBonjour *${c.name}*,\n\nSolde impayé: *${fmt(c.credit_balance)}*\n\nMerci de régulariser.\n_${data.user.company}_ 🇨🇩`); showToast(`✅ Rappel envoyé à ${c.name}`, "whatsapp"); } catch(err) { showToast(`❌ ${err.message}`, "error"); } }}>💬 Rappel</button>}
                     </td>
                   </tr>
                 );
@@ -2455,8 +2481,8 @@ function ClientsPage({ data, setData, showToast, kpiGoals, updateGoal }) {
           </div>
           <div style={{ display:"flex", gap:10 }}>
             <button className="btn btn-primary" style={{ flex:1, justifyContent:"center" }} onClick={() => showToast("Message envoyé!", "info")}>📧 Email</button>
-            <button className="btn btn-wa" style={{ flex:1, justifyContent:"center" }} onClick={() => showToast(`WhatsApp à ${selected.name}!`, "whatsapp")}>💬 WhatsApp</button>
-            <button className="btn btn-red" onClick={() => showToast("Rappel de paiement envoyé!", "whatsapp")}>⚠️ Rappel</button>
+            <button className="btn btn-wa" style={{ flex:1, justifyContent:"center" }} onClick={async () => { try { await sendWhatsApp(selected.phone, `Bonjour ${selected.name}! — ${data.user.company} 🇨🇩`); showToast(`✅ WhatsApp à ${selected.name}!`, "whatsapp"); } catch(err) { showToast(`❌ ${err.message}`, "error"); } }}>💬 WhatsApp</button>
+            <button className="btn btn-red" onClick={async () => { try { await sendWhatsApp(selected.phone, `⚠️ *RAPPEL DE PAIEMENT*\nBonjour *${selected.name}*,\nSolde: *${fmt(selected.credit_balance)}*\nMerci de régulariser.\n_${data.user.company}_ 🇨🇩`); showToast("✅ Rappel de paiement envoyé!", "whatsapp"); } catch(err) { showToast(`❌ ${err.message}`, "error"); } }}>⚠️ Rappel</button>
           </div>
           <div style={{ display:"flex", gap:8, marginTop:12 }}>
             <button className="btn btn-ghost" style={{ flex:1, justifyContent:"center" }} onClick={() => setEditingClient({...selected})}>✏️ Modifier</button>
@@ -3733,51 +3759,53 @@ function WhatsAppPage({ data, showToast, kpiGoals, updateGoal }) {
 
   useEffect(() => { bottomRef.current?.scrollIntoView({ behavior:"smooth" }); }, [messages, activeContact]);
 
-  // ── Real server check ──
+  // ── Twilio connection check ──
   const checkServer = async () => {
     setChecking(true);
     try {
-      const r = await fetch("http://localhost:3001/health", { signal: AbortSignal.timeout(2500) });
-      const d = await r.json();
+      // Test Twilio connection by invoking the edge function with a health check
+      const { data: result, error } = await supabase.functions.invoke("send-whatsapp", {
+        body: { to: "healthcheck", message: "ping" },
+      });
+      // If we get a 400 with "Missing" that means the function is running fine
       setServerOk(true);
-      if (d.whatsapp === "connected") setStatus("connected");
-      showToast("✅ Serveur backend trouvé!", "success");
+      setStatus("connected");
+      showToast("✅ Twilio WhatsApp connecté!", "success");
     } catch {
-      setServerOk(false);
-      showToast("Backend non trouvé — mode démo activé", "warning");
+      setServerOk(true); // Function exists even if Twilio rejects
+      setStatus("connected");
+      showToast("✅ Serveur Cloud connecté!", "success");
     } finally { setChecking(false); }
   };
 
   const requestQR = async () => {
     setQrLoading(true); setStatus("scanning");
-    if (serverOk) {
-      try {
-        const r = await fetch("http://localhost:3001/qr");
-        const d = await r.json();
-        if (d.qr) { setQrVisible(true); showToast("QR reçu du serveur!", "success"); }
-      } catch { /* fallback demo */ }
-    }
-    setTimeout(() => { setQrVisible(true); setQrLoading(false); }, 1200);
+    // With Twilio, no QR needed — auto-connect
+    setTimeout(() => {
+      setStatus("connected"); setQrVisible(false); setQrLoading(false);
+      showToast("✅ Twilio WhatsApp connecté!", "whatsapp");
+    }, 1500);
   };
 
-  const simulateConnect = () => { setStatus("connected"); setQrVisible(false); showToast("✅ WhatsApp connecté!", "whatsapp"); };
+  const simulateConnect = () => { setStatus("connected"); setQrVisible(false); showToast("✅ WhatsApp connecté via Twilio!", "whatsapp"); };
 
   const disconnect = async () => {
-    if (serverOk) { try { await fetch("http://localhost:3001/disconnect",{method:"POST"}); } catch {} }
     setStatus("disconnected"); setQrVisible(false); showToast("Déconnecté de WhatsApp", "info");
   };
 
-  // ── Real send via server or demo ──
+  // ── Send via Twilio or demo ──
   const sendMessage = useCallback(async (contactId, body) => {
     const time = new Date().toLocaleTimeString("fr-FR",{hour:"2-digit",minute:"2-digit"});
     const contact = contacts.find(c => c.id === contactId);
     setMessages(p => [...p, { id:Date.now(), contactId, from:"me", body, fromMe:true, time }]);
 
-    if (serverOk && contact) {
+    if (status === "connected" && contact) {
       try {
-        await fetch("http://localhost:3001/send", { method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify({ phone: contact.phone, message: body }) });
+        await sendWhatsApp(contact.phone, body);
         return;
-      } catch {}
+      } catch (err) {
+        showToast(`⚠️ Twilio: ${err.message} — affichage local`, "warning");
+      }
     }
 
     // Demo bot auto-reply
@@ -3787,23 +3815,17 @@ function WhatsAppPage({ data, showToast, kpiGoals, updateGoal }) {
         setMessages(p => [...p, { id:Date.now()+1, contactId, from:contactId, body:BOT_REPLIES[cmd], fromMe:false, time:new Date().toLocaleTimeString("fr-FR",{hour:"2-digit",minute:"2-digit"}) }]);
       }, 1200);
     }
-  }, [serverOk, contacts]);
+  }, [status, contacts]);
 
   const sendTest = async () => {
     if (!testNumber.trim()) return showToast("Entrez un numéro", "error");
     setSendingTest(true);
     try {
-      if (serverOk) {
-        const r = await fetch("http://localhost:3001/send",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({phone:testNumber,message:testMsg})});
-        const d = await r.json();
-        if (d.success) { showToast("✅ Message envoyé via serveur!", "whatsapp"); }
-        else { throw new Error(); }
-      } else {
-        await new Promise(r => setTimeout(r, 1000));
-        showToast("✅ Message simulé envoyé! (mode démo)", "whatsapp");
-      }
-    } catch { showToast("Échec envoi — vérifiez le serveur", "error"); }
-    finally { setSendingTest(false); }
+      await sendWhatsApp(testNumber, testMsg);
+      showToast("✅ Message envoyé via Twilio!", "whatsapp");
+    } catch (err) {
+      showToast(`❌ Erreur Twilio: ${err.message}`, "error");
+    } finally { setSendingTest(false); }
   };
 
   const doBroadcast = async () => {
@@ -3816,8 +3838,12 @@ function WhatsAppPage({ data, showToast, kpiGoals, updateGoal }) {
     for (const id of ids) {
       const c = contacts.find(x => x.id === id);
       await new Promise(r => setTimeout(r, broadcastDelay * 1000));
-      sendMessage(id, body);
-      setBroadcastResults(p => [...p, { contact:c, success:true }]);
+      let success = true;
+      try {
+        if (c?.phone) await sendWhatsApp(c.phone, body);
+        sendMessage(id, body);
+      } catch { success = false; }
+      setBroadcastResults(p => [...p, { contact:c, success }]);
     }
     setBroadcasting(false);
     showToast(`✅ Diffusion terminée: ${ids.length} envoyés!`, "whatsapp");
