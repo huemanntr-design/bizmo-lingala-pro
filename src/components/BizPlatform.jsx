@@ -1093,7 +1093,8 @@ function HomePage({ data, setData, showToast, dark, kpiGoals, updateGoal }) {
 
         {/* Daily Revenue Sparkline card */}
         <div className="card card-pad">
-          <div className="sec-title" style={{ marginBottom:14 }}>📈 Tendance Quotidienne</div>
+          <div className="sec-title" style={{ marginBottom:8 }}>📈 Tendance Quotidienne</div>
+          <div style={{ fontSize:10, color:"#7B91C4", marginBottom:8 }}>Cette courbe montre si vos revenus montent ↗ ou descendent ↘ chaque jour de la semaine</div>
           <SparkLine data={data.revenueChart.map(d=>d.amount)} width={200} height={60} color="#1A56FF" />
           <div style={{ display:"flex", gap:14, marginTop:12 }}>
             {[["Moy",fmt(data.revenueChart.reduce((s,d)=>s+d.amount,0)/7),"#1A56FF"],["Max",fmt(Math.max(...data.revenueChart.map(d=>d.amount))),"#16C55E"],["Min",fmt(Math.min(...data.revenueChart.map(d=>d.amount))),"#D42B3A"]].map(([l,v,c]) => (
