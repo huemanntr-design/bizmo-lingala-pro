@@ -424,6 +424,32 @@ const buildStyles = (dark) => {
   }
   .theme-btn:hover { background: ${t.glass3}; color: ${t.text}; }
 
+  /* ── KPI BANNER ── */
+  .kpi-banner { position: relative; margin-bottom: 20px; }
+  .kpi-banner-track { display: flex; gap: 14px; overflow-x: auto; scroll-behavior: smooth; scrollbar-width: none; padding: 2px 0; }
+  .kpi-banner-track::-webkit-scrollbar { display: none; }
+  .kpi-banner-item {
+    min-width: 200px; max-width: 220px; flex-shrink: 0;
+    background: ${t.surface}; border: 1px solid ${t.border};
+    border-radius: 14px; padding: 16px; position: relative; overflow: hidden;
+    transition: transform 0.18s, box-shadow 0.18s;
+  }
+  .kpi-banner-item:hover { transform: translateY(-2px); box-shadow: ${t.shadow}; }
+  .kpi-banner-glow { position: absolute; top: -15px; right: -15px; width: 70px; height: 70px; border-radius: 50%; filter: blur(25px); opacity: 0.25; }
+  .kpi-banner-arrow {
+    position: absolute; top: 50%; transform: translateY(-50%); z-index: 5;
+    width: 34px; height: 34px; border-radius: 50%;
+    background: ${t.surface}; border: 1px solid ${t.border2};
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer; font-size: 16px; color: ${t.text2};
+    box-shadow: 0 4px 16px rgba(0,0,0,${dark?0.4:0.12});
+    transition: all 0.18s;
+  }
+  .kpi-banner-arrow:hover { background: #1A56FF; color: white; border-color: #1A56FF; box-shadow: 0 4px 20px rgba(26,86,255,0.35); }
+  .kpi-banner-arrow.left { left: -6px; }
+  .kpi-banner-arrow.right { right: -6px; }
+  .kpi-banner-arrow:disabled { opacity: 0.3; pointer-events: none; }
+
   /* ── KEYFRAMES ── */
   @keyframes fadeIn    { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
   @keyframes scaleIn   { from { opacity: 0; transform: scale(0.95);     } to { opacity: 1; transform: scale(1);     } }
