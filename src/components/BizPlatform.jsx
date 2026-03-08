@@ -1060,7 +1060,8 @@ function HomePage({ data, setData, showToast, dark, kpiGoals, updateGoal }) {
 
         {/* Payment Methods Donut */}
         <div className="card card-pad">
-          <div className="sec-title" style={{ marginBottom:14 }}>💳 Modes de Paiement</div>
+          <div className="sec-title" style={{ marginBottom:8 }}>💳 Modes de Paiement</div>
+          <div style={{ fontSize:10, color:"#7B91C4", marginBottom:8 }}>Comment vos clients vous paient : cash, M-Pesa/Airtel (mobile), crédit (à rembourser plus tard), ou banque</div>
           {(() => {
             const methods = ["cash","mobile_money","credit","bank"];
             const colors = ["#16C55E","#25D366","#D42B3A","#1A56FF"];
