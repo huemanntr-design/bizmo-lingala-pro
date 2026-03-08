@@ -2350,7 +2350,7 @@ function MarketingPage({ data, setData, showToast }) {
 }
 
 // ─── ACCOUNTING PAGE ───────────────────────────────────────────────────────────
-function AccountingPage({ data, setData, showToast }) {
+function AccountingPage({ data, setData, showToast, kpiGoals, updateGoal }) {
   const [tab, setTab] = useState("cashbook");
   const [showAdd, setShowAdd] = useState(false);
   const [newExp, setNewExp] = useState({ description:"", amount:"", category:"Transport", expense_date:new Date().toISOString().split("T")[0], status:"pending" });
@@ -2375,6 +2375,8 @@ function AccountingPage({ data, setData, showToast }) {
         trend="+23%"
         trendUp={true}
         icon="📊"
+        onEditGoal={(v) => { showToast(`🎯 Objectif profit net: ${fmt(v)}`, "success"); }}
+        goalLabel="Objectif profit net ($)"
       />
       <div className="mini-kpi-grid">
         <MiniKpiCard icon="💵" label="Revenus" value={fmt(totalRev)} trend="+18%" trendUp={true} color="#1A56FF" />
