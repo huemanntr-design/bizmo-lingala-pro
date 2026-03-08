@@ -4740,6 +4740,9 @@ export default function BizPlatform() {
   const [toast, setToast]           = useState(null);
   const [time, setTime]             = useState(new Date());
   const [kpiGoals, setKpiGoals]     = useState(DEFAULT_KPI_GOALS);
+  const [globalSearch, setGlobalSearch] = useState("");
+  const [showGlobalSearch, setShowGlobalSearch] = useState(false);
+  const [showQuickAdd, setShowQuickAdd] = useState(false);
 
   const updateGoal = useCallback((key, value) => {
     setKpiGoals(prev => ({ ...prev, [key]: value }));
@@ -4747,22 +4750,31 @@ export default function BizPlatform() {
 
   useEffect(() => { const t = setInterval(() => setTime(new Date()), 1000); return () => clearInterval(t); }, []);
 
+  // Global keyboard shortcuts
+  useEffect(() => {
+    const handler = (e) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === "k") { e.preventDefault(); setShowGlobalSearch(s => !s); }
+      if (e.key === "Escape") { setShowGlobalSearch(false); setShowQuickAdd(false); }
+    };
+    window.addEventListener("keydown", handler);
+    return () => window.removeEventListener("keydown", handler);
+  }, []);
+
   const showToast = useCallback((message, type = "success") => {
     setToast({ message, type, id: Date.now() });
   }, []);
 
   const styles = buildStyles(dark);
 
-  // Inject CSS vars for card/border that can't be passed inline
   const cssVarOverride = `
     :root {
-      --border: ${dark ? "rgba(26,86,255,0.12)" : "rgba(26,86,255,0.14)"};
-      --border2:${dark ? "rgba(26,86,255,0.20)" : "rgba(26,86,255,0.22)"};
-      --text:   ${dark ? "#EEF2FF" : "#0A0F1E"};
+      --border: ${dark ? "rgba(100,140,255,0.08)" : "rgba(100,140,255,0.1)"};
+      --border2:${dark ? "rgba(100,140,255,0.14)" : "rgba(100,140,255,0.16)"};
+      --text:   ${dark ? "#E8EDFF" : "#0A0F1E"};
       --text2:  ${dark ? "#7B91C4" : "#3A4E7A"};
       --text3:  ${dark ? "#3A4E7A" : "#8A9DC0"};
-      --glass3: ${dark ? "rgba(26,86,255,0.14)" : "rgba(26,86,255,0.06)"};
-      --glass2: ${dark ? "rgba(26,86,255,0.08)" : "rgba(255,255,255,0.95)"};
+      --glass3: ${dark ? "rgba(60,100,255,0.08)" : "rgba(26,86,255,0.05)"};
+      --glass2: ${dark ? "rgba(20,30,70,0.35)" : "rgba(255,255,255,0.75)"};
     }
   `;
 
@@ -4778,6 +4790,22 @@ export default function BizPlatform() {
     bizplan:    <BusinessPlanPage data={data} showToast={showToast} dark={dark} />,
     settings:   <SettingsPage   data={data} setData={setData} showToast={showToast} dark={dark} setDark={setDark} />,
   };
+
+  // Global search results
+  const searchResults = globalSearch.length >= 2 ? [
+    ...data.products.filter(p => p.name.toLowerCase().includes(globalSearch.toLowerCase())).map(p => ({ type: "product", icon: p.emoji, name: p.name, sub: `${fmt(p.unit_price)} · ${p.stock_quantity}u`, page: "products" })),
+    ...data.clients.filter(c => c.name.toLowerCase().includes(globalSearch.toLowerCase())).map(c => ({ type: "client", icon: "👤", name: c.name, sub: c.phone, page: "clients" })),
+    ...NAV.filter(n => n.label.toLowerCase().includes(globalSearch.toLowerCase())).map(n => ({ type: "page", icon: n.icon, name: n.label, sub: "Page", page: n.id })),
+  ].slice(0, 8) : [];
+
+  const quickActions = [
+    { icon: "🛒", label: "Nouvelle Vente", action: () => { setActivePage("sales"); setShowQuickAdd(false); } },
+    { icon: "📦", label: "Ajouter Produit", action: () => { setActivePage("products"); setShowQuickAdd(false); } },
+    { icon: "👤", label: "Nouveau Client", action: () => { setActivePage("clients"); setShowQuickAdd(false); } },
+    { icon: "📝", label: "Créer Post", action: () => { setActivePage("marketing"); setShowQuickAdd(false); } },
+    { icon: "💰", label: "Ajouter Dépense", action: () => { setActivePage("accounting"); setShowQuickAdd(false); } },
+    { icon: "📋", label: "Business Plan", action: () => { setActivePage("bizplan"); setShowQuickAdd(false); } },
+  ];
 
   return (
     <>
@@ -4805,7 +4833,7 @@ export default function BizPlatform() {
             <div className={`nav-item ${activePage==="whatsapp"?"wa-active":""}`} onClick={() => setActivePage("whatsapp")} title="WhatsApp Bot">
               <span className="nav-icon">💬</span>
               {sidebarExp && <span className="nav-label">WhatsApp Bot</span>}
-              <div style={{ width:6, height:6, borderRadius:"50%", background:"#25D366", position:"absolute", top:8, right:8, animation:"pulse 2s infinite" }} />
+              <div style={{ width:7, height:7, borderRadius:"50%", background:"#25D366", position:"absolute", top:8, right:8, animation:"pulse 2s infinite", boxShadow:"0 0 8px rgba(37,211,102,0.5)" }} />
             </div>
           </div>
 
@@ -4826,8 +4854,8 @@ export default function BizPlatform() {
         <div className="main-area">
           {/* Topbar */}
           <div className="topbar">
-            <div style={{ flex:1 }}>
-              <div style={{ fontFamily:"'Bricolage Grotesque'", fontWeight:700, fontSize:15 }}>
+            <div style={{ flex:1, minWidth:0 }}>
+              <div style={{ fontFamily:"'Bricolage Grotesque'", fontWeight:700, fontSize:15, letterSpacing:"-0.2px" }}>
                 {NAV.find(n => n.id===activePage)?.label || "Tableau de Bord"}
               </div>
               <div style={{ fontSize:10, color:"#7B91C4" }}>
@@ -4835,9 +4863,25 @@ export default function BizPlatform() {
               </div>
             </div>
 
+            {/* Global Search Trigger */}
+            <div onClick={() => setShowGlobalSearch(true)}
+              style={{ display:"flex", alignItems:"center", gap:8, padding:"7px 14px", borderRadius:12, cursor:"pointer",
+                background: dark ? "rgba(15,22,55,0.5)" : "rgba(240,244,255,0.7)",
+                backdropFilter:"blur(12px)", border:`1px solid ${dark?"rgba(100,140,255,0.1)":"rgba(100,140,255,0.12)"}`,
+                transition:"all 0.2s", minWidth:160 }}>
+              <span style={{ fontSize:13, color:"#7B91C4" }}>🔍</span>
+              <span style={{ fontSize:12, color:"#7B91C4", flex:1 }}>Rechercher...</span>
+              <span style={{ fontSize:9, padding:"2px 6px", borderRadius:5, background: dark?"rgba(100,140,255,0.1)":"rgba(26,86,255,0.08)", color:"#7B91C4", fontWeight:700, fontFamily:"monospace" }}>⌘K</span>
+            </div>
+
+            {/* Quick Add */}
+            <button className="theme-btn" onClick={() => setShowQuickAdd(true)} title="Action rapide" style={{ background:"linear-gradient(135deg, #1A56FF, #2B6BFF)", color:"white", border:"none", boxShadow:"0 4px 16px rgba(26,86,255,0.3)" }}>
+              ＋
+            </button>
+
             {/* DRC colours */}
-            <div style={{ display:"flex", gap:4, alignItems:"center" }}>
-              {["#1A56FF","#F5C518","#D42B3A"].map(c => <div key={c} style={{ width:8, height:8, borderRadius:"50%", background:c }} />)}
+            <div style={{ display:"flex", gap:3, alignItems:"center" }}>
+              {["#1A56FF","#F5C518","#D42B3A"].map(c => <div key={c} style={{ width:7, height:7, borderRadius:"50%", background:c, boxShadow:`0 0 6px ${c}50` }} />)}
             </div>
 
             {/* Theme toggle */}
@@ -4846,19 +4890,27 @@ export default function BizPlatform() {
             </button>
 
             {/* Notifications */}
-            <button className="theme-btn" onClick={() => showToast("🔔 Aucune nouvelle alerte", "info")} title="Notifications">
+            <button className="theme-btn" onClick={() => showToast("🔔 Aucune nouvelle alerte", "info")} title="Notifications" style={{ position:"relative" }}>
               🔔
+              <div style={{ position:"absolute", top:6, right:6, width:6, height:6, borderRadius:"50%", background:"#D42B3A", boxShadow:"0 0 6px rgba(212,43,58,0.5)" }} />
             </button>
 
             {/* WA status indicator */}
-            <div style={{ display:"flex", alignItems:"center", gap:6, padding:"5px 12px", background:"rgba(37,211,102,0.06)", border:"1px solid rgba(37,211,102,0.2)", borderRadius:20, cursor:"pointer" }} onClick={() => setActivePage("whatsapp")}>
-              <div style={{ width:6, height:6, borderRadius:"50%", background:"#25D366", animation:"pulse 2s infinite" }} />
+            <div style={{ display:"flex", alignItems:"center", gap:6, padding:"6px 14px",
+              background:"rgba(37,211,102,0.06)", backdropFilter:"blur(12px)",
+              border:"1px solid rgba(37,211,102,0.15)", borderRadius:22, cursor:"pointer",
+              transition:"all 0.2s" }}
+              onClick={() => setActivePage("whatsapp")}>
+              <div style={{ width:7, height:7, borderRadius:"50%", background:"#25D366", animation:"pulse 2s infinite", boxShadow:"0 0 8px rgba(37,211,102,0.4)" }} />
               <span style={{ fontSize:11, fontWeight:600, color:"#25D366" }}>WA Bot</span>
             </div>
 
             {/* Avatar */}
-            <div style={{ cursor:"pointer" }} onClick={() => setActivePage("settings")}>
-              <Avatar name={data.user.name} size={34} />
+            <div style={{ cursor:"pointer", transition:"transform 0.2s" }}
+              onClick={() => setActivePage("settings")}
+              onMouseEnter={e => e.currentTarget.style.transform="scale(1.1)"}
+              onMouseLeave={e => e.currentTarget.style.transform="scale(1)"}>
+              <Avatar name={data.user.name} size={36} />
             </div>
           </div>
 
@@ -4878,6 +4930,85 @@ export default function BizPlatform() {
           ))}
         </nav>
       </div>
+
+      {/* ── GLOBAL SEARCH MODAL ── */}
+      {showGlobalSearch && (
+        <div className="modal-overlay" onClick={e => e.target === e.currentTarget && setShowGlobalSearch(false)}>
+          <div className="modal-box" style={{ maxWidth:520, overflow:"visible" }}>
+            <div style={{ padding:"16px 20px 0" }}>
+              <div style={{ display:"flex", alignItems:"center", gap:12, padding:"0 4px" }}>
+                <span style={{ fontSize:18 }}>🔍</span>
+                <input
+                  autoFocus
+                  value={globalSearch}
+                  onChange={e => setGlobalSearch(e.target.value)}
+                  placeholder="Rechercher produits, clients, pages..."
+                  style={{ border:"none", background:"transparent", boxShadow:"none", fontSize:16, fontWeight:500, padding:"12px 0" }}
+                />
+                <span onClick={() => setShowGlobalSearch(false)} style={{ cursor:"pointer", padding:"4px 8px", borderRadius:6, background:dark?"rgba(100,140,255,0.08)":"rgba(26,86,255,0.06)", fontSize:11, fontWeight:700, color:"#7B91C4" }}>ESC</span>
+              </div>
+            </div>
+            <div style={{ borderTop:`1px solid ${dark?"rgba(100,140,255,0.08)":"rgba(100,140,255,0.1)"}`, padding:"8px 12px 12px", maxHeight:320, overflowY:"auto" }}>
+              {globalSearch.length < 2 ? (
+                <div style={{ padding:"20px 8px", textAlign:"center" }}>
+                  <div style={{ fontSize:11, color:"#7B91C4", marginBottom:12 }}>NAVIGATION RAPIDE</div>
+                  <div style={{ display:"flex", flexWrap:"wrap", gap:6, justifyContent:"center" }}>
+                    {NAV.map(n => (
+                      <div key={n.id} onClick={() => { setActivePage(n.id); setShowGlobalSearch(false); setGlobalSearch(""); }}
+                        style={{ padding:"8px 14px", borderRadius:10, cursor:"pointer", fontSize:12, fontWeight:600,
+                          background: dark?"rgba(60,100,255,0.06)":"rgba(26,86,255,0.04)",
+                          border:`1px solid ${dark?"rgba(100,140,255,0.08)":"rgba(100,140,255,0.1)"}`,
+                          transition:"all 0.18s", display:"flex", alignItems:"center", gap:6 }}
+                        onMouseEnter={e => e.currentTarget.style.background=dark?"rgba(60,100,255,0.12)":"rgba(26,86,255,0.08)"}
+                        onMouseLeave={e => e.currentTarget.style.background=dark?"rgba(60,100,255,0.06)":"rgba(26,86,255,0.04)"}>
+                        <span>{n.icon}</span> {n.short}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ) : searchResults.length === 0 ? (
+                <div style={{ padding:"24px", textAlign:"center", color:"#7B91C4", fontSize:13 }}>Aucun résultat pour "{globalSearch}"</div>
+              ) : (
+                searchResults.map((r, i) => (
+                  <div key={i} onClick={() => { setActivePage(r.page); setShowGlobalSearch(false); setGlobalSearch(""); }}
+                    style={{ display:"flex", alignItems:"center", gap:12, padding:"10px 12px", borderRadius:10, cursor:"pointer", transition:"all 0.18s" }}
+                    onMouseEnter={e => e.currentTarget.style.background=dark?"rgba(60,100,255,0.08)":"rgba(26,86,255,0.05)"}
+                    onMouseLeave={e => e.currentTarget.style.background="transparent"}>
+                    <span style={{ fontSize:20, width:32, textAlign:"center" }}>{r.icon}</span>
+                    <div style={{ flex:1 }}>
+                      <div style={{ fontWeight:600, fontSize:13 }}>{r.name}</div>
+                      <div style={{ fontSize:11, color:"#7B91C4" }}>{r.sub}</div>
+                    </div>
+                    <span className="tag" style={{ background:dark?"rgba(60,100,255,0.08)":"rgba(26,86,255,0.06)", color:"#7B91C4", fontSize:9 }}>{r.type}</span>
+                  </div>
+                ))
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── QUICK ADD MODAL ── */}
+      {showQuickAdd && (
+        <div className="modal-overlay" onClick={e => e.target === e.currentTarget && setShowQuickAdd(false)}>
+          <div className="modal-box" style={{ maxWidth:400 }}>
+            <div className="modal-header">
+              <h3 style={{ fontFamily:"'Bricolage Grotesque'", fontSize:17, fontWeight:700 }}>⚡ Action Rapide</h3>
+              <button className="btn btn-ghost btn-icon" onClick={() => setShowQuickAdd(false)} style={{ fontSize:16 }}>✕</button>
+            </div>
+            <div className="modal-body" style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:10 }}>
+              {quickActions.map(qa => (
+                <div key={qa.label} onClick={qa.action}
+                  className="card card-hover"
+                  style={{ padding:"18px 14px", cursor:"pointer", textAlign:"center", transition:"all 0.22s" }}>
+                  <div style={{ fontSize:28, marginBottom:8 }}>{qa.icon}</div>
+                  <div style={{ fontSize:12, fontWeight:600 }}>{qa.label}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
 
       {toast && <Toast key={toast.id} message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
     </>
