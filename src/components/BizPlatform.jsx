@@ -1595,6 +1595,7 @@ function ProductsPage({ data, setData, showToast }) {
         <MiniKpiCard icon="📈" label="Marge Moy." value={(data.products.reduce((s,p)=>s+((p.unit_price-p.cogs)/p.unit_price*100),0)/data.products.length).toFixed(0)+"%"} color="#F5C518" />
         <MiniKpiCard icon="📊" label="Unités" value={data.products.reduce((s,p)=>s+p.stock_quantity,0)} color="#25D366" />
       </div>
+      <HelpText icon="📦">Vos produits et votre stock. Le «stock» c'est la quantité de marchandises que vous avez en réserve. Quand le stock est bas ⚠️, il faut recommander. La «marge» c'est le bénéfice que vous faites sur chaque produit (prix de vente − prix d'achat).</HelpText>
       <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:20, flexWrap:"wrap", gap:10 }}>
         <h1 style={{ fontFamily:"'Bricolage Grotesque'", fontSize:22, fontWeight:800 }}>◻ Produits & Stock</h1>
         <button className="btn btn-primary" onClick={() => setShowAdd(true)}>➕ Nouveau Produit</button>
