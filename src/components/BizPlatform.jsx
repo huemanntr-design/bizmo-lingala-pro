@@ -1721,30 +1721,103 @@ function ClientsPage({ data, setData, showToast }) {
       )}
 
       {tab === "crm" && (
-        <div className="g2">
-          {["lead","active","vip","inactive"].map(status => {
-            const clients = data.clients.filter(c => c.status === status);
-            const m = statusMeta[status];
-            return (
-              <div key={status} className="card card-pad">
-                <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom:14 }}>
-                  <div style={{ width:10, height:10, borderRadius:"50%", background:m.color }} />
-                  <span style={{ fontWeight:700, fontSize:14, color:m.color }}>{m.label}s</span>
-                  <span style={{ marginLeft:"auto", fontSize:13, fontWeight:700 }}>{clients.length}</span>
-                </div>
-                {clients.map(c => (
-                  <div key={c.id} style={{ display:"flex", alignItems:"center", gap:10, padding:"8px 0", borderBottom:"1px solid rgba(26,86,255,0.08)" }}>
-                    <Avatar name={c.name} size={30} color={m.color} />
+        <>
+          {/* Client Analytics Row */}
+          <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr 1fr", gap:16, marginBottom:16 }}>
+            {/* Client Status Donut */}
+            <div className="card card-pad">
+              <div className="sec-title" style={{ marginBottom:14 }}>👥 Pipeline Clients</div>
+              {(() => {
+                const statuses = ["lead","active","vip","inactive"];
+                const colors = ["#1A56FF","#16C55E","#F5C518","#7B91C4"];
+                const labels = ["Leads","Actifs","VIP","Inactifs"];
+                const counts = statuses.map(s => data.clients.filter(c=>c.status===s).length);
+                const total = counts.reduce((a,b)=>a+b,0) || 1;
+                return (
+                  <div style={{ display:"flex", alignItems:"center", gap:14 }}>
+                    <DonutChart segments={counts.map((c,i)=>({ value:(c/total)*100, color:colors[i] }))} size={90} strokeWidth={12} centerValue={total+""} centerLabel="clients" />
                     <div style={{ flex:1 }}>
-                      <div style={{ fontSize:12, fontWeight:600 }}>{c.name}</div>
-                      <div style={{ fontSize:11, color:"#7B91C4" }}>{fmt(c.total_revenue)}</div>
+                      {labels.map((l,i) => (
+                        <div key={l} style={{ display:"flex", alignItems:"center", gap:6, padding:"3px 0", fontSize:11 }}>
+                          <div style={{ width:8, height:8, borderRadius:2, background:colors[i] }} />
+                          <span style={{ flex:1, color:"#7B91C4" }}>{l}</span>
+                          <span style={{ fontWeight:700, color:colors[i] }}>{counts[i]}</span>
+                        </div>
+                      ))}
                     </div>
                   </div>
-                ))}
-              </div>
-            );
-          })}
-        </div>
+                );
+              })()}
+            </div>
+
+            {/* Revenue Distribution */}
+            <div className="card card-pad">
+              <div className="sec-title" style={{ marginBottom:14 }}>💰 Revenus par Client</div>
+              {(() => {
+                const sorted = [...data.clients].sort((a,b) => b.total_revenue - a.total_revenue);
+                const maxR = sorted[0]?.total_revenue || 1;
+                return sorted.slice(0,5).map(c => (
+                  <div key={c.id} style={{ marginBottom:8 }}>
+                    <div style={{ display:"flex", justifyContent:"space-between", fontSize:11, marginBottom:3 }}>
+                      <span style={{ display:"flex", alignItems:"center", gap:4 }}><Avatar name={c.name} size={16} color={c.status==="vip"?"#F5C518":"#1A56FF"} /> {c.name.split(" ")[0]}</span>
+                      <span style={{ fontWeight:700, color:"#1A56FF" }}>{fmt(c.total_revenue)}</span>
+                    </div>
+                    <div className="progress" style={{ height:5 }}>
+                      <div className="progress-fill" style={{ width:`${(c.total_revenue/maxR)*100}%`, background: c.status==="vip"?"#F5C518":"#1A56FF" }} />
+                    </div>
+                  </div>
+                ));
+              })()}
+            </div>
+
+            {/* Credit Risk */}
+            <div className="card card-pad">
+              <div className="sec-title" style={{ marginBottom:14 }}>⚠️ Risque Crédit</div>
+              {(() => {
+                const totalCredit = data.clients.reduce((s,c) => s+c.credit_balance, 0);
+                const totalLimit = data.clients.reduce((s,c) => s+c.credit_limit, 0) || 1;
+                const usage = (totalCredit/totalLimit)*100;
+                return (
+                  <>
+                    <DonutChart segments={[{ value: usage, color: usage>70?"#D42B3A":usage>40?"#F5C518":"#16C55E" }]} size={80} strokeWidth={10} centerValue={usage.toFixed(0)+"%"} centerLabel="utilisé" />
+                    <div style={{ marginTop:10, fontSize:12, color:"#7B91C4" }}>
+                      <div>Crédit total dû: <strong style={{ color:"#D42B3A" }}>{fmt(totalCredit)}</strong></div>
+                      <div>Limite totale: <strong>{fmt(totalLimit)}</strong></div>
+                    </div>
+                    <InsightCard icon={usage>60?"🔴":"🟢"} iconBg={usage>60?"rgba(212,43,58,0.12)":"rgba(22,197,94,0.12)"} title={usage>60?"Risque crédit élevé":"Crédit sous contrôle"} description={usage>60?"Envisagez de réduire les limites ou d'envoyer des rappels.":"Bonne gestion du crédit client!"} />
+                  </>
+                );
+              })()}
+            </div>
+          </div>
+
+          {/* CRM Pipeline */}
+          <div className="g2">
+            {["lead","active","vip","inactive"].map(status => {
+              const clients = data.clients.filter(c => c.status === status);
+              const m = statusMeta[status];
+              return (
+                <div key={status} className="card card-pad">
+                  <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom:14 }}>
+                    <div style={{ width:10, height:10, borderRadius:"50%", background:m.color }} />
+                    <span style={{ fontWeight:700, fontSize:14, color:m.color }}>{m.label}s</span>
+                    <span style={{ marginLeft:"auto", fontSize:13, fontWeight:700 }}>{clients.length}</span>
+                  </div>
+                  {clients.map(c => (
+                    <div key={c.id} style={{ display:"flex", alignItems:"center", gap:10, padding:"8px 0", borderBottom:"1px solid rgba(26,86,255,0.08)" }}>
+                      <Avatar name={c.name} size={30} color={m.color} />
+                      <div style={{ flex:1 }}>
+                        <div style={{ fontSize:12, fontWeight:600 }}>{c.name}</div>
+                        <div style={{ fontSize:11, color:"#7B91C4" }}>{fmt(c.total_revenue)}</div>
+                      </div>
+                      <SparkLine data={[c.total_revenue*0.6,c.total_revenue*0.7,c.total_revenue*0.8,c.total_revenue*0.85,c.total_revenue*0.95,c.total_revenue]} width={50} height={20} color={m.color} fill={false} />
+                    </div>
+                  ))}
+                </div>
+              );
+            })}
+          </div>
+        </>
       )}
 
       {tab === "credits" && (
