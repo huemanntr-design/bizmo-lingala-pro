@@ -2995,14 +2995,15 @@ function AccountingPage({ data, setData, showToast, kpiGoals, updateGoal }) {
   const [tab, setTab] = useState("cashbook");
   const [showAdd, setShowAdd] = useState(false);
   const [newExp, setNewExp] = useState({ description:"", amount:"", category:"Transport", expense_date:new Date().toISOString().split("T")[0], status:"pending" });
+  const [selectedTx, setSelectedTx] = useState(null);
 
   const totalRev  = data.sales.reduce((s,x) => s+x.total_amount, 0);
   const totalExp  = data.expenses.filter(e=>e.status==="approved").reduce((s,x) => s+x.amount, 0);
   const netProfit = totalRev - totalExp;
 
   const cashbook = [
-    ...data.sales.map(s   => ({ date:s.sale_date,   desc:`Vente: ${s.product_name}`,   type:"in",  amount:s.total_amount })),
-    ...data.expenses.filter(e=>e.status==="approved").map(e => ({ date:e.expense_date, desc:e.description, type:"out", amount:e.amount })),
+    ...data.sales.map(s   => ({ date:s.sale_date, desc:`Vente: ${s.product_name}`, type:"in", amount:s.total_amount, source:"sale", detail: s })),
+    ...data.expenses.filter(e=>e.status==="approved").map(e => ({ date:e.expense_date, desc:e.description, type:"out", amount:e.amount, source:"expense", detail: e })),
   ].sort((a,b) => new Date(b.date)-new Date(a.date));
 
   return (
@@ -3087,7 +3088,7 @@ function AccountingPage({ data, setData, showToast, kpiGoals, updateGoal }) {
                 <thead><tr><th>Date</th><th>Description</th><th>Type</th><th>Montant</th></tr></thead>
                 <tbody>
                   {cashbook.slice(0,20).map((e,i) => (
-                    <tr key={i}>
+                    <tr key={i} onClick={() => setSelectedTx(e)} style={{ cursor:"pointer" }}>
                       <td style={{ color:"#7B91C4", fontSize:12 }}>{e.date}</td>
                       <td style={{ fontWeight:500 }}>{e.desc}</td>
                       <td><span className="tag" style={{ background:e.type==="in"?"rgba(22,197,94,0.12)":"rgba(212,43,58,0.12)", color:e.type==="in"?"#16C55E":"#D42B3A" }}>{e.type==="in"?"📈 Entrée":"📉 Sortie"}</span></td>
@@ -3098,6 +3099,100 @@ function AccountingPage({ data, setData, showToast, kpiGoals, updateGoal }) {
               </table>
             </div>
           </div>
+
+          {/* Transaction Detail Modal */}
+          {selectedTx && (
+            <div style={{ position:"fixed", inset:0, zIndex:9999, display:"flex", alignItems:"center", justifyContent:"center" }}>
+              <div style={{ position:"absolute", inset:0, background:"rgba(0,0,0,0.6)", backdropFilter:"blur(6px)" }} onClick={() => setSelectedTx(null)} />
+              <div className="card" style={{ position:"relative", zIndex:1, width:"100%", maxWidth:480, padding:28, animation:"fadeUp .25s" }}>
+                <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:20 }}>
+                  <h2 style={{ fontFamily:"'Bricolage Grotesque'", fontWeight:800, fontSize:20, display:"flex", alignItems:"center", gap:8 }}>
+                    {selectedTx.type==="in" ? "📈" : "📉"} Détails Transaction
+                  </h2>
+                  <button className="btn btn-ghost" onClick={() => setSelectedTx(null)} style={{ fontSize:18 }}>✕</button>
+                </div>
+
+                <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:14 }}>
+                  <div>
+                    <div style={{ fontSize:10, color:"#7B91C4", textTransform:"uppercase", letterSpacing:1, marginBottom:4 }}>Date</div>
+                    <div style={{ fontWeight:600 }}>{selectedTx.date}</div>
+                  </div>
+                  <div>
+                    <div style={{ fontSize:10, color:"#7B91C4", textTransform:"uppercase", letterSpacing:1, marginBottom:4 }}>Type</div>
+                    <span className="tag" style={{ background:selectedTx.type==="in"?"rgba(22,197,94,0.12)":"rgba(212,43,58,0.12)", color:selectedTx.type==="in"?"#16C55E":"#D42B3A" }}>
+                      {selectedTx.type==="in"?"Entrée":"Sortie"}
+                    </span>
+                  </div>
+                  <div style={{ gridColumn:"1/-1" }}>
+                    <div style={{ fontSize:10, color:"#7B91C4", textTransform:"uppercase", letterSpacing:1, marginBottom:4 }}>Description</div>
+                    <div style={{ fontWeight:600 }}>{selectedTx.desc}</div>
+                  </div>
+                  <div>
+                    <div style={{ fontSize:10, color:"#7B91C4", textTransform:"uppercase", letterSpacing:1, marginBottom:4 }}>Montant</div>
+                    <div style={{ fontWeight:800, fontSize:22, color:selectedTx.type==="in"?"#16C55E":"#D42B3A" }}>
+                      {selectedTx.type==="in"?"+":"-"}{fmt(selectedTx.amount)}
+                    </div>
+                  </div>
+
+                  {selectedTx.source === "sale" && selectedTx.detail && (
+                    <>
+                      <div>
+                        <div style={{ fontSize:10, color:"#7B91C4", textTransform:"uppercase", letterSpacing:1, marginBottom:4 }}>Client</div>
+                        <div style={{ fontWeight:600 }}>{selectedTx.detail.client_name}</div>
+                      </div>
+                      <div>
+                        <div style={{ fontSize:10, color:"#7B91C4", textTransform:"uppercase", letterSpacing:1, marginBottom:4 }}>Produit</div>
+                        <div style={{ fontWeight:600 }}>{selectedTx.detail.product_name}</div>
+                      </div>
+                      <div>
+                        <div style={{ fontSize:10, color:"#7B91C4", textTransform:"uppercase", letterSpacing:1, marginBottom:4 }}>Quantité</div>
+                        <div style={{ fontWeight:600 }}>{selectedTx.detail.quantity}</div>
+                      </div>
+                      <div>
+                        <div style={{ fontSize:10, color:"#7B91C4", textTransform:"uppercase", letterSpacing:1, marginBottom:4 }}>Prix Unitaire</div>
+                        <div style={{ fontWeight:600 }}>{fmt(selectedTx.detail.unit_price)}</div>
+                      </div>
+                      <div>
+                        <div style={{ fontSize:10, color:"#7B91C4", textTransform:"uppercase", letterSpacing:1, marginBottom:4 }}>Profit</div>
+                        <div style={{ fontWeight:700, color:"#16C55E" }}>+{fmt(selectedTx.detail.profit)}</div>
+                      </div>
+                      <div>
+                        <div style={{ fontSize:10, color:"#7B91C4", textTransform:"uppercase", letterSpacing:1, marginBottom:4 }}>Paiement</div>
+                        <div style={{ fontWeight:600 }}>{payIcons[selectedTx.detail.payment_method]||""} {selectedTx.detail.payment_method}</div>
+                      </div>
+                      {selectedTx.detail.exchange_rate && (
+                        <div>
+                          <div style={{ fontSize:10, color:"#7B91C4", textTransform:"uppercase", letterSpacing:1, marginBottom:4 }}>Taux Change</div>
+                          <div style={{ fontWeight:600 }}>1 USD = {selectedTx.detail.exchange_rate.toLocaleString()} FC</div>
+                        </div>
+                      )}
+                      {selectedTx.detail.total_cdf && (
+                        <div>
+                          <div style={{ fontSize:10, color:"#7B91C4", textTransform:"uppercase", letterSpacing:1, marginBottom:4 }}>Total CDF</div>
+                          <div style={{ fontWeight:700, color:"#F5C518" }}>{selectedTx.detail.total_cdf.toLocaleString()} FC</div>
+                        </div>
+                      )}
+                    </>
+                  )}
+
+                  {selectedTx.source === "expense" && selectedTx.detail && (
+                    <>
+                      <div>
+                        <div style={{ fontSize:10, color:"#7B91C4", textTransform:"uppercase", letterSpacing:1, marginBottom:4 }}>Catégorie</div>
+                        <div style={{ fontWeight:600 }}>{selectedTx.detail.category}</div>
+                      </div>
+                      <div>
+                        <div style={{ fontSize:10, color:"#7B91C4", textTransform:"uppercase", letterSpacing:1, marginBottom:4 }}>Statut</div>
+                        <span className="tag" style={{ background: statusMeta[selectedTx.detail.status]?.bg, color: statusMeta[selectedTx.detail.status]?.color }}>
+                          {statusMeta[selectedTx.detail.status]?.label || selectedTx.detail.status}
+                        </span>
+                      </div>
+                    </>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
         </>
       )}
 
