@@ -4298,20 +4298,12 @@ export default function BizPlatform() {
 
           <div className="nav-list">
             {NAV.slice(0,-1).map(n => (
-              <div key={n.id} className={`nav-item ${activePage===n.id?(n.id==="whatsapp"?"wa-active":"active"):""}`} onClick={() => setActivePage(n.id)} title={n.label}>
+              <div key={n.id} className={`nav-item ${activePage===n.id?"active":""}`} onClick={() => setActivePage(n.id)} title={n.label}>
                 <span className="nav-icon">{n.icon}</span>
                 {sidebarExp && <span className="nav-label">{n.label}</span>}
                 {n.badge && <span className="nav-badge">{n.badge}</span>}
               </div>
             ))}
-
-            <div className="nav-divider" />
-
-            <div className={`nav-item ${activePage==="whatsapp"?"wa-active":""}`} onClick={() => setActivePage("whatsapp")} title="WhatsApp Bot">
-              <span className="nav-icon">💬</span>
-              {sidebarExp && <span className="nav-label">WhatsApp Bot</span>}
-              <div style={{ width:7, height:7, borderRadius:"50%", background:"#25D366", position:"absolute", top:8, right:8, animation:"pulse 2s infinite", boxShadow:"0 0 8px rgba(37,211,102,0.5)" }} />
-            </div>
           </div>
 
           <div className="nav-bottom">
