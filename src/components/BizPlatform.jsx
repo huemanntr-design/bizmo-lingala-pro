@@ -1032,7 +1032,9 @@ function ProductsPage({ data, setData, showToast }) {
               const low = p.stock_quantity <= p.low_stock_alert;
               return (
                 <div key={p.id} className="card card-pad card-hover" style={{ cursor:"pointer", borderColor: low ? "rgba(245,197,24,0.3)" : undefined }} onClick={() => setSelected(p)}>
-                  <div style={{ fontSize:40, marginBottom:12, textAlign:"center" }}>{p.emoji}</div>
+                  <div style={{ height:80, marginBottom:12, textAlign:"center", display:"flex", alignItems:"center", justifyContent:"center", overflow:"hidden", borderRadius:8, background:"rgba(26,86,255,0.03)" }}>
+                    {p.image ? <img src={p.image} alt={p.name} style={{ maxHeight:"100%", maxWidth:"100%", objectFit:"contain", borderRadius:8 }} /> : <span style={{ fontSize:40 }}>{p.emoji}</span>}
+                  </div>
                   <div style={{ fontWeight:700, fontSize:14, marginBottom:2 }}>{p.name}</div>
                   <div style={{ fontSize:11, color:"#7B91C4", marginBottom:12 }}>{p.type}</div>
                   <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:8 }}>
