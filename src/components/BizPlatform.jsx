@@ -2338,55 +2338,174 @@ function AccountingPage({ data, setData, showToast }) {
       </div>
 
       {tab==="cashbook" && (
-        <div className="card card-pad">
-          <div style={{ overflowX:"auto" }}>
+        <>
+          {/* Cashflow Visual */}
+          <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr 1fr", gap:16, marginBottom:16 }}>
+            <div className="card card-pad">
+              <div className="sec-title" style={{ marginBottom:10 }}>📈 Flux Entrant</div>
+              <SparkLine data={cashbook.filter(e=>e.type==="in").slice(0,10).map(e=>e.amount)} width={180} height={50} color="#16C55E" />
+              <div style={{ marginTop:8, fontFamily:"'Bricolage Grotesque'", fontWeight:700, fontSize:18, color:"#16C55E" }}>+{fmt(totalRev)}</div>
+              <div style={{ fontSize:11, color:"#7B91C4" }}>{cashbook.filter(e=>e.type==="in").length} entrées</div>
+            </div>
+            <div className="card card-pad">
+              <div className="sec-title" style={{ marginBottom:10 }}>📉 Flux Sortant</div>
+              <SparkLine data={cashbook.filter(e=>e.type==="out").slice(0,10).map(e=>e.amount)} width={180} height={50} color="#D42B3A" />
+              <div style={{ marginTop:8, fontFamily:"'Bricolage Grotesque'", fontWeight:700, fontSize:18, color:"#D42B3A" }}>-{fmt(totalExp)}</div>
+              <div style={{ fontSize:11, color:"#7B91C4" }}>{cashbook.filter(e=>e.type==="out").length} sorties</div>
+            </div>
+            <div className="card card-pad">
+              <div className="sec-title" style={{ marginBottom:10 }}>💰 Dépenses par Catégorie</div>
+              {(() => {
+                const cats = {};
+                data.expenses.filter(e=>e.status==="approved").forEach(e => { cats[e.category] = (cats[e.category]||0) + e.amount; });
+                const entries = Object.entries(cats).sort((a,b) => b[1]-a[1]);
+                const colors = ["#1A56FF","#D42B3A","#F5C518","#16C55E","#25D366","#7B91C4"];
+                const total = entries.reduce((s,e)=>s+e[1],0) || 1;
+                return (
+                  <div style={{ display:"flex", alignItems:"center", gap:12 }}>
+                    <DonutChart segments={entries.map((e,i) => ({ value:(e[1]/total)*100, color:colors[i%colors.length] }))} size={80} strokeWidth={10} centerValue={entries.length+""} centerLabel="catég." />
+                    <div style={{ flex:1 }}>
+                      {entries.map((e,i) => (
+                        <div key={e[0]} style={{ display:"flex", alignItems:"center", gap:6, padding:"2px 0", fontSize:10 }}>
+                          <div style={{ width:6, height:6, borderRadius:2, background:colors[i%colors.length] }} />
+                          <span style={{ flex:1, color:"#7B91C4" }}>{e[0]}</span>
+                          <span style={{ fontWeight:700 }}>{fmt(e[1])}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                );
+              })()}
+            </div>
+          </div>
+          <div className="card card-pad">
+            <div style={{ overflowX:"auto" }}>
+              <table className="data-table">
+                <thead><tr><th>Date</th><th>Description</th><th>Type</th><th>Montant</th></tr></thead>
+                <tbody>
+                  {cashbook.slice(0,20).map((e,i) => (
+                    <tr key={i}>
+                      <td style={{ color:"#7B91C4", fontSize:12 }}>{e.date}</td>
+                      <td style={{ fontWeight:500 }}>{e.desc}</td>
+                      <td><span className="tag" style={{ background:e.type==="in"?"rgba(22,197,94,0.12)":"rgba(212,43,58,0.12)", color:e.type==="in"?"#16C55E":"#D42B3A" }}>{e.type==="in"?"📈 Entrée":"📉 Sortie"}</span></td>
+                      <td style={{ fontWeight:700, color:e.type==="in"?"#16C55E":"#D42B3A" }}>{e.type==="in"?"+":"-"}{fmt(e.amount)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </>
+      )}
+
+      {tab==="expenses" && (
+        <>
+          {/* Expense breakdown visual */}
+          <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:16, marginBottom:16 }}>
+            <div className="card card-pad">
+              <div className="sec-title" style={{ marginBottom:14 }}>📊 Répartition Dépenses</div>
+              {(() => {
+                const cats = {};
+                data.expenses.forEach(e => { cats[e.category] = (cats[e.category]||0) + e.amount; });
+                const entries = Object.entries(cats).sort((a,b) => b[1]-a[1]);
+                const maxV = entries[0]?.[1] || 1;
+                const colors = ["#1A56FF","#D42B3A","#F5C518","#16C55E","#25D366","#7B91C4"];
+                return entries.map((e,i) => (
+                  <div key={e[0]} style={{ marginBottom:10 }}>
+                    <div style={{ display:"flex", justifyContent:"space-between", fontSize:12, marginBottom:4 }}>
+                      <span style={{ fontWeight:600 }}>{e[0]}</span>
+                      <span style={{ fontWeight:700, color:colors[i%colors.length] }}>{fmt(e[1])}</span>
+                    </div>
+                    <div className="progress" style={{ height:8 }}>
+                      <div className="progress-fill" style={{ width:`${(e[1]/maxV)*100}%`, background:colors[i%colors.length] }} />
+                    </div>
+                  </div>
+                ));
+              })()}
+            </div>
+            <div className="card card-pad">
+              <div className="sec-title" style={{ marginBottom:14 }}>📈 Statut des Dépenses</div>
+              {(() => {
+                const approved = data.expenses.filter(e=>e.status==="approved").length;
+                const pending = data.expenses.filter(e=>e.status==="pending").length;
+                const total = data.expenses.length || 1;
+                return (
+                  <>
+                    <DonutChart segments={[
+                      { value:(approved/total)*100, color:"#16C55E" },
+                      { value:(pending/total)*100, color:"#F5C518" },
+                    ]} size={100} strokeWidth={14} centerValue={total+""} centerLabel="dépenses" />
+                    <div style={{ display:"flex", gap:16, marginTop:12 }}>
+                      <div style={{ display:"flex", alignItems:"center", gap:6 }}><div style={{ width:8, height:8, borderRadius:2, background:"#16C55E" }} /><span style={{ fontSize:12, color:"#7B91C4" }}>Approuvées: {approved}</span></div>
+                      <div style={{ display:"flex", alignItems:"center", gap:6 }}><div style={{ width:8, height:8, borderRadius:2, background:"#F5C518" }} /><span style={{ fontSize:12, color:"#7B91C4" }}>En attente: {pending}</span></div>
+                    </div>
+                  </>
+                );
+              })()}
+            </div>
+          </div>
+          <div className="card card-pad">
             <table className="data-table">
-              <thead><tr><th>Date</th><th>Description</th><th>Type</th><th>Montant</th></tr></thead>
+              <thead><tr><th>Description</th><th>Catégorie</th><th>Montant</th><th>Date</th><th>Statut</th></tr></thead>
               <tbody>
-                {cashbook.slice(0,20).map((e,i) => (
-                  <tr key={i}>
-                    <td style={{ color:"#7B91C4", fontSize:12 }}>{e.date}</td>
-                    <td style={{ fontWeight:500 }}>{e.desc}</td>
-                    <td><span className="tag" style={{ background:e.type==="in"?"rgba(22,197,94,0.12)":"rgba(212,43,58,0.12)", color:e.type==="in"?"#16C55E":"#D42B3A" }}>{e.type==="in"?"📈 Entrée":"📉 Sortie"}</span></td>
-                    <td style={{ fontWeight:700, color:e.type==="in"?"#16C55E":"#D42B3A" }}>{e.type==="in"?"+":"-"}{fmt(e.amount)}</td>
+                {data.expenses.map(e => (
+                  <tr key={e.id}>
+                    <td style={{ fontWeight:500 }}>{e.description}</td>
+                    <td><span style={{ fontSize:12, color:"#7B91C4" }}>{e.category}</span></td>
+                    <td style={{ color:"#D42B3A", fontWeight:700 }}>{fmt(e.amount)}</td>
+                    <td style={{ color:"#7B91C4", fontSize:12 }}>{e.expense_date}</td>
+                    <td><Tag status={e.status} /></td>
                   </tr>
                 ))}
               </tbody>
             </table>
           </div>
-        </div>
-      )}
-
-      {tab==="expenses" && (
-        <div className="card card-pad">
-          <table className="data-table">
-            <thead><tr><th>Description</th><th>Catégorie</th><th>Montant</th><th>Date</th><th>Statut</th></tr></thead>
-            <tbody>
-              {data.expenses.map(e => (
-                <tr key={e.id}>
-                  <td style={{ fontWeight:500 }}>{e.description}</td>
-                  <td><span style={{ fontSize:12, color:"#7B91C4" }}>{e.category}</span></td>
-                  <td style={{ color:"#D42B3A", fontWeight:700 }}>{fmt(e.amount)}</td>
-                  <td style={{ color:"#7B91C4", fontSize:12 }}>{e.expense_date}</td>
-                  <td><Tag status={e.status} /></td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+        </>
       )}
 
       {tab==="reports" && (
-        <div className="g2">
-          {[["📊 P&L Mensuel","Revenus vs Dépenses","Février 2025"],["🧾 Bilan","Actifs et passifs","2025"],["💹 Flux de trésorerie","Entrées et sorties","Trim. 1"],["📈 Croissance","Évolution revenus","12 mois"]].map(([t,d,p]) => (
-            <div key={t} className="card card-pad card-hover" style={{ cursor:"pointer" }} onClick={() => showToast(`Rapport ${t} généré!`, "info")}>
-              <div style={{ fontSize:28, marginBottom:10 }}>{t.slice(0,2)}</div>
-              <div style={{ fontWeight:700, fontSize:14, marginBottom:4 }}>{t.slice(3)}</div>
-              <div style={{ fontSize:12, color:"#7B91C4", marginBottom:8 }}>{d}</div>
-              <div style={{ fontSize:11, color:"#1A56FF", fontWeight:600 }}>{p} →</div>
+        <>
+          {/* P&L Visual */}
+          <div className="card card-pad" style={{ marginBottom:16 }}>
+            <div className="sec-title" style={{ marginBottom:16 }}>📊 Compte de Résultat (P&L)</div>
+            <div style={{ display:"grid", gridTemplateColumns:"1fr auto 1fr auto 1fr", gap:12, alignItems:"center", textAlign:"center" }}>
+              <div style={{ padding:16, background:"rgba(22,197,94,0.06)", borderRadius:12, border:"1px solid rgba(22,197,94,0.15)" }}>
+                <div style={{ fontSize:11, color:"#7B91C4", marginBottom:4 }}>Revenus</div>
+                <div style={{ fontFamily:"'Bricolage Grotesque'", fontWeight:800, fontSize:24, color:"#16C55E" }}>{fmt(totalRev)}</div>
+              </div>
+              <div style={{ fontSize:20, color:"#7B91C4" }}>−</div>
+              <div style={{ padding:16, background:"rgba(212,43,58,0.06)", borderRadius:12, border:"1px solid rgba(212,43,58,0.15)" }}>
+                <div style={{ fontSize:11, color:"#7B91C4", marginBottom:4 }}>Dépenses</div>
+                <div style={{ fontFamily:"'Bricolage Grotesque'", fontWeight:800, fontSize:24, color:"#D42B3A" }}>{fmt(totalExp)}</div>
+              </div>
+              <div style={{ fontSize:20, color:"#7B91C4" }}>=</div>
+              <div style={{ padding:16, background: netProfit >= 0 ? "rgba(26,86,255,0.06)" : "rgba(212,43,58,0.06)", borderRadius:12, border:`1px solid ${netProfit>=0?"rgba(26,86,255,0.15)":"rgba(212,43,58,0.15)"}` }}>
+                <div style={{ fontSize:11, color:"#7B91C4", marginBottom:4 }}>Profit Net</div>
+                <div style={{ fontFamily:"'Bricolage Grotesque'", fontWeight:800, fontSize:24, color: netProfit>=0?"#1A56FF":"#D42B3A" }}>{fmt(netProfit)}</div>
+              </div>
             </div>
-          ))}
-        </div>
+            <div style={{ marginTop:16 }}>
+              <div style={{ display:"flex", justifyContent:"space-between", fontSize:12, marginBottom:6, color:"#7B91C4" }}>
+                <span>Marge nette</span>
+                <span style={{ fontWeight:700, color: netProfit/totalRev > 0.2 ? "#16C55E" : "#F5C518" }}>{totalRev > 0 ? ((netProfit/totalRev)*100).toFixed(1) : 0}%</span>
+              </div>
+              <div className="progress" style={{ height:10 }}>
+                <div className="progress-fill" style={{ width:`${totalRev > 0 ? Math.min((netProfit/totalRev)*100,100) : 0}%`, background:"linear-gradient(90deg, #1A56FF, #16C55E)" }} />
+              </div>
+            </div>
+          </div>
+
+          <div className="g2">
+            {[["📊 P&L Mensuel","Revenus vs Dépenses","Février 2025"],["🧾 Bilan","Actifs et passifs","2025"],["💹 Flux de trésorerie","Entrées et sorties","Trim. 1"],["📈 Croissance","Évolution revenus","12 mois"]].map(([t,d,p]) => (
+              <div key={t} className="card card-pad card-hover" style={{ cursor:"pointer" }} onClick={() => showToast(`Rapport ${t} généré!`, "info")}>
+                <div style={{ fontSize:28, marginBottom:10 }}>{t.slice(0,2)}</div>
+                <div style={{ fontWeight:700, fontSize:14, marginBottom:4 }}>{t.slice(3)}</div>
+                <div style={{ fontSize:12, color:"#7B91C4", marginBottom:8 }}>{d}</div>
+                <div style={{ fontSize:11, color:"#1A56FF", fontWeight:600 }}>{p} →</div>
+              </div>
+            ))}
+          </div>
+        </>
       )}
 
       {tab==="taxes" && (
@@ -2394,6 +2513,20 @@ function AccountingPage({ data, setData, showToast }) {
           <div style={{ fontSize:48, marginBottom:12 }}>🏛️</div>
           <div style={{ fontFamily:"'Bricolage Grotesque'", fontSize:20, fontWeight:800, marginBottom:8 }}>Gestion Fiscale DRC</div>
           <div style={{ fontSize:13, color:"#7B91C4", marginBottom:20 }}>TVA 16% · Impôts DGI · Déclarations automatiques</div>
+          <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr 1fr", gap:12, marginBottom:20 }}>
+            <div style={{ padding:14, background:"rgba(26,86,255,0.06)", borderRadius:10, border:"1px solid rgba(26,86,255,0.15)" }}>
+              <div style={{ fontSize:11, color:"#7B91C4", marginBottom:4 }}>TVA collectée</div>
+              <div style={{ fontFamily:"'Bricolage Grotesque'", fontWeight:800, fontSize:18, color:"#1A56FF" }}>{fmt(totalRev * 0.16)}</div>
+            </div>
+            <div style={{ padding:14, background:"rgba(212,43,58,0.06)", borderRadius:10, border:"1px solid rgba(212,43,58,0.15)" }}>
+              <div style={{ fontSize:11, color:"#7B91C4", marginBottom:4 }}>TVA déductible</div>
+              <div style={{ fontFamily:"'Bricolage Grotesque'", fontWeight:800, fontSize:18, color:"#D42B3A" }}>{fmt(totalExp * 0.16)}</div>
+            </div>
+            <div style={{ padding:14, background:"rgba(22,197,94,0.06)", borderRadius:10, border:"1px solid rgba(22,197,94,0.15)" }}>
+              <div style={{ fontSize:11, color:"#7B91C4", marginBottom:4 }}>TVA à payer</div>
+              <div style={{ fontFamily:"'Bricolage Grotesque'", fontWeight:800, fontSize:18, color:"#16C55E" }}>{fmt((totalRev - totalExp) * 0.16)}</div>
+            </div>
+          </div>
           <button className="btn btn-primary" onClick={() => showToast("Module fiscal ouvert!", "info")}>🏛️ Déclarer TVA</button>
         </div>
       )}
