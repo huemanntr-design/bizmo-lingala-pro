@@ -974,11 +974,84 @@ function HomePage({ data, setData, showToast, dark }) {
         <MiniKpiCard icon="⚠️" label="Stock Bas" value={lowStock.length} trendUp={false} color={lowStock.length>0?"#D42B3A":"#16C55E"} />
       </div>
 
+      {/* ── VISUAL ANALYTICS ROW ── */}
+      <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr 1fr", gap:16, marginBottom:16 }}>
+        {/* Profit Breakdown Donut */}
+        <div className="card card-pad">
+          <div className="sec-title" style={{ marginBottom:14 }}>💰 Répartition Profit</div>
+          <div style={{ display:"flex", alignItems:"center", gap:16 }}>
+            <DonutChart
+              segments={[
+                { value: totalRevenue > 0 ? (totalProfit/totalRevenue)*100 : 0, color:"#16C55E" },
+                { value: totalRevenue > 0 ? (totalExpenses/totalRevenue)*100 : 0, color:"#D42B3A" },
+                { value: totalRevenue > 0 ? Math.max(100 - (totalProfit/totalRevenue)*100 - (totalExpenses/totalRevenue)*100, 0) : 0, color:"#1A56FF" },
+              ]}
+              size={100}
+              strokeWidth={14}
+              centerValue={totalRevenue > 0 ? ((totalProfit/totalRevenue)*100).toFixed(0)+"%" : "0%"}
+              centerLabel="marge"
+            />
+            <div style={{ flex:1 }}>
+              {[["Profit",fmt(totalProfit),"#16C55E"],["Dépenses",fmt(totalExpenses),"#D42B3A"],["COGS",fmt(totalRevenue-totalProfit-totalExpenses > 0 ? totalRevenue-totalProfit-totalExpenses : 0),"#1A56FF"]].map(([l,v,c]) => (
+                <div key={l} style={{ display:"flex", alignItems:"center", gap:8, padding:"4px 0" }}>
+                  <div style={{ width:8, height:8, borderRadius:2, background:c }} />
+                  <span style={{ fontSize:11, color:"#7B91C4", flex:1 }}>{l}</span>
+                  <span style={{ fontSize:12, fontWeight:700, color:c }}>{v}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* Payment Methods Donut */}
+        <div className="card card-pad">
+          <div className="sec-title" style={{ marginBottom:14 }}>💳 Modes de Paiement</div>
+          {(() => {
+            const methods = ["cash","mobile_money","credit","bank"];
+            const colors = ["#16C55E","#25D366","#D42B3A","#1A56FF"];
+            const labels = ["Cash","Mobile","Crédit","Banque"];
+            const totals = methods.map(m => data.sales.filter(s=>s.payment_method===m).reduce((a,s)=>a+s.total_amount,0));
+            const sum = totals.reduce((a,b)=>a+b,0) || 1;
+            return (
+              <div style={{ display:"flex", alignItems:"center", gap:16 }}>
+                <DonutChart
+                  segments={totals.map((t,i) => ({ value:(t/sum)*100, color:colors[i] }))}
+                  size={100}
+                  strokeWidth={14}
+                  centerValue={data.sales.length+""}
+                  centerLabel="ventes"
+                />
+                <div style={{ flex:1 }}>
+                  {labels.map((l,i) => (
+                    <div key={l} style={{ display:"flex", alignItems:"center", gap:8, padding:"4px 0" }}>
+                      <div style={{ width:8, height:8, borderRadius:2, background:colors[i] }} />
+                      <span style={{ fontSize:11, color:"#7B91C4", flex:1 }}>{l}</span>
+                      <span style={{ fontSize:12, fontWeight:700, color:colors[i] }}>{fmt(totals[i])}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            );
+          })()}
+        </div>
+
+        {/* Daily Revenue Sparkline card */}
+        <div className="card card-pad">
+          <div className="sec-title" style={{ marginBottom:14 }}>📈 Tendance Quotidienne</div>
+          <SparkLine data={data.revenueChart.map(d=>d.amount)} width={200} height={60} color="#1A56FF" />
+          <div style={{ display:"flex", gap:14, marginTop:12 }}>
+            {[["Moy",fmt(data.revenueChart.reduce((s,d)=>s+d.amount,0)/7),"#1A56FF"],["Max",fmt(Math.max(...data.revenueChart.map(d=>d.amount))),"#16C55E"],["Min",fmt(Math.min(...data.revenueChart.map(d=>d.amount))),"#D42B3A"]].map(([l,v,c]) => (
+              <div key={l}><div style={{ fontSize:10, color:"#7B91C4" }}>{l}</div><div style={{ fontSize:13, fontWeight:700, color:c }}>{v}</div></div>
+            ))}
+          </div>
+        </div>
+      </div>
+
       <div style={{ display: "grid", gridTemplateColumns: "1fr 360px", gap: 16, marginBottom: 16 }}>
         {/* Chart */}
         <div className="card card-pad">
           <div className="sec-head">
-            <div className="sec-title">📈 Revenus Hebdomadaires</div>
+            <div className="sec-title">📊 Revenus Hebdomadaires</div>
             <span style={{ fontSize: 11, color: "#7B91C4" }}>7 derniers jours</span>
           </div>
           <RevenueChart data={data.revenueChart} dark={dark} />
@@ -1031,6 +1104,24 @@ function HomePage({ data, setData, showToast, dark }) {
               </div>
             ))}
           </div>
+        </div>
+      </div>
+
+      {/* Product Performance Mini Bars */}
+      <div className="card card-pad" style={{ marginBottom:16 }}>
+        <div className="sec-title" style={{ marginBottom:14 }}>📦 Performance par Produit</div>
+        <div style={{ display:"flex", alignItems:"flex-end", gap:8, height:100 }}>
+          {data.products.map(p => {
+            const rev = data.sales.filter(s=>s.product_name===p.name).reduce((a,s)=>a+s.total_amount,0);
+            const maxRev = Math.max(...data.products.map(pr => data.sales.filter(s=>s.product_name===pr.name).reduce((a,s)=>a+s.total_amount,0)), 1);
+            return (
+              <div key={p.id} style={{ flex:1, display:"flex", flexDirection:"column", alignItems:"center", gap:4 }}>
+                <div style={{ fontSize:10, fontWeight:700, color:"#1A56FF" }}>{fmt(rev)}</div>
+                <div style={{ width:"100%", height:`${Math.max((rev/maxRev)*100,6)}%`, borderRadius:"6px 6px 0 0", background:"linear-gradient(180deg,#1A56FF,#0D3DCC)", transition:"height 0.5s" }} />
+                <div style={{ fontSize:9, color:"#7B91C4", textAlign:"center", maxWidth:60, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{p.emoji} {p.name.split(" ")[0]}</div>
+              </div>
+            );
+          })}
         </div>
       </div>
 
@@ -1200,24 +1291,57 @@ function SalesPage({ data, setData, showToast }) {
       )}
 
       {tab === "history" && (
-        <div className="card card-pad">
-          <table className="data-table">
-            <thead><tr><th>Produit</th><th>Client</th><th>Qté</th><th>Montant</th><th>Profit</th><th>Paiement</th><th>Date</th></tr></thead>
-            <tbody>
-              {data.sales.map(s => (
-                <tr key={s.id}>
-                  <td style={{ fontWeight:500 }}>{s.product_name}</td>
-                  <td style={{ color:"#7B91C4" }}>{s.client_name}</td>
-                  <td>{s.quantity}</td>
-                  <td style={{ color:"#1A56FF", fontWeight:600 }}>{fmt(s.total_amount)}</td>
-                  <td style={{ color:"#16C55E", fontWeight:600 }}>{fmt(s.profit)}</td>
-                  <td>{payIcons[s.payment_method]}</td>
-                  <td style={{ color:"#7B91C4", fontSize:12 }}>{s.sale_date}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+        <>
+          {/* Sales Analytics Row */}
+          <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:16, marginBottom:16 }}>
+            {/* Sales by Product Bar Chart */}
+            <div className="card card-pad">
+              <div className="sec-title" style={{ marginBottom:14 }}>📊 Ventes par Produit</div>
+              <MiniBarChartViz
+                data={data.products.map(p => ({
+                  value: data.sales.filter(s=>s.product_name===p.name).reduce((a,s)=>a+s.total_amount,0),
+                  label: p.emoji,
+                  highlight: data.sales.filter(s=>s.product_name===p.name).reduce((a,s)=>a+s.total_amount,0) === Math.max(...data.products.map(pr=>data.sales.filter(s=>s.product_name===pr.name).reduce((a,s)=>a+s.total_amount,0)))
+                }))}
+                height={80}
+              />
+              <div style={{ display:"flex", gap:6, marginTop:10, flexWrap:"wrap" }}>
+                {data.products.map(p => {
+                  const rev = data.sales.filter(s=>s.product_name===p.name).reduce((a,s)=>a+s.total_amount,0);
+                  return <span key={p.id} style={{ fontSize:10, color:"#7B91C4" }}>{p.emoji} {fmt(rev)}</span>;
+                })}
+              </div>
+            </div>
+            {/* Profit Trend Sparkline */}
+            <div className="card card-pad">
+              <div className="sec-title" style={{ marginBottom:14 }}>📈 Tendance des Profits</div>
+              <SparkLine data={data.sales.map(s=>s.profit)} width={260} height={70} color="#16C55E" />
+              <div style={{ display:"flex", gap:14, marginTop:12 }}>
+                <div><div style={{ fontSize:10, color:"#7B91C4" }}>Profit total</div><div style={{ fontSize:14, fontWeight:700, color:"#16C55E" }}>{fmt(data.sales.reduce((s,x)=>s+x.profit,0))}</div></div>
+                <div><div style={{ fontSize:10, color:"#7B91C4" }}>Moy/vente</div><div style={{ fontSize:14, fontWeight:700, color:"#1A56FF" }}>{fmt(data.sales.reduce((s,x)=>s+x.profit,0)/data.sales.length)}</div></div>
+                <div><div style={{ fontSize:10, color:"#7B91C4" }}>Meilleur</div><div style={{ fontSize:14, fontWeight:700, color:"#F5C518" }}>{fmt(Math.max(...data.sales.map(s=>s.profit)))}</div></div>
+              </div>
+            </div>
+          </div>
+          <div className="card card-pad">
+            <table className="data-table">
+              <thead><tr><th>Produit</th><th>Client</th><th>Qté</th><th>Montant</th><th>Profit</th><th>Paiement</th><th>Date</th></tr></thead>
+              <tbody>
+                {data.sales.map(s => (
+                  <tr key={s.id}>
+                    <td style={{ fontWeight:500 }}>{s.product_name}</td>
+                    <td style={{ color:"#7B91C4" }}>{s.client_name}</td>
+                    <td>{s.quantity}</td>
+                    <td style={{ color:"#1A56FF", fontWeight:600 }}>{fmt(s.total_amount)}</td>
+                    <td style={{ color:"#16C55E", fontWeight:600 }}>{fmt(s.profit)}</td>
+                    <td>{payIcons[s.payment_method]}</td>
+                    <td style={{ color:"#7B91C4", fontSize:12 }}>{s.sale_date}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </>
       )}
 
       {tab === "invoices" && (
@@ -1340,28 +1464,102 @@ function ProductsPage({ data, setData, showToast }) {
       )}
 
       {tab === "analytics" && (
-        <div className="g2">
-          {data.products.map(p => {
-            const sold = data.sales.filter(s => s.product_name === p.name).reduce((a,s) => a + s.quantity, 0);
-            const rev  = data.sales.filter(s => s.product_name === p.name).reduce((a,s) => a + s.total_amount, 0);
-            return (
-              <div key={p.id} className="card card-pad">
-                <div style={{ display:"flex", alignItems:"center", gap:12, marginBottom:14 }}>
-                  <span style={{ fontSize:28 }}>{p.emoji}</span>
-                  <div><div style={{ fontWeight:700 }}>{p.name}</div><div style={{ fontSize:12, color:"#7B91C4" }}>{p.type}</div></div>
-                </div>
-                <div className="g2">
-                  {[["Vendus",sold+"u","#1A56FF"],["Revenus",fmt(rev),"#16C55E"],["Stock",p.stock_quantity+"u",p.stock_quantity<=p.low_stock_alert?"#D42B3A":"#F5C518"],["Marge",((p.unit_price-p.cogs)/p.unit_price*100).toFixed(0)+"%","#1A56FF"]].map(([k,v,c]) => (
-                    <div key={k} style={{ padding:"10px", background:`${c}0A`, borderRadius:9, border:`1px solid ${c}22` }}>
-                      <div style={{ fontSize:11, color:"#7B91C4", marginBottom:3 }}>{k}</div>
-                      <div style={{ fontFamily:"'Bricolage Grotesque'", fontWeight:700, color:c, fontSize:16 }}>{v}</div>
+        <>
+          {/* Overview Charts */}
+          <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr 1fr", gap:16, marginBottom:16 }}>
+            {/* Stock Distribution Donut */}
+            <div className="card card-pad">
+              <div className="sec-title" style={{ marginBottom:14 }}>📦 Distribution Stock</div>
+              {(() => {
+                const totalStock = data.products.reduce((s,p) => s+p.stock_quantity, 0) || 1;
+                const colors = ["#1A56FF","#D42B3A","#F5C518","#16C55E","#25D366","#7B91C4"];
+                return (
+                  <div style={{ display:"flex", alignItems:"center", gap:14 }}>
+                    <DonutChart
+                      segments={data.products.map((p,i) => ({ value:(p.stock_quantity/totalStock)*100, color:colors[i%colors.length] }))}
+                      size={100} strokeWidth={14} centerValue={totalStock+""} centerLabel="unités"
+                    />
+                    <div style={{ flex:1 }}>
+                      {data.products.map((p,i) => (
+                        <div key={p.id} style={{ display:"flex", alignItems:"center", gap:6, padding:"3px 0", fontSize:11 }}>
+                          <div style={{ width:8, height:8, borderRadius:2, background:colors[i%colors.length] }} />
+                          <span style={{ flex:1, color:"#7B91C4" }}>{p.emoji} {p.name.split(" ")[0]}</span>
+                          <span style={{ fontWeight:700 }}>{p.stock_quantity}u</span>
+                        </div>
+                      ))}
                     </div>
-                  ))}
-                </div>
+                  </div>
+                );
+              })()}
+            </div>
+
+            {/* Margin Comparison */}
+            <div className="card card-pad">
+              <div className="sec-title" style={{ marginBottom:14 }}>📈 Comparaison Marges</div>
+              <MiniBarChartViz
+                data={data.products.map(p => ({
+                  value: ((p.unit_price-p.cogs)/p.unit_price)*100,
+                  label: p.emoji,
+                  highlight: ((p.unit_price-p.cogs)/p.unit_price)*100 === Math.max(...data.products.map(pr=>((pr.unit_price-pr.cogs)/pr.unit_price)*100))
+                }))}
+                height={70}
+                barColor="#16C55E"
+              />
+              <div style={{ fontSize:11, color:"#7B91C4", marginTop:8 }}>
+                Marge moyenne: <strong style={{ color:"#16C55E" }}>{(data.products.reduce((s,p)=>s+((p.unit_price-p.cogs)/p.unit_price*100),0)/data.products.length).toFixed(0)}%</strong>
               </div>
-            );
-          })}
-        </div>
+            </div>
+
+            {/* Revenue per Product */}
+            <div className="card card-pad">
+              <div className="sec-title" style={{ marginBottom:14 }}>💰 Revenus par Produit</div>
+              {(() => {
+                const prodRevs = data.products.map(p => ({
+                  name: p.name, emoji: p.emoji,
+                  rev: data.sales.filter(s=>s.product_name===p.name).reduce((a,s)=>a+s.total_amount,0)
+                })).sort((a,b) => b.rev - a.rev);
+                const maxR = prodRevs[0]?.rev || 1;
+                return prodRevs.map(p => (
+                  <div key={p.name} style={{ marginBottom:8 }}>
+                    <div style={{ display:"flex", justifyContent:"space-between", fontSize:11, marginBottom:3 }}>
+                      <span>{p.emoji} {p.name.split(" ")[0]}</span>
+                      <span style={{ fontWeight:700, color:"#1A56FF" }}>{fmt(p.rev)}</span>
+                    </div>
+                    <div className="progress" style={{ height:6 }}>
+                      <div className="progress-fill" style={{ width:`${(p.rev/maxR)*100}%`, background:"#1A56FF" }} />
+                    </div>
+                  </div>
+                ));
+              })()}
+            </div>
+          </div>
+
+          {/* Per-product detail cards */}
+          <div className="g2">
+            {data.products.map(p => {
+              const sold = data.sales.filter(s => s.product_name === p.name).reduce((a,s) => a + s.quantity, 0);
+              const rev  = data.sales.filter(s => s.product_name === p.name).reduce((a,s) => a + s.total_amount, 0);
+              const margin = ((p.unit_price-p.cogs)/p.unit_price*100);
+              return (
+                <div key={p.id} className="card card-pad">
+                  <div style={{ display:"flex", alignItems:"center", gap:12, marginBottom:14 }}>
+                    <span style={{ fontSize:28 }}>{p.emoji}</span>
+                    <div style={{ flex:1 }}><div style={{ fontWeight:700 }}>{p.name}</div><div style={{ fontSize:12, color:"#7B91C4" }}>{p.type}</div></div>
+                    <DonutChart segments={[{ value: margin, color: margin>50?"#16C55E":margin>30?"#1A56FF":"#D42B3A" }]} size={48} strokeWidth={6} centerValue={margin.toFixed(0)+"%"} />
+                  </div>
+                  <div className="g2">
+                    {[["Vendus",sold+"u","#1A56FF"],["Revenus",fmt(rev),"#16C55E"],["Stock",p.stock_quantity+"u",p.stock_quantity<=p.low_stock_alert?"#D42B3A":"#F5C518"],["Marge",margin.toFixed(0)+"%","#1A56FF"]].map(([k,v,c]) => (
+                      <div key={k} style={{ padding:"10px", background:`${c}0A`, borderRadius:9, border:`1px solid ${c}22` }}>
+                        <div style={{ fontSize:11, color:"#7B91C4", marginBottom:3 }}>{k}</div>
+                        <div style={{ fontFamily:"'Bricolage Grotesque'", fontWeight:700, color:c, fontSize:16 }}>{v}</div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </>
       )}
 
       {/* Product detail modal */}
@@ -1523,30 +1721,103 @@ function ClientsPage({ data, setData, showToast }) {
       )}
 
       {tab === "crm" && (
-        <div className="g2">
-          {["lead","active","vip","inactive"].map(status => {
-            const clients = data.clients.filter(c => c.status === status);
-            const m = statusMeta[status];
-            return (
-              <div key={status} className="card card-pad">
-                <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom:14 }}>
-                  <div style={{ width:10, height:10, borderRadius:"50%", background:m.color }} />
-                  <span style={{ fontWeight:700, fontSize:14, color:m.color }}>{m.label}s</span>
-                  <span style={{ marginLeft:"auto", fontSize:13, fontWeight:700 }}>{clients.length}</span>
-                </div>
-                {clients.map(c => (
-                  <div key={c.id} style={{ display:"flex", alignItems:"center", gap:10, padding:"8px 0", borderBottom:"1px solid rgba(26,86,255,0.08)" }}>
-                    <Avatar name={c.name} size={30} color={m.color} />
+        <>
+          {/* Client Analytics Row */}
+          <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr 1fr", gap:16, marginBottom:16 }}>
+            {/* Client Status Donut */}
+            <div className="card card-pad">
+              <div className="sec-title" style={{ marginBottom:14 }}>👥 Pipeline Clients</div>
+              {(() => {
+                const statuses = ["lead","active","vip","inactive"];
+                const colors = ["#1A56FF","#16C55E","#F5C518","#7B91C4"];
+                const labels = ["Leads","Actifs","VIP","Inactifs"];
+                const counts = statuses.map(s => data.clients.filter(c=>c.status===s).length);
+                const total = counts.reduce((a,b)=>a+b,0) || 1;
+                return (
+                  <div style={{ display:"flex", alignItems:"center", gap:14 }}>
+                    <DonutChart segments={counts.map((c,i)=>({ value:(c/total)*100, color:colors[i] }))} size={90} strokeWidth={12} centerValue={total+""} centerLabel="clients" />
                     <div style={{ flex:1 }}>
-                      <div style={{ fontSize:12, fontWeight:600 }}>{c.name}</div>
-                      <div style={{ fontSize:11, color:"#7B91C4" }}>{fmt(c.total_revenue)}</div>
+                      {labels.map((l,i) => (
+                        <div key={l} style={{ display:"flex", alignItems:"center", gap:6, padding:"3px 0", fontSize:11 }}>
+                          <div style={{ width:8, height:8, borderRadius:2, background:colors[i] }} />
+                          <span style={{ flex:1, color:"#7B91C4" }}>{l}</span>
+                          <span style={{ fontWeight:700, color:colors[i] }}>{counts[i]}</span>
+                        </div>
+                      ))}
                     </div>
                   </div>
-                ))}
-              </div>
-            );
-          })}
-        </div>
+                );
+              })()}
+            </div>
+
+            {/* Revenue Distribution */}
+            <div className="card card-pad">
+              <div className="sec-title" style={{ marginBottom:14 }}>💰 Revenus par Client</div>
+              {(() => {
+                const sorted = [...data.clients].sort((a,b) => b.total_revenue - a.total_revenue);
+                const maxR = sorted[0]?.total_revenue || 1;
+                return sorted.slice(0,5).map(c => (
+                  <div key={c.id} style={{ marginBottom:8 }}>
+                    <div style={{ display:"flex", justifyContent:"space-between", fontSize:11, marginBottom:3 }}>
+                      <span style={{ display:"flex", alignItems:"center", gap:4 }}><Avatar name={c.name} size={16} color={c.status==="vip"?"#F5C518":"#1A56FF"} /> {c.name.split(" ")[0]}</span>
+                      <span style={{ fontWeight:700, color:"#1A56FF" }}>{fmt(c.total_revenue)}</span>
+                    </div>
+                    <div className="progress" style={{ height:5 }}>
+                      <div className="progress-fill" style={{ width:`${(c.total_revenue/maxR)*100}%`, background: c.status==="vip"?"#F5C518":"#1A56FF" }} />
+                    </div>
+                  </div>
+                ));
+              })()}
+            </div>
+
+            {/* Credit Risk */}
+            <div className="card card-pad">
+              <div className="sec-title" style={{ marginBottom:14 }}>⚠️ Risque Crédit</div>
+              {(() => {
+                const totalCredit = data.clients.reduce((s,c) => s+c.credit_balance, 0);
+                const totalLimit = data.clients.reduce((s,c) => s+c.credit_limit, 0) || 1;
+                const usage = (totalCredit/totalLimit)*100;
+                return (
+                  <>
+                    <DonutChart segments={[{ value: usage, color: usage>70?"#D42B3A":usage>40?"#F5C518":"#16C55E" }]} size={80} strokeWidth={10} centerValue={usage.toFixed(0)+"%"} centerLabel="utilisé" />
+                    <div style={{ marginTop:10, fontSize:12, color:"#7B91C4" }}>
+                      <div>Crédit total dû: <strong style={{ color:"#D42B3A" }}>{fmt(totalCredit)}</strong></div>
+                      <div>Limite totale: <strong>{fmt(totalLimit)}</strong></div>
+                    </div>
+                    <InsightCard icon={usage>60?"🔴":"🟢"} iconBg={usage>60?"rgba(212,43,58,0.12)":"rgba(22,197,94,0.12)"} title={usage>60?"Risque crédit élevé":"Crédit sous contrôle"} description={usage>60?"Envisagez de réduire les limites ou d'envoyer des rappels.":"Bonne gestion du crédit client!"} />
+                  </>
+                );
+              })()}
+            </div>
+          </div>
+
+          {/* CRM Pipeline */}
+          <div className="g2">
+            {["lead","active","vip","inactive"].map(status => {
+              const clients = data.clients.filter(c => c.status === status);
+              const m = statusMeta[status];
+              return (
+                <div key={status} className="card card-pad">
+                  <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom:14 }}>
+                    <div style={{ width:10, height:10, borderRadius:"50%", background:m.color }} />
+                    <span style={{ fontWeight:700, fontSize:14, color:m.color }}>{m.label}s</span>
+                    <span style={{ marginLeft:"auto", fontSize:13, fontWeight:700 }}>{clients.length}</span>
+                  </div>
+                  {clients.map(c => (
+                    <div key={c.id} style={{ display:"flex", alignItems:"center", gap:10, padding:"8px 0", borderBottom:"1px solid rgba(26,86,255,0.08)" }}>
+                      <Avatar name={c.name} size={30} color={m.color} />
+                      <div style={{ flex:1 }}>
+                        <div style={{ fontSize:12, fontWeight:600 }}>{c.name}</div>
+                        <div style={{ fontSize:11, color:"#7B91C4" }}>{fmt(c.total_revenue)}</div>
+                      </div>
+                      <SparkLine data={[c.total_revenue*0.6,c.total_revenue*0.7,c.total_revenue*0.8,c.total_revenue*0.85,c.total_revenue*0.95,c.total_revenue]} width={50} height={20} color={m.color} fill={false} />
+                    </div>
+                  ))}
+                </div>
+              );
+            })}
+          </div>
+        </>
       )}
 
       {tab === "credits" && (
@@ -2067,55 +2338,174 @@ function AccountingPage({ data, setData, showToast }) {
       </div>
 
       {tab==="cashbook" && (
-        <div className="card card-pad">
-          <div style={{ overflowX:"auto" }}>
+        <>
+          {/* Cashflow Visual */}
+          <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr 1fr", gap:16, marginBottom:16 }}>
+            <div className="card card-pad">
+              <div className="sec-title" style={{ marginBottom:10 }}>📈 Flux Entrant</div>
+              <SparkLine data={cashbook.filter(e=>e.type==="in").slice(0,10).map(e=>e.amount)} width={180} height={50} color="#16C55E" />
+              <div style={{ marginTop:8, fontFamily:"'Bricolage Grotesque'", fontWeight:700, fontSize:18, color:"#16C55E" }}>+{fmt(totalRev)}</div>
+              <div style={{ fontSize:11, color:"#7B91C4" }}>{cashbook.filter(e=>e.type==="in").length} entrées</div>
+            </div>
+            <div className="card card-pad">
+              <div className="sec-title" style={{ marginBottom:10 }}>📉 Flux Sortant</div>
+              <SparkLine data={cashbook.filter(e=>e.type==="out").slice(0,10).map(e=>e.amount)} width={180} height={50} color="#D42B3A" />
+              <div style={{ marginTop:8, fontFamily:"'Bricolage Grotesque'", fontWeight:700, fontSize:18, color:"#D42B3A" }}>-{fmt(totalExp)}</div>
+              <div style={{ fontSize:11, color:"#7B91C4" }}>{cashbook.filter(e=>e.type==="out").length} sorties</div>
+            </div>
+            <div className="card card-pad">
+              <div className="sec-title" style={{ marginBottom:10 }}>💰 Dépenses par Catégorie</div>
+              {(() => {
+                const cats = {};
+                data.expenses.filter(e=>e.status==="approved").forEach(e => { cats[e.category] = (cats[e.category]||0) + e.amount; });
+                const entries = Object.entries(cats).sort((a,b) => b[1]-a[1]);
+                const colors = ["#1A56FF","#D42B3A","#F5C518","#16C55E","#25D366","#7B91C4"];
+                const total = entries.reduce((s,e)=>s+e[1],0) || 1;
+                return (
+                  <div style={{ display:"flex", alignItems:"center", gap:12 }}>
+                    <DonutChart segments={entries.map((e,i) => ({ value:(e[1]/total)*100, color:colors[i%colors.length] }))} size={80} strokeWidth={10} centerValue={entries.length+""} centerLabel="catég." />
+                    <div style={{ flex:1 }}>
+                      {entries.map((e,i) => (
+                        <div key={e[0]} style={{ display:"flex", alignItems:"center", gap:6, padding:"2px 0", fontSize:10 }}>
+                          <div style={{ width:6, height:6, borderRadius:2, background:colors[i%colors.length] }} />
+                          <span style={{ flex:1, color:"#7B91C4" }}>{e[0]}</span>
+                          <span style={{ fontWeight:700 }}>{fmt(e[1])}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                );
+              })()}
+            </div>
+          </div>
+          <div className="card card-pad">
+            <div style={{ overflowX:"auto" }}>
+              <table className="data-table">
+                <thead><tr><th>Date</th><th>Description</th><th>Type</th><th>Montant</th></tr></thead>
+                <tbody>
+                  {cashbook.slice(0,20).map((e,i) => (
+                    <tr key={i}>
+                      <td style={{ color:"#7B91C4", fontSize:12 }}>{e.date}</td>
+                      <td style={{ fontWeight:500 }}>{e.desc}</td>
+                      <td><span className="tag" style={{ background:e.type==="in"?"rgba(22,197,94,0.12)":"rgba(212,43,58,0.12)", color:e.type==="in"?"#16C55E":"#D42B3A" }}>{e.type==="in"?"📈 Entrée":"📉 Sortie"}</span></td>
+                      <td style={{ fontWeight:700, color:e.type==="in"?"#16C55E":"#D42B3A" }}>{e.type==="in"?"+":"-"}{fmt(e.amount)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </>
+      )}
+
+      {tab==="expenses" && (
+        <>
+          {/* Expense breakdown visual */}
+          <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:16, marginBottom:16 }}>
+            <div className="card card-pad">
+              <div className="sec-title" style={{ marginBottom:14 }}>📊 Répartition Dépenses</div>
+              {(() => {
+                const cats = {};
+                data.expenses.forEach(e => { cats[e.category] = (cats[e.category]||0) + e.amount; });
+                const entries = Object.entries(cats).sort((a,b) => b[1]-a[1]);
+                const maxV = entries[0]?.[1] || 1;
+                const colors = ["#1A56FF","#D42B3A","#F5C518","#16C55E","#25D366","#7B91C4"];
+                return entries.map((e,i) => (
+                  <div key={e[0]} style={{ marginBottom:10 }}>
+                    <div style={{ display:"flex", justifyContent:"space-between", fontSize:12, marginBottom:4 }}>
+                      <span style={{ fontWeight:600 }}>{e[0]}</span>
+                      <span style={{ fontWeight:700, color:colors[i%colors.length] }}>{fmt(e[1])}</span>
+                    </div>
+                    <div className="progress" style={{ height:8 }}>
+                      <div className="progress-fill" style={{ width:`${(e[1]/maxV)*100}%`, background:colors[i%colors.length] }} />
+                    </div>
+                  </div>
+                ));
+              })()}
+            </div>
+            <div className="card card-pad">
+              <div className="sec-title" style={{ marginBottom:14 }}>📈 Statut des Dépenses</div>
+              {(() => {
+                const approved = data.expenses.filter(e=>e.status==="approved").length;
+                const pending = data.expenses.filter(e=>e.status==="pending").length;
+                const total = data.expenses.length || 1;
+                return (
+                  <>
+                    <DonutChart segments={[
+                      { value:(approved/total)*100, color:"#16C55E" },
+                      { value:(pending/total)*100, color:"#F5C518" },
+                    ]} size={100} strokeWidth={14} centerValue={total+""} centerLabel="dépenses" />
+                    <div style={{ display:"flex", gap:16, marginTop:12 }}>
+                      <div style={{ display:"flex", alignItems:"center", gap:6 }}><div style={{ width:8, height:8, borderRadius:2, background:"#16C55E" }} /><span style={{ fontSize:12, color:"#7B91C4" }}>Approuvées: {approved}</span></div>
+                      <div style={{ display:"flex", alignItems:"center", gap:6 }}><div style={{ width:8, height:8, borderRadius:2, background:"#F5C518" }} /><span style={{ fontSize:12, color:"#7B91C4" }}>En attente: {pending}</span></div>
+                    </div>
+                  </>
+                );
+              })()}
+            </div>
+          </div>
+          <div className="card card-pad">
             <table className="data-table">
-              <thead><tr><th>Date</th><th>Description</th><th>Type</th><th>Montant</th></tr></thead>
+              <thead><tr><th>Description</th><th>Catégorie</th><th>Montant</th><th>Date</th><th>Statut</th></tr></thead>
               <tbody>
-                {cashbook.slice(0,20).map((e,i) => (
-                  <tr key={i}>
-                    <td style={{ color:"#7B91C4", fontSize:12 }}>{e.date}</td>
-                    <td style={{ fontWeight:500 }}>{e.desc}</td>
-                    <td><span className="tag" style={{ background:e.type==="in"?"rgba(22,197,94,0.12)":"rgba(212,43,58,0.12)", color:e.type==="in"?"#16C55E":"#D42B3A" }}>{e.type==="in"?"📈 Entrée":"📉 Sortie"}</span></td>
-                    <td style={{ fontWeight:700, color:e.type==="in"?"#16C55E":"#D42B3A" }}>{e.type==="in"?"+":"-"}{fmt(e.amount)}</td>
+                {data.expenses.map(e => (
+                  <tr key={e.id}>
+                    <td style={{ fontWeight:500 }}>{e.description}</td>
+                    <td><span style={{ fontSize:12, color:"#7B91C4" }}>{e.category}</span></td>
+                    <td style={{ color:"#D42B3A", fontWeight:700 }}>{fmt(e.amount)}</td>
+                    <td style={{ color:"#7B91C4", fontSize:12 }}>{e.expense_date}</td>
+                    <td><Tag status={e.status} /></td>
                   </tr>
                 ))}
               </tbody>
             </table>
           </div>
-        </div>
-      )}
-
-      {tab==="expenses" && (
-        <div className="card card-pad">
-          <table className="data-table">
-            <thead><tr><th>Description</th><th>Catégorie</th><th>Montant</th><th>Date</th><th>Statut</th></tr></thead>
-            <tbody>
-              {data.expenses.map(e => (
-                <tr key={e.id}>
-                  <td style={{ fontWeight:500 }}>{e.description}</td>
-                  <td><span style={{ fontSize:12, color:"#7B91C4" }}>{e.category}</span></td>
-                  <td style={{ color:"#D42B3A", fontWeight:700 }}>{fmt(e.amount)}</td>
-                  <td style={{ color:"#7B91C4", fontSize:12 }}>{e.expense_date}</td>
-                  <td><Tag status={e.status} /></td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+        </>
       )}
 
       {tab==="reports" && (
-        <div className="g2">
-          {[["📊 P&L Mensuel","Revenus vs Dépenses","Février 2025"],["🧾 Bilan","Actifs et passifs","2025"],["💹 Flux de trésorerie","Entrées et sorties","Trim. 1"],["📈 Croissance","Évolution revenus","12 mois"]].map(([t,d,p]) => (
-            <div key={t} className="card card-pad card-hover" style={{ cursor:"pointer" }} onClick={() => showToast(`Rapport ${t} généré!`, "info")}>
-              <div style={{ fontSize:28, marginBottom:10 }}>{t.slice(0,2)}</div>
-              <div style={{ fontWeight:700, fontSize:14, marginBottom:4 }}>{t.slice(3)}</div>
-              <div style={{ fontSize:12, color:"#7B91C4", marginBottom:8 }}>{d}</div>
-              <div style={{ fontSize:11, color:"#1A56FF", fontWeight:600 }}>{p} →</div>
+        <>
+          {/* P&L Visual */}
+          <div className="card card-pad" style={{ marginBottom:16 }}>
+            <div className="sec-title" style={{ marginBottom:16 }}>📊 Compte de Résultat (P&L)</div>
+            <div style={{ display:"grid", gridTemplateColumns:"1fr auto 1fr auto 1fr", gap:12, alignItems:"center", textAlign:"center" }}>
+              <div style={{ padding:16, background:"rgba(22,197,94,0.06)", borderRadius:12, border:"1px solid rgba(22,197,94,0.15)" }}>
+                <div style={{ fontSize:11, color:"#7B91C4", marginBottom:4 }}>Revenus</div>
+                <div style={{ fontFamily:"'Bricolage Grotesque'", fontWeight:800, fontSize:24, color:"#16C55E" }}>{fmt(totalRev)}</div>
+              </div>
+              <div style={{ fontSize:20, color:"#7B91C4" }}>−</div>
+              <div style={{ padding:16, background:"rgba(212,43,58,0.06)", borderRadius:12, border:"1px solid rgba(212,43,58,0.15)" }}>
+                <div style={{ fontSize:11, color:"#7B91C4", marginBottom:4 }}>Dépenses</div>
+                <div style={{ fontFamily:"'Bricolage Grotesque'", fontWeight:800, fontSize:24, color:"#D42B3A" }}>{fmt(totalExp)}</div>
+              </div>
+              <div style={{ fontSize:20, color:"#7B91C4" }}>=</div>
+              <div style={{ padding:16, background: netProfit >= 0 ? "rgba(26,86,255,0.06)" : "rgba(212,43,58,0.06)", borderRadius:12, border:`1px solid ${netProfit>=0?"rgba(26,86,255,0.15)":"rgba(212,43,58,0.15)"}` }}>
+                <div style={{ fontSize:11, color:"#7B91C4", marginBottom:4 }}>Profit Net</div>
+                <div style={{ fontFamily:"'Bricolage Grotesque'", fontWeight:800, fontSize:24, color: netProfit>=0?"#1A56FF":"#D42B3A" }}>{fmt(netProfit)}</div>
+              </div>
             </div>
-          ))}
-        </div>
+            <div style={{ marginTop:16 }}>
+              <div style={{ display:"flex", justifyContent:"space-between", fontSize:12, marginBottom:6, color:"#7B91C4" }}>
+                <span>Marge nette</span>
+                <span style={{ fontWeight:700, color: netProfit/totalRev > 0.2 ? "#16C55E" : "#F5C518" }}>{totalRev > 0 ? ((netProfit/totalRev)*100).toFixed(1) : 0}%</span>
+              </div>
+              <div className="progress" style={{ height:10 }}>
+                <div className="progress-fill" style={{ width:`${totalRev > 0 ? Math.min((netProfit/totalRev)*100,100) : 0}%`, background:"linear-gradient(90deg, #1A56FF, #16C55E)" }} />
+              </div>
+            </div>
+          </div>
+
+          <div className="g2">
+            {[["📊 P&L Mensuel","Revenus vs Dépenses","Février 2025"],["🧾 Bilan","Actifs et passifs","2025"],["💹 Flux de trésorerie","Entrées et sorties","Trim. 1"],["📈 Croissance","Évolution revenus","12 mois"]].map(([t,d,p]) => (
+              <div key={t} className="card card-pad card-hover" style={{ cursor:"pointer" }} onClick={() => showToast(`Rapport ${t} généré!`, "info")}>
+                <div style={{ fontSize:28, marginBottom:10 }}>{t.slice(0,2)}</div>
+                <div style={{ fontWeight:700, fontSize:14, marginBottom:4 }}>{t.slice(3)}</div>
+                <div style={{ fontSize:12, color:"#7B91C4", marginBottom:8 }}>{d}</div>
+                <div style={{ fontSize:11, color:"#1A56FF", fontWeight:600 }}>{p} →</div>
+              </div>
+            ))}
+          </div>
+        </>
       )}
 
       {tab==="taxes" && (
@@ -2123,6 +2513,20 @@ function AccountingPage({ data, setData, showToast }) {
           <div style={{ fontSize:48, marginBottom:12 }}>🏛️</div>
           <div style={{ fontFamily:"'Bricolage Grotesque'", fontSize:20, fontWeight:800, marginBottom:8 }}>Gestion Fiscale DRC</div>
           <div style={{ fontSize:13, color:"#7B91C4", marginBottom:20 }}>TVA 16% · Impôts DGI · Déclarations automatiques</div>
+          <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr 1fr", gap:12, marginBottom:20 }}>
+            <div style={{ padding:14, background:"rgba(26,86,255,0.06)", borderRadius:10, border:"1px solid rgba(26,86,255,0.15)" }}>
+              <div style={{ fontSize:11, color:"#7B91C4", marginBottom:4 }}>TVA collectée</div>
+              <div style={{ fontFamily:"'Bricolage Grotesque'", fontWeight:800, fontSize:18, color:"#1A56FF" }}>{fmt(totalRev * 0.16)}</div>
+            </div>
+            <div style={{ padding:14, background:"rgba(212,43,58,0.06)", borderRadius:10, border:"1px solid rgba(212,43,58,0.15)" }}>
+              <div style={{ fontSize:11, color:"#7B91C4", marginBottom:4 }}>TVA déductible</div>
+              <div style={{ fontFamily:"'Bricolage Grotesque'", fontWeight:800, fontSize:18, color:"#D42B3A" }}>{fmt(totalExp * 0.16)}</div>
+            </div>
+            <div style={{ padding:14, background:"rgba(22,197,94,0.06)", borderRadius:10, border:"1px solid rgba(22,197,94,0.15)" }}>
+              <div style={{ fontSize:11, color:"#7B91C4", marginBottom:4 }}>TVA à payer</div>
+              <div style={{ fontFamily:"'Bricolage Grotesque'", fontWeight:800, fontSize:18, color:"#16C55E" }}>{fmt((totalRev - totalExp) * 0.16)}</div>
+            </div>
+          </div>
           <button className="btn btn-primary" onClick={() => showToast("Module fiscal ouvert!", "info")}>🏛️ Déclarer TVA</button>
         </div>
       )}
