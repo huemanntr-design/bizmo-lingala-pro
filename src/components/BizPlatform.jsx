@@ -2613,7 +2613,7 @@ function AccountingPage({ data, setData, showToast, kpiGoals, updateGoal }) {
 }
 
 // ─── PERSONAL FINANCE PAGE ─────────────────────────────────────────────────────
-function PersonalPage({ data, setData, showToast }) {
+function PersonalPage({ data, setData, showToast, kpiGoals, updateGoal }) {
   const [tab, setTab] = useState("overview");
   const [goals, setGoals] = useState([
     { id:1,name:"Fonds d'urgence",   emoji:"🛡️",target:5000, current:2200 },
