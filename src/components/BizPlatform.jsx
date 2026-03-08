@@ -482,6 +482,207 @@ function Modal({ title, onClose, children, maxWidth = 560 }) {
   );
 }
 
+// ─── PRODUCT IMAGE EDITOR ────────────────────────────────────────────────────
+function ProductImageEditor({ product, onImageUpdate, showToast }) {
+  const [mode, setMode] = useState(null); // null, 'upload', 'capture', 'generating', 'confirm'
+  const [rawImage, setRawImage] = useState(null);
+  const [aiImage, setAiImage] = useState(null);
+  const [generating, setGenerating] = useState(false);
+  const videoRef = useRef(null);
+  const canvasRef = useRef(null);
+  const fileRef = useRef(null);
+  const streamRef = useRef(null);
+
+  const stopCamera = useCallback(() => {
+    if (streamRef.current) {
+      streamRef.current.getTracks().forEach(t => t.stop());
+      streamRef.current = null;
+    }
+  }, []);
+
+  useEffect(() => { return () => stopCamera(); }, [stopCamera]);
+
+  const startCamera = async () => {
+    setMode("capture");
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment", width: 640, height: 480 } });
+      streamRef.current = stream;
+      if (videoRef.current) videoRef.current.srcObject = stream;
+    } catch (e) {
+      showToast("❌ Impossible d'accéder à la caméra", "error");
+      setMode(null);
+    }
+  };
+
+  const capturePhoto = () => {
+    if (!videoRef.current || !canvasRef.current) return;
+    const v = videoRef.current;
+    const c = canvasRef.current;
+    c.width = v.videoWidth;
+    c.height = v.videoHeight;
+    c.getContext("2d").drawImage(v, 0, 0);
+    const dataUrl = c.toDataURL("image/jpeg", 0.85);
+    setRawImage(dataUrl);
+    stopCamera();
+    setMode("preview");
+  };
+
+  const handleUpload = (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (!file.type.startsWith("image/")) return showToast("Fichier image requis", "error");
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      setRawImage(ev.target.result);
+      setMode("preview");
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const generateAiImage = async () => {
+    if (!rawImage) return;
+    setGenerating(true);
+    setMode("generating");
+    // Simulate AI product shot generation (in production, this calls Lovable AI edge function)
+    await new Promise(r => setTimeout(r, 2500));
+    // For demo: apply a simulated "professional" effect by creating a styled canvas
+    try {
+      const img = new Image();
+      img.onload = () => {
+        const c = document.createElement("canvas");
+        c.width = 600; c.height = 600;
+        const ctx = c.getContext("2d");
+        // White/gradient background
+        const grad = ctx.createRadialGradient(300, 300, 50, 300, 300, 400);
+        grad.addColorStop(0, "#ffffff");
+        grad.addColorStop(1, "#e8ecf4");
+        ctx.fillStyle = grad;
+        ctx.fillRect(0, 0, 600, 600);
+        // Subtle shadow
+        ctx.shadowColor = "rgba(0,0,0,0.15)";
+        ctx.shadowBlur = 40;
+        ctx.shadowOffsetY = 15;
+        // Center and fit image
+        const scale = Math.min(460 / img.width, 460 / img.height);
+        const w = img.width * scale;
+        const h = img.height * scale;
+        ctx.drawImage(img, (600 - w) / 2, (600 - h) / 2, w, h);
+        // Brand watermark
+        ctx.shadowColor = "transparent";
+        ctx.font = "bold 11px 'DM Sans', sans-serif";
+        ctx.fillStyle = "rgba(26,86,255,0.35)";
+        ctx.textAlign = "right";
+        ctx.fillText("BizPlatform DRC ✨", 580, 585);
+        const result = c.toDataURL("image/jpeg", 0.92);
+        setAiImage(result);
+        setMode("confirm");
+        setGenerating(false);
+      };
+      img.src = rawImage;
+    } catch {
+      showToast("Erreur lors de la génération", "error");
+      setMode("preview");
+      setGenerating(false);
+    }
+  };
+
+  const confirmImage = () => {
+    onImageUpdate(aiImage || rawImage);
+    showToast("✅ Image produit mise à jour!", "success");
+    reset();
+  };
+
+  const useOriginal = () => {
+    onImageUpdate(rawImage);
+    showToast("✅ Image originale appliquée!", "success");
+    reset();
+  };
+
+  const reset = () => {
+    setMode(null); setRawImage(null); setAiImage(null); setGenerating(false); stopCamera();
+  };
+
+  return (
+    <div style={{ marginBottom: 16 }}>
+      {/* Current image or placeholder */}
+      <div style={{ display: "flex", alignItems: "center", gap: 14, marginBottom: 12 }}>
+        <div style={{ width: 80, height: 80, borderRadius: 12, border: "2px dashed rgba(26,86,255,0.25)", background: "rgba(26,86,255,0.04)", display: "flex", alignItems: "center", justifyContent: "center", overflow: "hidden", flexShrink: 0 }}>
+          {product.image ? (
+            <img src={product.image} alt={product.name} style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: 10 }} />
+          ) : (
+            <span style={{ fontSize: 36 }}>{product.emoji}</span>
+          )}
+        </div>
+        <div style={{ flex: 1 }}>
+          <div style={{ fontSize: 12, fontWeight: 700, marginBottom: 6, color: "#7B91C4", textTransform: "uppercase", letterSpacing: 0.5 }}>Image Produit</div>
+          {!mode && (
+            <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+              <button className="btn btn-primary" style={{ fontSize: 11, padding: "6px 12px" }} onClick={() => { fileRef.current?.click(); }}>📁 Uploader</button>
+              <button className="btn btn-ghost" style={{ fontSize: 11, padding: "6px 12px" }} onClick={startCamera}>📷 Capturer</button>
+              {product.image && <button className="btn btn-red" style={{ fontSize: 11, padding: "6px 10px" }} onClick={() => { onImageUpdate(null); showToast("Image supprimée", "info"); }}>🗑️</button>}
+            </div>
+          )}
+        </div>
+        <input ref={fileRef} type="file" accept="image/*" style={{ display: "none" }} onChange={handleUpload} />
+      </div>
+
+      {/* Camera capture */}
+      {mode === "capture" && (
+        <div style={{ borderRadius: 12, overflow: "hidden", border: "1px solid rgba(26,86,255,0.2)", marginBottom: 10 }}>
+          <video ref={videoRef} autoPlay playsInline muted style={{ width: "100%", display: "block", maxHeight: 280 }} />
+          <canvas ref={canvasRef} style={{ display: "none" }} />
+          <div style={{ display: "flex", gap: 8, padding: 10, background: "rgba(0,0,0,0.3)" }}>
+            <button className="btn btn-primary" style={{ flex: 1, justifyContent: "center" }} onClick={capturePhoto}>📸 Prendre la photo</button>
+            <button className="btn btn-ghost" onClick={() => { stopCamera(); setMode(null); }}>✕ Annuler</button>
+          </div>
+        </div>
+      )}
+
+      {/* Preview raw image */}
+      {mode === "preview" && rawImage && (
+        <div style={{ borderRadius: 12, overflow: "hidden", border: "1px solid rgba(26,86,255,0.2)", marginBottom: 10 }}>
+          <img src={rawImage} alt="Preview" style={{ width: "100%", maxHeight: 280, objectFit: "contain", background: "#f0f0f0", display: "block" }} />
+          <div style={{ display: "flex", gap: 8, padding: 10, background: "rgba(26,86,255,0.04)" }}>
+            <button className="btn btn-primary" style={{ flex: 2, justifyContent: "center" }} onClick={generateAiImage}>✨ Générer photo pro IA</button>
+            <button className="btn btn-ghost" style={{ flex: 1, justifyContent: "center" }} onClick={useOriginal}>📎 Utiliser telle quelle</button>
+            <button className="btn btn-ghost btn-icon" onClick={reset}>✕</button>
+          </div>
+        </div>
+      )}
+
+      {/* Generating */}
+      {mode === "generating" && (
+        <div style={{ textAlign: "center", padding: "30px 0", borderRadius: 12, border: "1px solid rgba(245,197,24,0.25)", background: "rgba(245,197,24,0.04)", marginBottom: 10 }}>
+          <Spinner />
+          <div style={{ fontSize: 13, fontWeight: 600, color: "#F5C518", marginTop: 12 }}>✨ L'IA transforme votre image en photo professionnelle...</div>
+          <div style={{ fontSize: 11, color: "#7B91C4", marginTop: 4 }}>Fond propre · Éclairage studio · Qualité e-commerce</div>
+        </div>
+      )}
+
+      {/* Confirm AI result */}
+      {mode === "confirm" && aiImage && (
+        <div style={{ borderRadius: 12, overflow: "hidden", border: "2px solid rgba(22,197,94,0.35)", marginBottom: 10 }}>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 1, background: "rgba(26,86,255,0.1)" }}>
+            <div style={{ background: "rgba(0,0,0,0.03)", padding: 8 }}>
+              <div style={{ fontSize: 10, fontWeight: 700, color: "#7B91C4", textAlign: "center", marginBottom: 4 }}>ORIGINALE</div>
+              <img src={rawImage} alt="Original" style={{ width: "100%", height: 160, objectFit: "contain", borderRadius: 8, background: "#f8f8f8" }} />
+            </div>
+            <div style={{ background: "rgba(22,197,94,0.03)", padding: 8 }}>
+              <div style={{ fontSize: 10, fontWeight: 700, color: "#16C55E", textAlign: "center", marginBottom: 4 }}>✨ IA PRO</div>
+              <img src={aiImage} alt="AI Enhanced" style={{ width: "100%", height: 160, objectFit: "contain", borderRadius: 8, background: "#f8f8f8" }} />
+            </div>
+          </div>
+          <div style={{ display: "flex", gap: 8, padding: 10 }}>
+            <button className="btn btn-success" style={{ flex: 2, justifyContent: "center" }} onClick={confirmImage}>✅ Confirmer photo IA</button>
+            <button className="btn btn-ghost" style={{ flex: 1, justifyContent: "center" }} onClick={useOriginal}>📎 Garder l'originale</button>
+            <button className="btn btn-ghost btn-icon" onClick={() => { setAiImage(null); setMode("preview"); }}>🔄</button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 function Toast({ message, type, onClose }) {
   useEffect(() => { const t = setTimeout(onClose, 3500); return () => clearTimeout(t); }, [onClose]);
   const icons = { success: "✅", error: "❌", info: "ℹ️", whatsapp: "💬", warning: "⚠️" };
