@@ -2346,10 +2346,11 @@ function MarketingPage({ data, setData, showToast, kpiGoals, updateGoal }) {
                 </div>
                 {p.title && <div style={{ fontWeight:700, marginBottom:6, fontSize:13 }}>{p.title}</div>}
                 <div style={{ fontSize:11, color:"#7B91C4", lineHeight:1.6, marginBottom:10 }}>{p.content?.slice(0,100)}…</div>
-                {isAI && (
+                {p.status !== "published" && (
                   <div style={{ display:"flex", gap:8 }}>
-                    <button onClick={() => validate(p.id)} className="btn btn-success" style={{ flex:1, justifyContent:"center", fontSize:11 }}>✅ Valider</button>
-                    <button onClick={() => reject(p.id)}   className="btn btn-red"     style={{ flex:1, justifyContent:"center", fontSize:11 }}>✕ Rejeter</button>
+                    {isAI && <button onClick={() => validate(p.id)} className="btn btn-success" style={{ flex:1, justifyContent:"center", fontSize:11 }}>✅ Valider</button>}
+                    <button onClick={() => startEdit(p, isAI)} className="btn btn-primary" style={{ flex:1, justifyContent:"center", fontSize:11 }}>✏️ Modifier</button>
+                    {isAI && <button onClick={() => reject(p.id)} className="btn btn-red" style={{ flex:1, justifyContent:"center", fontSize:11 }}>✕ Rejeter</button>}
                   </div>
                 )}
               </div>
