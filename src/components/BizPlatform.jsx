@@ -2454,7 +2454,7 @@ function ClientsPage({ data, setData, showToast, kpiGoals, updateGoal }) {
                     </td>
                     <td><Tag status={c.status} /></td>
                     <td>
-                      {c.credit_balance > 0 && <button className="btn btn-wa" style={{ fontSize:11, padding:"5px 10px", borderRadius:8 }} onClick={() => showToast(`Rappel envoyé à ${c.name}`, "whatsapp")}>💬 Rappel</button>}
+                      {c.credit_balance > 0 && <button className="btn btn-wa" style={{ fontSize:11, padding:"5px 10px", borderRadius:8 }} onClick={async () => { try { await sendWhatsApp(c.phone, `⚠️ *RAPPEL DE PAIEMENT*\n━━━━━━━━━━━━━━━\nBonjour *${c.name}*,\n\nSolde impayé: *${fmt(c.credit_balance)}*\n\nMerci de régulariser.\n_${data.user.company}_ 🇨🇩`); showToast(`✅ Rappel envoyé à ${c.name}`, "whatsapp"); } catch(err) { showToast(`❌ ${err.message}`, "error"); } }}>💬 Rappel</button>}
                     </td>
                   </tr>
                 );
