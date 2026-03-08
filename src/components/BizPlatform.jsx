@@ -2015,6 +2015,22 @@ function MarketingPage({ data, setData, showToast, kpiGoals, updateGoal }) {
   const validate = (id) => { setAiPosts(p => p.map(x => x.id===id ? {...x,status:"scheduled"} : x)); setHovPost(null); showToast("✅ Post validé!", "success"); };
   const reject   = (id) => { setAiPosts(p => p.map(x => x.id===id ? {...x,status:"rejected"} : x)); setHovPost(null); showToast("Post rejeté", "info"); };
 
+  const startEdit = (post, isAI) => {
+    setEditPost({ ...post, isAI });
+    setHovPost(null);
+  };
+  const saveEdit = () => {
+    if (!editPost) return;
+    const { isAI, ...updated } = editPost;
+    if (isAI) {
+      setAiPosts(p => p.map(x => x.id===updated.id ? { ...x, title:updated.title, content:updated.content, platform:updated.platform, time:updated.time } : x));
+    } else {
+      setData(d => ({ ...d, posts: d.posts.map(x => x.id===updated.id ? { ...x, title:updated.title, content:updated.content, platform:updated.platform, scheduled_date:updated.scheduled_date } : x) }));
+    }
+    setEditPost(null);
+    showToast("✅ Post modifié!", "success");
+  };
+
   const postColor = (p) => {
     if (p.status==="rejected") return "#4a5678";
     if (p.status==="ai_proposed") return "#F5C518";
