@@ -1946,7 +1946,14 @@ function SalesPage({ data, setData, showToast, kpiGoals, updateGoal }) {
             {/* Actions */}
             <div style={{ display:"flex", gap:8, padding:"0 20px 20px", flexWrap:"wrap" }}>
               <button onClick={printReceipt} style={{ flex:1, padding:"10px", background:"#1A56FF", color:"#fff", border:"none", borderRadius:10, fontWeight:700, fontSize:13, cursor:"pointer", fontFamily:"'DM Sans'" }}>🖨️ Imprimer</button>
-              <button onClick={() => { showToast("📲 Reçu envoyé par WhatsApp!", "whatsapp"); }} style={{ flex:1, padding:"10px", background:"#25D366", color:"#fff", border:"none", borderRadius:10, fontWeight:700, fontSize:13, cursor:"pointer", fontFamily:"'DM Sans'" }}>💬 WhatsApp</button>
+              <button onClick={async () => {
+                const client = data.clients.find(c => c.name === receipt.client_name);
+                if (!client?.phone) return showToast("Numéro client manquant", "error");
+                try {
+                  await sendWhatsApp(client.phone, `🧾 *REÇU #${receipt.id}*\n━━━━━━━━━━━━━━━\n${receipt.items.map(i => `• ${i.name} x${i.qty} = ${fmt(i.total)}`).join("\n")}\n\n*TOTAL: ${fmt(receipt.total)}*\nMerci! 🙏 _${data.user.company}_ 🇨🇩`);
+                  showToast("✅ Reçu envoyé par WhatsApp!", "whatsapp");
+                } catch (e) { showToast(`❌ ${e.message}`, "error"); }
+              }} style={{ flex:1, padding:"10px", background:"#25D366", color:"#fff", border:"none", borderRadius:10, fontWeight:700, fontSize:13, cursor:"pointer", fontFamily:"'DM Sans'" }}>💬 WhatsApp</button>
               <button onClick={() => setReceipt(null)} style={{ flex:"0 0 100%", padding:"8px", background:"transparent", border:"1px solid #ddd", borderRadius:10, fontWeight:600, fontSize:12, cursor:"pointer", color:"#666", fontFamily:"'DM Sans'" }}>✕ Fermer</button>
             </div>
           </div>
