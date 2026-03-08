@@ -150,7 +150,6 @@ const buildStyles = (dark) => {
     scrollBg: "rgba(26,86,255,0.2)",
   };
   return `
-  @import url('${FONT_URL}');
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
   html, body, #root { height: 100%; }
   body {
