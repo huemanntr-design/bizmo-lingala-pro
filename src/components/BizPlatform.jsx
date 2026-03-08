@@ -1466,7 +1466,7 @@ function HomePage({ data, setData, showToast, dark, kpiGoals, updateGoal }) {
 }
 
 // ─── SALES PAGE ────────────────────────────────────────────────────────────────
-function SalesPage({ data, setData, showToast, kpiGoals, updateGoal }) {
+function SalesPage({ data, setData, showToast, kpiGoals, updateGoal, exchangeRate }) {
   const [tab, setTab] = useState("pos");
   const [cart, setCart] = useState([]);
   const [search, setSearch] = useState("");
