@@ -2325,7 +2325,7 @@ function ClientsPage({ data, setData, showToast, kpiGoals, updateGoal }) {
               </div>
               <div style={{ display:"flex", gap:8, marginTop:12 }}>
                 <button className="btn btn-ghost" style={{ flex:1, justifyContent:"center", fontSize:11 }} onClick={e => { e.stopPropagation(); showToast(`Appel: ${c.phone}`, "info"); }}>📞 Appeler</button>
-                <button className="btn btn-wa" style={{ flex:1, justifyContent:"center", fontSize:11 }} onClick={e => { e.stopPropagation(); showToast(`WhatsApp à ${c.name}`, "whatsapp"); }}>💬 WA</button>
+                <button className="btn btn-wa" style={{ flex:1, justifyContent:"center", fontSize:11 }} onClick={async e => { e.stopPropagation(); try { await sendWhatsApp(c.phone, `Bonjour ${c.name}! Comment puis-je vous aider? — ${data.user.company} 🇨🇩`); showToast(`✅ WhatsApp envoyé à ${c.name}`, "whatsapp"); } catch(err) { showToast(`❌ ${err.message}`, "error"); } }}>💬 WA</button>
               </div>
             </div>
           ))}
