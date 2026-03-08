@@ -3780,20 +3780,16 @@ function WhatsAppPage({ data, showToast, kpiGoals, updateGoal }) {
 
   const requestQR = async () => {
     setQrLoading(true); setStatus("scanning");
-    if (serverOk) {
-      try {
-        const r = await fetch("http://localhost:3001/qr");
-        const d = await r.json();
-        if (d.qr) { setQrVisible(true); showToast("QR reçu du serveur!", "success"); }
-      } catch { /* fallback demo */ }
-    }
-    setTimeout(() => { setQrVisible(true); setQrLoading(false); }, 1200);
+    // With Twilio, no QR needed — auto-connect
+    setTimeout(() => {
+      setStatus("connected"); setQrVisible(false); setQrLoading(false);
+      showToast("✅ Twilio WhatsApp connecté!", "whatsapp");
+    }, 1500);
   };
 
-  const simulateConnect = () => { setStatus("connected"); setQrVisible(false); showToast("✅ WhatsApp connecté!", "whatsapp"); };
+  const simulateConnect = () => { setStatus("connected"); setQrVisible(false); showToast("✅ WhatsApp connecté via Twilio!", "whatsapp"); };
 
   const disconnect = async () => {
-    if (serverOk) { try { await fetch("http://localhost:3001/disconnect",{method:"POST"}); } catch {} }
     setStatus("disconnected"); setQrVisible(false); showToast("Déconnecté de WhatsApp", "info");
   };
 
