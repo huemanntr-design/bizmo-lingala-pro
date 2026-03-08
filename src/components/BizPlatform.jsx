@@ -1005,10 +1005,7 @@ function HomePage({ data, setData, showToast, dark, kpiGoals, updateGoal }) {
           <h1 style={{ fontFamily: "'Bricolage Grotesque'", fontSize: 28, fontWeight: 800, letterSpacing: "-0.5px" }}>{data.user.name.split(" ").slice(0,2).join(" ")}</h1>
           <div style={{ fontSize: 12, color: "#7B91C4", marginTop: 3 }}>{data.user.company} · {data.user.role}</div>
         </div>
-        <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
-          <button className="btn btn-ghost" onClick={() => showToast("Export PDF en cours...", "info")}>📥 Export</button>
-          <button className="btn btn-wa" onClick={() => setShowWAModal(true)}>💬 Rapport WA</button>
-        </div>
+      <HelpText icon="👋">Ceci est votre tableau de bord — c'est un résumé de tout ce qui se passe dans votre business. Vous voyez combien d'argent vous avez gagné, dépensé et ce qui reste comme profit (bénéfice).</HelpText>
       </div>
 
       {/* Hero KPI */}
