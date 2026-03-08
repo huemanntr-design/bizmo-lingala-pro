@@ -2630,14 +2630,22 @@ function WhatsAppPage({ data, showToast }) {
 
   return (
     <div className="page-bg page-content fade-in">
-      <KpiBanner kpis={[
-        { icon:"💬", label:"Messages", value:messages.length, color:"#25D366" },
-        { icon:"👥", label:"Contacts", value:contacts.length, color:"#1A56FF" },
-        { icon:"📢", label:"Diffusions", value:broadcastResults.length, color:"#F5C518" },
-        { icon:"🤖", label:"Commandes Bot", value:"8 actives", color:"#16C55E" },
-        { icon:"📊", label:"Taux Réponse", value:"94%", trend:"+2%", trendUp:true, color:"#1877F2" },
-        { icon:"🔗", label:"Statut", value:status==="connected"?"Connecté":"Déconnecté", color:status==="connected"?"#16C55E":"#D42B3A" },
-      ]} />
+      <HeroBanner
+        label="TAUX DE RÉPONSE BOT"
+        value="94%"
+        subtitle={`${messages.length} messages · ${contacts.length} contacts`}
+        progress={94}
+        progressLabel="Réponse automatique"
+        trend="+2%"
+        trendUp={true}
+        icon="🤖"
+      />
+      <div className="mini-kpi-grid">
+        <MiniKpiCard icon="💬" label="Messages" value={messages.length} color="#25D366" />
+        <MiniKpiCard icon="👥" label="Contacts" value={contacts.length} color="#1A56FF" />
+        <MiniKpiCard icon="📢" label="Diffusions" value={broadcastResults.length} color="#F5C518" />
+        <MiniKpiCard icon="🔗" label="Statut" value={status==="connected"?"✅":"⭕"} color={status==="connected"?"#16C55E":"#D42B3A"} />
+      </div>
       {/* Header */}
       <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:20, flexWrap:"wrap", gap:12 }}>
         <div style={{ display:"flex", alignItems:"center", gap:14 }}>
