@@ -974,11 +974,84 @@ function HomePage({ data, setData, showToast, dark }) {
         <MiniKpiCard icon="⚠️" label="Stock Bas" value={lowStock.length} trendUp={false} color={lowStock.length>0?"#D42B3A":"#16C55E"} />
       </div>
 
+      {/* ── VISUAL ANALYTICS ROW ── */}
+      <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr 1fr", gap:16, marginBottom:16 }}>
+        {/* Profit Breakdown Donut */}
+        <div className="card card-pad">
+          <div className="sec-title" style={{ marginBottom:14 }}>💰 Répartition Profit</div>
+          <div style={{ display:"flex", alignItems:"center", gap:16 }}>
+            <DonutChart
+              segments={[
+                { value: totalRevenue > 0 ? (totalProfit/totalRevenue)*100 : 0, color:"#16C55E" },
+                { value: totalRevenue > 0 ? (totalExpenses/totalRevenue)*100 : 0, color:"#D42B3A" },
+                { value: totalRevenue > 0 ? Math.max(100 - (totalProfit/totalRevenue)*100 - (totalExpenses/totalRevenue)*100, 0) : 0, color:"#1A56FF" },
+              ]}
+              size={100}
+              strokeWidth={14}
+              centerValue={totalRevenue > 0 ? ((totalProfit/totalRevenue)*100).toFixed(0)+"%" : "0%"}
+              centerLabel="marge"
+            />
+            <div style={{ flex:1 }}>
+              {[["Profit",fmt(totalProfit),"#16C55E"],["Dépenses",fmt(totalExpenses),"#D42B3A"],["COGS",fmt(totalRevenue-totalProfit-totalExpenses > 0 ? totalRevenue-totalProfit-totalExpenses : 0),"#1A56FF"]].map(([l,v,c]) => (
+                <div key={l} style={{ display:"flex", alignItems:"center", gap:8, padding:"4px 0" }}>
+                  <div style={{ width:8, height:8, borderRadius:2, background:c }} />
+                  <span style={{ fontSize:11, color:"#7B91C4", flex:1 }}>{l}</span>
+                  <span style={{ fontSize:12, fontWeight:700, color:c }}>{v}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* Payment Methods Donut */}
+        <div className="card card-pad">
+          <div className="sec-title" style={{ marginBottom:14 }}>💳 Modes de Paiement</div>
+          {(() => {
+            const methods = ["cash","mobile_money","credit","bank"];
+            const colors = ["#16C55E","#25D366","#D42B3A","#1A56FF"];
+            const labels = ["Cash","Mobile","Crédit","Banque"];
+            const totals = methods.map(m => data.sales.filter(s=>s.payment_method===m).reduce((a,s)=>a+s.total_amount,0));
+            const sum = totals.reduce((a,b)=>a+b,0) || 1;
+            return (
+              <div style={{ display:"flex", alignItems:"center", gap:16 }}>
+                <DonutChart
+                  segments={totals.map((t,i) => ({ value:(t/sum)*100, color:colors[i] }))}
+                  size={100}
+                  strokeWidth={14}
+                  centerValue={data.sales.length+""}
+                  centerLabel="ventes"
+                />
+                <div style={{ flex:1 }}>
+                  {labels.map((l,i) => (
+                    <div key={l} style={{ display:"flex", alignItems:"center", gap:8, padding:"4px 0" }}>
+                      <div style={{ width:8, height:8, borderRadius:2, background:colors[i] }} />
+                      <span style={{ fontSize:11, color:"#7B91C4", flex:1 }}>{l}</span>
+                      <span style={{ fontSize:12, fontWeight:700, color:colors[i] }}>{fmt(totals[i])}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            );
+          })()}
+        </div>
+
+        {/* Daily Revenue Sparkline card */}
+        <div className="card card-pad">
+          <div className="sec-title" style={{ marginBottom:14 }}>📈 Tendance Quotidienne</div>
+          <SparkLine data={data.revenueChart.map(d=>d.amount)} width={200} height={60} color="#1A56FF" />
+          <div style={{ display:"flex", gap:14, marginTop:12 }}>
+            {[["Moy",fmt(data.revenueChart.reduce((s,d)=>s+d.amount,0)/7),"#1A56FF"],["Max",fmt(Math.max(...data.revenueChart.map(d=>d.amount))),"#16C55E"],["Min",fmt(Math.min(...data.revenueChart.map(d=>d.amount))),"#D42B3A"]].map(([l,v,c]) => (
+              <div key={l}><div style={{ fontSize:10, color:"#7B91C4" }}>{l}</div><div style={{ fontSize:13, fontWeight:700, color:c }}>{v}</div></div>
+            ))}
+          </div>
+        </div>
+      </div>
+
       <div style={{ display: "grid", gridTemplateColumns: "1fr 360px", gap: 16, marginBottom: 16 }}>
         {/* Chart */}
         <div className="card card-pad">
           <div className="sec-head">
-            <div className="sec-title">📈 Revenus Hebdomadaires</div>
+            <div className="sec-title">📊 Revenus Hebdomadaires</div>
             <span style={{ fontSize: 11, color: "#7B91C4" }}>7 derniers jours</span>
           </div>
           <RevenueChart data={data.revenueChart} dark={dark} />
@@ -1031,6 +1104,24 @@ function HomePage({ data, setData, showToast, dark }) {
               </div>
             ))}
           </div>
+        </div>
+      </div>
+
+      {/* Product Performance Mini Bars */}
+      <div className="card card-pad" style={{ marginBottom:16 }}>
+        <div className="sec-title" style={{ marginBottom:14 }}>📦 Performance par Produit</div>
+        <div style={{ display:"flex", alignItems:"flex-end", gap:8, height:100 }}>
+          {data.products.map(p => {
+            const rev = data.sales.filter(s=>s.product_name===p.name).reduce((a,s)=>a+s.total_amount,0);
+            const maxRev = Math.max(...data.products.map(pr => data.sales.filter(s=>s.product_name===pr.name).reduce((a,s)=>a+s.total_amount,0)), 1);
+            return (
+              <div key={p.id} style={{ flex:1, display:"flex", flexDirection:"column", alignItems:"center", gap:4 }}>
+                <div style={{ fontSize:10, fontWeight:700, color:"#1A56FF" }}>{fmt(rev)}</div>
+                <div style={{ width:"100%", height:`${Math.max((rev/maxRev)*100,6)}%`, borderRadius:"6px 6px 0 0", background:"linear-gradient(180deg,#1A56FF,#0D3DCC)", transition:"height 0.5s" }} />
+                <div style={{ fontSize:9, color:"#7B91C4", textAlign:"center", maxWidth:60, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{p.emoji} {p.name.split(" ")[0]}</div>
+              </div>
+            );
+          })}
         </div>
       </div>
 
