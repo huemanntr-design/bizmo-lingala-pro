@@ -3057,13 +3057,17 @@ function SettingsPage({ data, setData, showToast, dark, setDark }) {
   const [tab, setTab] = useState("profile");
   return (
     <div className="page-bg page-content fade-in">
-      <KpiBanner kpis={[
-        { icon:"👤", label:"Utilisateur", value:data.user.name.split(" ")[0], color:"#1A56FF" },
-        { icon:"🏢", label:"Entreprise", value:data.user.company.split(" ")[0], color:"#16C55E" },
-        { icon:"👨‍💼", label:"Employés", value:data.staff?.length||3, color:"#F5C518" },
-        { icon:"🔌", label:"Intégrations", value:"4 actives", color:"#25D366" },
-        { icon:dark?"🌙":"☀️", label:"Thème", value:dark?"Sombre":"Clair", color:"#7B91C4" },
-      ]} />
+      <HeroBanner
+        label="CONFIGURATION SYSTÈME"
+        value={data.user.company}
+        subtitle={`${data.user.name} · ${data.user.role}`}
+        icon="⚙️"
+      />
+      <div className="mini-kpi-grid">
+        <MiniKpiCard icon="👨‍💼" label="Employés" value={data.staff?.length||3} color="#F5C518" />
+        <MiniKpiCard icon="🔌" label="Intégrations" value="4" color="#25D366" />
+        <MiniKpiCard icon={dark?"🌙":"☀️"} label="Thème" value={dark?"Sombre":"Clair"} color="#7B91C4" />
+      </div>
       <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:20 }}>
         <h1 style={{ fontFamily:"'Bricolage Grotesque'", fontSize:22, fontWeight:800 }}>◉ Paramètres</h1>
       </div>
