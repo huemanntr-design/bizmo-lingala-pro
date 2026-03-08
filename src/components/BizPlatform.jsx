@@ -277,6 +277,7 @@ const buildStyles = (dark) => {
     background: ${t.surface}; border: 1px solid ${t.border};
     border-radius: 14px; padding: 20px; position: relative; overflow: hidden;
     transition: transform 0.18s, box-shadow 0.18s;
+    min-width: 200px; flex-shrink: 0;
   }
   .kpi:hover { transform: translateY(-2px); box-shadow: ${t.shadow}; }
   .kpi-glow { position: absolute; top: -20px; right: -20px; width: 100px; height: 100px; border-radius: 50%; filter: blur(30px); opacity: 0.3; }
@@ -284,6 +285,26 @@ const buildStyles = (dark) => {
   .kpi-val { font-family: 'Bricolage Grotesque', sans-serif; font-size: 26px; font-weight: 700; line-height: 1; letter-spacing: -0.5px; }
   .kpi-label { font-size: 12px; color: ${t.text2}; margin-top: 4px; font-weight: 500; }
   .kpi-trend { font-size: 11px; margin-top: 10px; display: flex; align-items: center; gap: 4px; font-weight: 600; }
+
+  /* ── KPI BANNER ── */
+  .kpi-banner { position: relative; margin-bottom: 20px; }
+  .kpi-banner-scroll {
+    display: flex; gap: 12px; overflow-x: auto; scroll-behavior: smooth;
+    scrollbar-width: none; -ms-overflow-style: none; padding: 4px 0;
+  }
+  .kpi-banner-scroll::-webkit-scrollbar { display: none; }
+  .kpi-banner-arrow {
+    position: absolute; top: 50%; transform: translateY(-50%); z-index: 10;
+    width: 32px; height: 32px; border-radius: 50%;
+    background: ${t.surface}; border: 1px solid ${t.border2};
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer; font-size: 14px; color: ${t.text};
+    box-shadow: ${t.shadow}; transition: opacity 0.2s, background 0.2s;
+  }
+  .kpi-banner-arrow:hover { background: ${t.surface2}; }
+  .kpi-banner-arrow.left { left: -12px; }
+  .kpi-banner-arrow.right { right: -12px; }
+  .kpi-banner-arrow.hidden { opacity: 0; pointer-events: none; }
 
   /* ── TABS ── */
   .tabs { display: flex; gap: 2px; background: ${t.glass3}; border-radius: 11px; padding: 4px; overflow-x: auto; flex-shrink: 0; }
