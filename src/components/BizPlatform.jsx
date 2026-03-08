@@ -1103,14 +1103,22 @@ function SalesPage({ data, setData, showToast }) {
 
   return (
     <div className="page-bg page-content fade-in">
-      <KpiBanner kpis={[
-        { icon:"🛒", label:"Ventes Aujourd'hui", value:fmt(data.sales.filter(s=>s.sale_date===new Date().toISOString().split("T")[0]).reduce((s,x)=>s+x.total_amount,0)), color:"#1A56FF" },
-        { icon:"💵", label:"Chiffre d'Affaires", value:fmt(data.sales.reduce((s,x)=>s+x.total_amount,0)), trend:"+18%", trendUp:true, color:"#16C55E" },
-        { icon:"✨", label:"Profit Total", value:fmt(data.sales.reduce((s,x)=>s+x.profit,0)), trend:"+23%", trendUp:true, color:"#F5C518" },
-        { icon:"🧾", label:"Nb Ventes", value:data.sales.length, trend:"+12%", trendUp:true, color:"#7B91C4" },
-        { icon:"📱", label:"Mobile Money", value:data.sales.filter(s=>s.payment_method==="mobile_money").length+" ventes", color:"#25D366" },
-        { icon:"💳", label:"Crédit", value:fmt(data.sales.filter(s=>s.payment_method==="credit").reduce((s,x)=>s+x.total_amount,0)), color:"#D42B3A" },
-      ]} />
+      <HeroBanner
+        label="OBJECTIF VENTES QUOTIDIEN"
+        value={fmt(data.sales.reduce((s,x)=>s+x.total_amount,0))}
+        subtitle={`Objectif: ${fmt(1500)}`}
+        progress={(data.sales.reduce((s,x)=>s+x.total_amount,0) / 1500) * 100}
+        progressLabel={`${fmt(data.sales.reduce((s,x)=>s+x.total_amount,0))} sur ${fmt(1500)}`}
+        trend="+18%"
+        trendUp={true}
+        icon="🛒"
+      />
+      <div className="mini-kpi-grid">
+        <MiniKpiCard icon="✨" label="Profit" value={fmt(data.sales.reduce((s,x)=>s+x.profit,0))} trend="+23%" trendUp={true} color="#16C55E" />
+        <MiniKpiCard icon="🧾" label="Ventes" value={data.sales.length} trend="+12%" trendUp={true} color="#F5C518" />
+        <MiniKpiCard icon="📱" label="Mobile Money" value={data.sales.filter(s=>s.payment_method==="mobile_money").length} color="#25D366" />
+        <MiniKpiCard icon="💳" label="Crédit" value={fmt(data.sales.filter(s=>s.payment_method==="credit").reduce((s,x)=>s+x.total_amount,0))} color="#D42B3A" />
+      </div>
       <div className="sec-head"><h1 style={{ fontFamily:"'Bricolage Grotesque'", fontSize:22, fontWeight:800 }}>◈ Ventes & POS</h1></div>
       <div className="tabs" style={{ marginBottom: 20 }}>
         {[["pos","🛒 Point de Vente"],["history","📋 Historique"],["invoices","🧾 Factures"]].map(([k,l]) => (
