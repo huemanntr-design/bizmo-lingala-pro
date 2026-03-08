@@ -3775,6 +3775,11 @@ export default function BizPlatform() {
   const [sidebarExp, setSidebarExp] = useState(false);
   const [toast, setToast]           = useState(null);
   const [time, setTime]             = useState(new Date());
+  const [kpiGoals, setKpiGoals]     = useState(DEFAULT_KPI_GOALS);
+
+  const updateGoal = useCallback((key, value) => {
+    setKpiGoals(prev => ({ ...prev, [key]: value }));
+  }, []);
 
   useEffect(() => { const t = setInterval(() => setTime(new Date()), 1000); return () => clearInterval(t); }, []);
 
