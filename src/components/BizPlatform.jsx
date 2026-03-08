@@ -72,7 +72,9 @@ const initialData = {
 };
 
 // ─── UTILS ─────────────────────────────────────────────────────────────────────
-const fmt = (v, c = "USD") => c === "CDF" ? `${(v * 2800).toLocaleString()} FC` : `$${Number(v).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+let _globalCurrency = "USD";
+const setGlobalCurrency = (c) => { _globalCurrency = c; };
+const fmt = (v, c) => { const cur = c || _globalCurrency; return cur === "CDF" ? `${(v * 2800).toLocaleString()} FC` : `$${Number(v).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`; };
 const pct = (a, b) => b > 0 ? ((a / b) * 100).toFixed(0) + "%" : "0%";
 const initials = (name) => name.split(" ").map(w => w[0]).join("").slice(0, 2).toUpperCase();
 const payIcons = { cash: "💵", mobile_money: "📱", credit: "🏦", bank: "🏛️" };
@@ -4784,6 +4786,10 @@ export default function BizPlatform() {
   const [globalSearch, setGlobalSearch] = useState("");
   const [showGlobalSearch, setShowGlobalSearch] = useState(false);
   const [showQuickAdd, setShowQuickAdd] = useState(false);
+  const [currency, setCurrency]     = useState("USD");
+
+  // Keep global currency in sync for fmt() — synchronous update before render
+  _globalCurrency = currency;
 
   const updateGoal = useCallback((key, value) => {
     setKpiGoals(prev => ({ ...prev, [key]: value }));
@@ -4924,6 +4930,11 @@ export default function BizPlatform() {
             <div style={{ display:"flex", gap:3, alignItems:"center" }}>
               {["#1A56FF","#F5C518","#D42B3A"].map(c => <div key={c} style={{ width:7, height:7, borderRadius:"50%", background:c, boxShadow:`0 0 6px ${c}50` }} />)}
             </div>
+
+            {/* Currency toggle */}
+            <button className="theme-btn" onClick={() => setCurrency(c => c === "USD" ? "CDF" : "USD")} title={currency === "USD" ? "Afficher en Francs Congolais" : "Afficher en Dollars"} style={{ fontSize:12, fontWeight:700, letterSpacing:0.3 }}>
+              {currency === "USD" ? "🇺🇸$" : "🇨🇩FC"}
+            </button>
 
             {/* Theme toggle */}
             <button className="theme-btn" onClick={() => setDark(d => !d)} title={dark?"Mode Clair":"Mode Sombre"}>
