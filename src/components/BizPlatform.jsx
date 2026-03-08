@@ -1648,6 +1648,69 @@ function SalesPage({ data, setData, showToast, kpiGoals, updateGoal }) {
           <button className="btn btn-primary" onClick={() => showToast("Nouvelle facture créée!", "success")}>➕ Nouvelle Facture</button>
         </div>
       )}
+      {/* ─ RECEIPT MODAL ─ */}
+      {receipt && (
+        <div style={{ position:"fixed", inset:0, zIndex:9999, display:"flex", alignItems:"center", justifyContent:"center", background:"rgba(0,0,0,0.7)", backdropFilter:"blur(6px)" }} onClick={() => setReceipt(null)}>
+          <div style={{ background:"#fff", color:"#111", borderRadius:16, width:"min(360px, 92vw)", maxHeight:"85vh", overflow:"auto", boxShadow:"0 20px 60px rgba(0,0,0,0.5)" }} onClick={e => e.stopPropagation()}>
+            <div ref={receiptRef} style={{ padding:"24px 20px" }}>
+              {/* Header */}
+              <div style={{ textAlign:"center", marginBottom:16 }}>
+                <div style={{ fontSize:28, fontWeight:900, fontFamily:"'Bricolage Grotesque'", letterSpacing:"-0.5px" }}>{receipt.company}</div>
+                <div style={{ fontSize:11, color:"#666", marginTop:4 }}>{receipt.phone}</div>
+                <div style={{ fontSize:10, color:"#999", marginTop:2 }}>Vendeur: {receipt.seller}</div>
+              </div>
+              {/* Dashed line */}
+              <div style={{ borderTop:"2px dashed #ccc", margin:"12px 0" }} />
+              {/* Receipt info */}
+              <div style={{ display:"flex", justifyContent:"space-between", fontSize:11, color:"#555", marginBottom:8 }}>
+                <span>N°: {receipt.id}</span>
+                <span>{receipt.date}</span>
+              </div>
+              <div style={{ fontSize:12, marginBottom:12 }}>
+                <strong>Client:</strong> {receipt.client}
+              </div>
+              {/* Items */}
+              <div style={{ borderTop:"1px solid #ddd", borderBottom:"1px solid #ddd", padding:"8px 0" }}>
+                <div style={{ display:"flex", justifyContent:"space-between", fontSize:10, fontWeight:700, color:"#888", marginBottom:6, textTransform:"uppercase" }}>
+                  <span style={{ flex:2 }}>Article</span>
+                  <span style={{ flex:1, textAlign:"center" }}>Qté</span>
+                  <span style={{ flex:1, textAlign:"right" }}>P.U.</span>
+                  <span style={{ flex:1, textAlign:"right" }}>Total</span>
+                </div>
+                {receipt.items.map((item, i) => (
+                  <div key={i} style={{ display:"flex", justifyContent:"space-between", fontSize:12, padding:"4px 0", borderBottom: i < receipt.items.length - 1 ? "1px dotted #eee" : "none" }}>
+                    <span style={{ flex:2, fontWeight:500 }}>{item.emoji} {item.name}</span>
+                    <span style={{ flex:1, textAlign:"center", color:"#666" }}>×{item.qty}</span>
+                    <span style={{ flex:1, textAlign:"right", color:"#666" }}>{fmt(item.unit_price)}</span>
+                    <span style={{ flex:1, textAlign:"right", fontWeight:600 }}>{fmt(item.total)}</span>
+                  </div>
+                ))}
+              </div>
+              {/* Total */}
+              <div style={{ borderTop:"2px dashed #ccc", margin:"12px 0" }} />
+              <div style={{ display:"flex", justifyContent:"space-between", fontSize:18, fontWeight:900, fontFamily:"'Bricolage Grotesque'" }}>
+                <span>TOTAL</span>
+                <span>{fmt(receipt.subtotal)}</span>
+              </div>
+              <div style={{ fontSize:11, color:"#666", marginTop:4 }}>
+                Paiement: {payIcons[receipt.payment_method]} {receipt.payment_method === "cash" ? "Espèces" : receipt.payment_method === "mobile_money" ? "Mobile Money" : receipt.payment_method === "credit" ? "Crédit" : "Banque"}
+              </div>
+              {/* Footer */}
+              <div style={{ borderTop:"2px dashed #ccc", margin:"14px 0 8px" }} />
+              <div style={{ textAlign:"center", fontSize:10, color:"#999" }}>
+                <div>Merci pour votre achat! 🙏</div>
+                <div style={{ marginTop:2 }}>Powered by BizPlatform DRC</div>
+              </div>
+            </div>
+            {/* Actions */}
+            <div style={{ display:"flex", gap:8, padding:"0 20px 20px", flexWrap:"wrap" }}>
+              <button onClick={printReceipt} style={{ flex:1, padding:"10px", background:"#1A56FF", color:"#fff", border:"none", borderRadius:10, fontWeight:700, fontSize:13, cursor:"pointer", fontFamily:"'DM Sans'" }}>🖨️ Imprimer</button>
+              <button onClick={() => { showToast("📲 Reçu envoyé par WhatsApp!", "whatsapp"); }} style={{ flex:1, padding:"10px", background:"#25D366", color:"#fff", border:"none", borderRadius:10, fontWeight:700, fontSize:13, cursor:"pointer", fontFamily:"'DM Sans'" }}>💬 WhatsApp</button>
+              <button onClick={() => setReceipt(null)} style={{ flex:"0 0 100%", padding:"8px", background:"transparent", border:"1px solid #ddd", borderRadius:10, fontWeight:600, fontSize:12, cursor:"pointer", color:"#666", fontFamily:"'DM Sans'" }}>✕ Fermer</button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
