@@ -2155,16 +2155,57 @@ function PersonalPage({ data, showToast }) {
   const totalPersonal = data.budget.spent;
   const savingsRate   = (((totalIncome-totalPersonal)/totalIncome)*100).toFixed(0);
 
+  const budgetUsed = (data.budget.spent / data.budget.monthly) * 100;
+  const remaining = data.budget.monthly - data.budget.spent;
+  const totalGoalsSaved = goals.reduce((s,g) => s + g.current, 0);
+  const totalGoalsTarget = goals.reduce((s,g) => s + g.target, 0);
+
+  // Budget donut segments
+  const budgetSegments = data.budget.categories.map((c, i) => {
+    const colors = ["#1A56FF","#D42B3A","#F5C518","#16C55E","#25D366","#7B91C4"];
+    return { value: (c.spent / data.budget.spent) * 100, color: colors[i % colors.length], label: c.name, amount: c.spent };
+  });
+
   return (
     <div className="page-bg page-content fade-in">
-      <KpiBanner kpis={[
-        { icon:"💵", label:"Revenus Mensuels", value:fmt(totalIncome), trend:"+8%", trendUp:true, color:"#1A56FF" },
-        { icon:"💸", label:"Dépenses Perso", value:fmt(totalPersonal), trend:"+3%", trendUp:false, color:"#D42B3A" },
-        { icon:"🏦", label:"Taux d'Épargne", value:savingsRate+"%", trend:"+2%", trendUp:true, color:"#16C55E" },
-        { icon:"📱", label:"M-PESA", value:"+$320", color:"#25D366" },
-        { icon:"🎯", label:"Budget Restant", value:fmt(data.budget.monthly-data.budget.spent), color:data.budget.spent>data.budget.monthly?"#D42B3A":"#F5C518" },
-        { icon:"📊", label:"Catégories", value:data.budget.categories.length, color:"#7B91C4" },
-      ]} />
+      {/* Hero: Budget Health */}
+      <HeroBanner
+        label="SANTÉ FINANCIÈRE DU MOIS"
+        value={fmt(remaining)}
+        subtitle={remaining >= 0 ? "💚 Il vous reste ce montant à dépenser ce mois" : "🔴 Vous avez dépassé votre budget!"}
+        progress={Math.min(budgetUsed, 100)}
+        progressLabel={`${fmt(data.budget.spent)} dépensés sur ${fmt(data.budget.monthly)}`}
+        progressColor={budgetUsed > 90 ? "linear-gradient(90deg, #F5C518, #D42B3A)" : budgetUsed > 70 ? "linear-gradient(90deg, #1A56FF, #F5C518)" : undefined}
+        trend={savingsRate + "% épargné"}
+        trendUp={Number(savingsRate) > 0}
+        icon="🏦"
+      >
+        {/* Pedagogic explanation */}
+        <div style={{ display:"flex", gap:16, marginTop:16, paddingTop:14, borderTop:"1px solid rgba(26,86,255,0.1)" }}>
+          <div style={{ flex:1, textAlign:"center" }}>
+            <div style={{ fontSize:10, color:"#7B91C4", textTransform:"uppercase", letterSpacing:0.5, marginBottom:2 }}>Revenus</div>
+            <div style={{ fontFamily:"'Bricolage Grotesque'", fontWeight:700, fontSize:18, color:"#16C55E" }}>{fmt(totalIncome)}</div>
+          </div>
+          <div style={{ fontSize:20, color:"#7B91C4", display:"flex", alignItems:"center" }}>→</div>
+          <div style={{ flex:1, textAlign:"center" }}>
+            <div style={{ fontSize:10, color:"#7B91C4", textTransform:"uppercase", letterSpacing:0.5, marginBottom:2 }}>Dépenses</div>
+            <div style={{ fontFamily:"'Bricolage Grotesque'", fontWeight:700, fontSize:18, color:"#D42B3A" }}>{fmt(totalPersonal)}</div>
+          </div>
+          <div style={{ fontSize:20, color:"#7B91C4", display:"flex", alignItems:"center" }}>→</div>
+          <div style={{ flex:1, textAlign:"center" }}>
+            <div style={{ fontSize:10, color:"#7B91C4", textTransform:"uppercase", letterSpacing:0.5, marginBottom:2 }}>Épargne</div>
+            <div style={{ fontFamily:"'Bricolage Grotesque'", fontWeight:700, fontSize:18, color:"#1A56FF" }}>{fmt(totalIncome - totalPersonal)}</div>
+          </div>
+        </div>
+      </HeroBanner>
+
+      <div className="mini-kpi-grid">
+        <MiniKpiCard icon="💵" label="Revenus" value={fmt(totalIncome)} trend="+8%" trendUp={true} color="#1A56FF" />
+        <MiniKpiCard icon="💸" label="Dépensé" value={fmt(totalPersonal)} trend="+3%" trendUp={false} color="#D42B3A" />
+        <MiniKpiCard icon="🏦" label="Épargne" value={savingsRate+"%"} trend="+2%" trendUp={true} color="#16C55E" />
+        <MiniKpiCard icon="📱" label="M-PESA" value="+$320" color="#25D366" />
+      </div>
+
       <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:20 }}>
         <h1 style={{ fontFamily:"'Bricolage Grotesque'", fontSize:22, fontWeight:800 }}>◷ Finance Personnelle</h1>
         <button className="btn btn-ghost" onClick={() => showToast("Synchronisation...", "info")}>🔄 Sync</button>
@@ -2178,24 +2219,72 @@ function PersonalPage({ data, showToast }) {
 
       {tab==="overview" && (
         <>
-          <div className="g2">
+          <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:16, marginBottom:16 }}>
+            {/* Budget Donut */}
             <div className="card card-pad">
-              <div className="sec-title" style={{ marginBottom:14 }}>💡 Conseils IA Budget</div>
-              {[["🔴","Dépenses Loisirs dépassées de $70. Réduisez les sorties."],["🟡",`Taux d'épargne de ${savingsRate}%. Objectif: 20%.`],["🟢","Excellent contrôle alimentaire ce mois! Continuez."]].map(([ico,tip],i) => (
-                <div key={i} style={{ display:"flex", alignItems:"flex-start", gap:8, padding:"10px 0", borderBottom: i<2?"1px solid rgba(26,86,255,0.08)":"none" }}>
-                  <span>{ico}</span><span style={{ fontSize:13, color:"#7B91C4" }}>{tip}</span>
+              <div className="sec-title" style={{ marginBottom:16 }}>📊 Où va votre argent?</div>
+              <div style={{ display:"flex", alignItems:"center", gap:24 }}>
+                <DonutChart
+                  segments={budgetSegments}
+                  size={140}
+                  strokeWidth={18}
+                  centerValue={budgetUsed.toFixed(0)+"%"}
+                  centerLabel="utilisé"
+                />
+                <div style={{ flex:1 }}>
+                  {data.budget.categories.map((c, i) => {
+                    const colors = ["#1A56FF","#D42B3A","#F5C518","#16C55E","#25D366","#7B91C4"];
+                    const over = c.spent > c.budget;
+                    return (
+                      <div key={c.name} style={{ display:"flex", alignItems:"center", gap:8, padding:"6px 0", borderBottom:"1px solid rgba(26,86,255,0.06)" }}>
+                        <div style={{ width:10, height:10, borderRadius:3, background:colors[i%colors.length], flexShrink:0 }} />
+                        <div style={{ flex:1, fontSize:12 }}>{c.name}</div>
+                        <div style={{ fontSize:12, fontWeight:700, color: over ? "#D42B3A" : "#7B91C4" }}>{fmt(c.spent)}</div>
+                      </div>
+                    );
+                  })}
                 </div>
-              ))}
+              </div>
+              <div style={{ marginTop:14, padding:"10px 14px", background:"rgba(26,86,255,0.04)", borderRadius:10, border:"1px solid rgba(26,86,255,0.08)" }}>
+                <div style={{ fontSize:11, color:"#7B91C4", lineHeight:1.6 }}>
+                  💡 <strong>Astuce:</strong> Les experts recommandent la règle <strong>50/30/20</strong> — 50% besoins, 30% envies, 20% épargne. Votre taux d'épargne est de <strong style={{ color: Number(savingsRate) >= 20 ? "#16C55E" : "#F5C518" }}>{savingsRate}%</strong>.
+                </div>
+              </div>
             </div>
+
+            {/* Income vs Expense trend */}
             <div className="card card-pad">
-              <div className="sec-title" style={{ marginBottom:14 }}>📱 Mobile Money</div>
-              {[["M-PESA","💚","#25D366","+$320"],["Airtel Money","🔴","#D42B3A","+$180"],["Orange Money","🟠","#F5C518","+$450"]].map(([n,ico,c,a]) => (
-                <div key={n} style={{ display:"flex", alignItems:"center", justifyContent:"space-between", padding:"10px 0", borderBottom:"1px solid rgba(26,86,255,0.08)" }}>
-                  <div style={{ display:"flex", alignItems:"center", gap:10 }}>
+              <div className="sec-title" style={{ marginBottom:16 }}>📈 Tendance Mensuelle</div>
+              <div style={{ marginBottom:16 }}>
+                <SparkLine data={[2800,2600,3000,2900,3100,3200,3200]} width={280} height={60} color="#16C55E" />
+                <div style={{ fontSize:11, color:"#7B91C4", marginTop:6 }}>↗ Revenus en hausse constante ces 7 derniers mois</div>
+              </div>
+              <div style={{ marginBottom:16 }}>
+                <SparkLine data={[1800,1900,1850,1700,1950,1920,1950]} width={280} height={40} color="#D42B3A" />
+                <div style={{ fontSize:11, color:"#7B91C4", marginTop:4 }}>⚡ Dépenses stables — bon signe!</div>
+              </div>
+
+              {/* AI Insights */}
+              <div className="sec-title" style={{ marginBottom:10, fontSize:13 }}>💡 Conseils Personnalisés</div>
+              <InsightCard icon="🔴" iconBg="rgba(212,43,58,0.12)" title="Loisirs: +$70 au-dessus du budget" description="Vous avez dépensé $220 au lieu de $150. Essayez de limiter les sorties la dernière semaine." />
+              <InsightCard icon="🟡" iconBg="rgba(245,197,24,0.12)" title={`Épargne: ${savingsRate}% — Objectif 20%`} description="Augmentez votre virement automatique de $50/mois pour atteindre l'objectif." action="Ajuster" onAction={() => showToast("Paramètres d'épargne ouverts", "info")} />
+              <InsightCard icon="🟢" iconBg="rgba(22,197,94,0.12)" title="Alimentation: Sous contrôle!" description="$350 dépensés sur un budget de $400. Excellent travail ce mois!" />
+            </div>
+          </div>
+
+          {/* Mobile Money */}
+          <div className="card card-pad">
+            <div className="sec-title" style={{ marginBottom:14 }}>📱 Comptes Mobile Money</div>
+            <div style={{ display:"grid", gridTemplateColumns:"repeat(3,1fr)", gap:12 }}>
+              {[["M-PESA","💚","#25D366",320,[280,310,290,320,300,350,320]],["Airtel Money","🔴","#D42B3A",180,[150,160,170,180,190,175,180]],["Orange Money","🟠","#F5C518",450,[400,380,420,430,440,460,450]]].map(([n,ico,c,a,trend]) => (
+                <div key={n} className="card card-pad-sm" style={{ borderColor:`${c}30` }}>
+                  <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom:10 }}>
                     <div style={{ width:32, height:32, borderRadius:"50%", background:`${c}20`, display:"flex", alignItems:"center", justifyContent:"center" }}>{ico}</div>
                     <span style={{ fontWeight:600, fontSize:13 }}>{n}</span>
                   </div>
-                  <span style={{ fontFamily:"'Bricolage Grotesque'", fontWeight:700, color:"#16C55E" }}>{a}</span>
+                  <div style={{ fontFamily:"'Bricolage Grotesque'", fontWeight:800, fontSize:22, color:c, marginBottom:4 }}>+{fmt(a)}</div>
+                  <SparkLine data={trend} width={120} height={28} color={c} />
+                  <div style={{ fontSize:10, color:"#7B91C4", marginTop:4 }}>Ce mois</div>
                 </div>
               ))}
             </div>
@@ -2204,73 +2293,180 @@ function PersonalPage({ data, showToast }) {
       )}
 
       {tab==="goals" && (
-        <div className="g2">
-          {goals.map(g => {
-            const p = Math.min((g.current/g.target)*100,100);
-            return (
-              <div key={g.id} className="card card-pad">
-                <div style={{ display:"flex", alignItems:"center", gap:12, marginBottom:16 }}>
-                  <div style={{ width:48, height:48, borderRadius:12, background:"rgba(26,86,255,0.1)", display:"flex", alignItems:"center", justifyContent:"center", fontSize:24 }}>{g.emoji}</div>
-                  <div><div style={{ fontWeight:700 }}>{g.name}</div><div style={{ fontSize:11, color:"#7B91C4" }}>Objectif: {fmt(g.target)}</div></div>
+        <>
+          {/* Goals progress overview */}
+          <div className="card card-pad" style={{ marginBottom:16 }}>
+            <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:16 }}>
+              <div className="sec-title">🎯 Progression Globale de vos Objectifs</div>
+              <div style={{ fontFamily:"'Bricolage Grotesque'", fontWeight:700, color:"#1A56FF" }}>{fmt(totalGoalsSaved)} / {fmt(totalGoalsTarget)}</div>
+            </div>
+            <div className="hero-progress" style={{ height:12 }}>
+              <div className="hero-progress-fill" style={{ width:`${(totalGoalsSaved/totalGoalsTarget*100)}%` }} />
+            </div>
+            <div style={{ fontSize:12, color:"#7B91C4", marginTop:8 }}>
+              💡 Vous avez épargné <strong style={{ color:"#16C55E" }}>{(totalGoalsSaved/totalGoalsTarget*100).toFixed(0)}%</strong> de vos objectifs totaux. {totalGoalsSaved/totalGoalsTarget < 0.5 ? "Continuez, chaque petit montant compte!" : "Excellent travail, vous y êtes presque!"}
+            </div>
+          </div>
+          <div className="g2">
+            {goals.map(g => {
+              const p = Math.min((g.current/g.target)*100,100);
+              const monthsLeft = Math.ceil((g.target - g.current) / (g.current > 0 ? g.current / 6 : 100));
+              return (
+                <div key={g.id} className="card card-pad">
+                  <div style={{ display:"flex", alignItems:"center", gap:12, marginBottom:16 }}>
+                    <div style={{ width:48, height:48, borderRadius:12, background:"rgba(26,86,255,0.1)", display:"flex", alignItems:"center", justifyContent:"center", fontSize:24 }}>{g.emoji}</div>
+                    <div style={{ flex:1 }}><div style={{ fontWeight:700 }}>{g.name}</div><div style={{ fontSize:11, color:"#7B91C4" }}>Objectif: {fmt(g.target)}</div></div>
+                    <DonutChart segments={[{ value: p, color: p>80?"#16C55E":p>50?"#1A56FF":"#F5C518" }]} size={56} strokeWidth={7} centerValue={p.toFixed(0)+"%"} />
+                  </div>
+                  <div style={{ fontFamily:"'Bricolage Grotesque'", fontSize:24, fontWeight:800, color:"#1A56FF", marginBottom:4 }}>{fmt(g.current)}</div>
+                  <div style={{ fontSize:11, color:"#7B91C4", marginBottom:10 }}>
+                    Il reste <strong>{fmt(g.target-g.current)}</strong> · ~{monthsLeft} mois au rythme actuel
+                  </div>
+                  <div className="progress" style={{ height:8, marginBottom:8 }}>
+                    <div className="progress-fill" style={{ width:`${p}%`, background:p>80?"#16C55E":p>50?"#1A56FF":"#F5C518" }} />
+                  </div>
+                  <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center" }}>
+                    <span style={{ fontSize:11, color:"#7B91C4" }}>{p.toFixed(0)}% atteint</span>
+                    <button style={{ background:"none", border:"none", color:"#1A56FF", cursor:"pointer", fontSize:11, fontWeight:700 }}
+                      onClick={() => { setGoals(prev => prev.map(x => x.id===g.id?{...x,current:Math.min(x.current+100,x.target)}:x)); showToast(`+$100 ajouté à "${g.name}"!`,"success"); }}>
+                      + Verser $100
+                    </button>
+                  </div>
                 </div>
-                <div style={{ fontFamily:"'Bricolage Grotesque'", fontSize:24, fontWeight:800, color:"#1A56FF", marginBottom:4 }}>{fmt(g.current)}</div>
-                <div style={{ fontSize:11, color:"#7B91C4", marginBottom:10 }}>Il reste {fmt(g.target-g.current)} à économiser</div>
-                <div className="progress" style={{ height:8, marginBottom:8 }}>
-                  <div className="progress-fill" style={{ width:`${p}%`, background:p>80?"#16C55E":p>50?"#1A56FF":"#F5C518" }} />
-                </div>
-                <div style={{ display:"flex", justifyContent:"space-between" }}>
-                  <span style={{ fontSize:11, color:"#7B91C4" }}>{p.toFixed(0)}% atteint</span>
-                  <button style={{ background:"none", border:"none", color:"#1A56FF", cursor:"pointer", fontSize:11, fontWeight:700 }}
-                    onClick={() => { setGoals(prev => prev.map(x => x.id===g.id?{...x,current:Math.min(x.current+100,x.target)}:x)); showToast(`+$100 ajouté à "${g.name}"!`,"success"); }}>
-                    + Verser $100
-                  </button>
-                </div>
-              </div>
-            );
-          })}
-        </div>
+              );
+            })}
+          </div>
+        </>
       )}
 
       {tab==="budget" && (
-        <div className="card card-pad">
-          <div className="sec-head">
-            <div className="sec-title">🎯 Budget Mensuel</div>
-            <div style={{ fontFamily:"'Bricolage Grotesque'", fontWeight:700, fontSize:16 }}>{fmt(data.budget.spent)} / {fmt(data.budget.monthly)}</div>
-          </div>
-          <div className="progress" style={{ height:10, marginBottom:24 }}>
-            <div className="progress-fill" style={{ width:`${(data.budget.spent/data.budget.monthly)*100}%`, background: data.budget.spent>data.budget.monthly*0.9?"#D42B3A":"#1A56FF" }} />
-          </div>
-          {data.budget.categories.map(c => {
-            const over = c.spent > c.budget;
-            return (
-              <div key={c.name} style={{ marginBottom:14 }}>
-                <div style={{ display:"flex", justifyContent:"space-between", marginBottom:5 }}>
-                  <span style={{ fontWeight:600, fontSize:13 }}>{c.name}</span>
-                  <span style={{ fontSize:12, color: over?"#D42B3A":"#7B91C4" }}>{fmt(c.spent)} / {fmt(c.budget)}</span>
+        <div style={{ display:"grid", gridTemplateColumns:"1fr 340px", gap:16 }}>
+          <div className="card card-pad">
+            <div className="sec-head">
+              <div className="sec-title">🎯 Budget Mensuel par Catégorie</div>
+            </div>
+            {data.budget.categories.map((c, i) => {
+              const over = c.spent > c.budget;
+              const pct2 = Math.min((c.spent/c.budget)*100, 100);
+              const colors = ["#1A56FF","#D42B3A","#F5C518","#16C55E","#25D366"];
+              const emojis = ["🍽️","🚗","🏠","🎮","💰"];
+              return (
+                <div key={c.name} style={{ marginBottom:18 }}>
+                  <div style={{ display:"flex", justifyContent:"space-between", marginBottom:6, alignItems:"center" }}>
+                    <div style={{ display:"flex", alignItems:"center", gap:8 }}>
+                      <span>{emojis[i] || "📋"}</span>
+                      <span style={{ fontWeight:600, fontSize:13 }}>{c.name}</span>
+                    </div>
+                    <div style={{ display:"flex", alignItems:"center", gap:8 }}>
+                      <span style={{ fontSize:12, fontWeight:700, color: over?"#D42B3A":"#7B91C4" }}>{fmt(c.spent)}</span>
+                      <span style={{ fontSize:11, color:"#7B91C4" }}>/ {fmt(c.budget)}</span>
+                    </div>
+                  </div>
+                  <div className="progress" style={{ height:8 }}>
+                    <div className="progress-fill" style={{ width:`${pct2}%`, background: over?"#D42B3A":pct2>80?colors[i%colors.length]+"CC":colors[i%colors.length] }} />
+                  </div>
+                  {over && (
+                    <div style={{ fontSize:10, color:"#D42B3A", marginTop:4, display:"flex", alignItems:"center", gap:4 }}>
+                      ⚠️ Dépassé de {fmt(c.spent-c.budget)} — {((c.spent/c.budget-1)*100).toFixed(0)}% au-dessus
+                    </div>
+                  )}
+                  {!over && pct2 > 80 && (
+                    <div style={{ fontSize:10, color:"#F5C518", marginTop:4 }}>
+                      ⚡ Attention: {(100-pct2).toFixed(0)}% restant ({fmt(c.budget-c.spent)})
+                    </div>
+                  )}
                 </div>
-                <div className="progress">
-                  <div className="progress-fill" style={{ width:`${Math.min((c.spent/c.budget)*100,100)}%`, background: over?"#D42B3A":c.spent>c.budget*0.8?"#F5C518":"#1A56FF" }} />
-                </div>
-                {over && <div style={{ fontSize:10, color:"#D42B3A", marginTop:3 }}>⚠️ Dépassé de {fmt(c.spent-c.budget)}</div>}
+              );
+            })}
+          </div>
+
+          {/* Right: Summary */}
+          <div style={{ display:"flex", flexDirection:"column", gap:14 }}>
+            <div className="card card-pad" style={{ textAlign:"center" }}>
+              <DonutChart
+                segments={[
+                  { value: (data.budget.spent/data.budget.monthly)*100, color: budgetUsed > 90 ? "#D42B3A" : "#1A56FF" },
+                ]}
+                size={160}
+                strokeWidth={20}
+                centerValue={fmt(remaining)}
+                centerLabel="restant"
+              />
+              <div style={{ marginTop:14, fontFamily:"'Bricolage Grotesque'", fontWeight:700, fontSize:16 }}>
+                {budgetUsed > 100 ? "🔴 Budget dépassé!" : budgetUsed > 90 ? "🟡 Presque épuisé" : budgetUsed > 70 ? "🟢 En bonne voie" : "✅ Excellent contrôle"}
               </div>
-            );
-          })}
+              <div style={{ fontSize:12, color:"#7B91C4", marginTop:4, lineHeight:1.6 }}>
+                {budgetUsed > 100
+                  ? `Vous avez dépensé ${fmt(data.budget.spent - data.budget.monthly)} de plus que prévu.`
+                  : `Il vous reste ${fmt(remaining)} pour les ${30 - new Date().getDate()} jours restants, soit ~${fmt(remaining / Math.max(30 - new Date().getDate(), 1))}/jour.`
+                }
+              </div>
+            </div>
+
+            <div className="card card-pad-sm" style={{ background:"rgba(26,86,255,0.04)", borderColor:"rgba(26,86,255,0.15)" }}>
+              <div style={{ fontSize:12, fontWeight:700, color:"#1A56FF", marginBottom:8 }}>📚 Le saviez-vous?</div>
+              <div style={{ fontSize:12, color:"#7B91C4", lineHeight:1.7 }}>
+                La <strong>règle 50/30/20</strong> est simple:<br/>
+                • <strong>50%</strong> pour les besoins (loyer, nourriture)<br/>
+                • <strong>30%</strong> pour les envies (loisirs, sorties)<br/>
+                • <strong>20%</strong> pour l'épargne et les dettes<br/><br/>
+                Sur vos {fmt(totalIncome)}, visez {fmt(totalIncome*0.2)} d'épargne minimum.
+              </div>
+            </div>
+          </div>
         </div>
       )}
 
       {tab==="debts" && (
-        <div style={{ display:"flex", flexDirection:"column", gap:14 }}>
-          {[{name:"Prêt Banque",total:5000,remaining:2800,monthly:250,rate:"12%",emoji:"🏦"},{name:"Crédit Fournisseur",total:1200,remaining:600,monthly:200,rate:"0%",emoji:"📦"}].map(d => (
-            <div key={d.name} className="card card-pad" style={{ borderColor:"rgba(212,43,58,0.2)" }}>
-              <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:12 }}>
-                <div style={{ display:"flex", alignItems:"center", gap:12 }}><span style={{ fontSize:28 }}>{d.emoji}</span><div><div style={{ fontWeight:700, fontSize:14 }}>{d.name}</div><div style={{ fontSize:11, color:"#7B91C4" }}>Taux: {d.rate} · {fmt(d.monthly)}/mois</div></div></div>
-                <div style={{ textAlign:"right" }}><div style={{ fontFamily:"'Bricolage Grotesque'", fontWeight:800, fontSize:20, color:"#D42B3A" }}>{fmt(d.remaining)}</div><div style={{ fontSize:10, color:"#7B91C4" }}>/ {fmt(d.total)}</div></div>
-              </div>
-              <div className="progress"><div className="progress-fill" style={{ width:`${((d.total-d.remaining)/d.total)*100}%`, background:"#16C55E" }} /></div>
-              <div style={{ fontSize:11, color:"#16C55E", marginTop:4 }}>{((d.total-d.remaining)/d.total*100).toFixed(0)}% remboursé</div>
+        <>
+          <div className="card card-pad" style={{ marginBottom:16 }}>
+            <div className="sec-title" style={{ marginBottom:8 }}>📊 Vue d'ensemble de vos Dettes</div>
+            <div style={{ fontSize:12, color:"#7B91C4", marginBottom:14, lineHeight:1.6 }}>
+              💡 <strong>Stratégie avalanche:</strong> Remboursez d'abord la dette au taux le plus élevé pour économiser sur les intérêts. Ou utilisez la <strong>stratégie boule de neige:</strong> commencez par la plus petite dette pour la satisfaction rapide.
             </div>
-          ))}
-        </div>
+            <div style={{ display:"flex", gap:12 }}>
+              <div style={{ flex:1, padding:14, background:"rgba(212,43,58,0.06)", borderRadius:10, border:"1px solid rgba(212,43,58,0.15)", textAlign:"center" }}>
+                <div style={{ fontSize:11, color:"#7B91C4", marginBottom:4 }}>Total Restant</div>
+                <div style={{ fontFamily:"'Bricolage Grotesque'", fontWeight:800, fontSize:24, color:"#D42B3A" }}>{fmt(3400)}</div>
+              </div>
+              <div style={{ flex:1, padding:14, background:"rgba(22,197,94,0.06)", borderRadius:10, border:"1px solid rgba(22,197,94,0.15)", textAlign:"center" }}>
+                <div style={{ fontSize:11, color:"#7B91C4", marginBottom:4 }}>Déjà Remboursé</div>
+                <div style={{ fontFamily:"'Bricolage Grotesque'", fontWeight:800, fontSize:24, color:"#16C55E" }}>{fmt(2800)}</div>
+              </div>
+              <div style={{ flex:1, padding:14, background:"rgba(26,86,255,0.06)", borderRadius:10, border:"1px solid rgba(26,86,255,0.15)", textAlign:"center" }}>
+                <div style={{ fontSize:11, color:"#7B91C4", marginBottom:4 }}>Paiement/Mois</div>
+                <div style={{ fontFamily:"'Bricolage Grotesque'", fontWeight:800, fontSize:24, color:"#1A56FF" }}>{fmt(450)}</div>
+              </div>
+            </div>
+          </div>
+          <div style={{ display:"flex", flexDirection:"column", gap:14 }}>
+            {[{name:"Prêt Banque",total:5000,remaining:2800,monthly:250,rate:"12%",emoji:"🏦",tip:"Priorité #1 — taux élevé. Envisagez un paiement supplémentaire."},{name:"Crédit Fournisseur",total:1200,remaining:600,monthly:200,rate:"0%",emoji:"📦",tip:"Pas d'intérêts! Maintenez les paiements réguliers."}].map(d => (
+              <div key={d.name} className="card card-pad" style={{ borderColor:"rgba(212,43,58,0.2)" }}>
+                <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:12 }}>
+                  <div style={{ display:"flex", alignItems:"center", gap:12 }}>
+                    <span style={{ fontSize:28 }}>{d.emoji}</span>
+                    <div>
+                      <div style={{ fontWeight:700, fontSize:14 }}>{d.name}</div>
+                      <div style={{ fontSize:11, color:"#7B91C4" }}>Taux: {d.rate} · {fmt(d.monthly)}/mois</div>
+                    </div>
+                  </div>
+                  <div style={{ textAlign:"right" }}>
+                    <div style={{ fontFamily:"'Bricolage Grotesque'", fontWeight:800, fontSize:20, color:"#D42B3A" }}>{fmt(d.remaining)}</div>
+                    <div style={{ fontSize:10, color:"#7B91C4" }}>/ {fmt(d.total)}</div>
+                  </div>
+                </div>
+                <div className="progress" style={{ height:8 }}><div className="progress-fill" style={{ width:`${((d.total-d.remaining)/d.total)*100}%`, background:"#16C55E" }} /></div>
+                <div style={{ display:"flex", justifyContent:"space-between", marginTop:6 }}>
+                  <span style={{ fontSize:11, color:"#16C55E", fontWeight:600 }}>{((d.total-d.remaining)/d.total*100).toFixed(0)}% remboursé</span>
+                  <span style={{ fontSize:11, color:"#7B91C4" }}>~{Math.ceil(d.remaining / d.monthly)} mois restants</span>
+                </div>
+                <div style={{ marginTop:8, padding:"8px 12px", background:"rgba(245,197,24,0.06)", borderRadius:8, border:"1px solid rgba(245,197,24,0.12)" }}>
+                  <div style={{ fontSize:11, color:"#F5C518" }}>💡 {d.tip}</div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </>
       )}
     </div>
   );
