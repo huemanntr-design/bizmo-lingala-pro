@@ -3842,8 +3842,12 @@ function WhatsAppPage({ data, showToast, kpiGoals, updateGoal }) {
     for (const id of ids) {
       const c = contacts.find(x => x.id === id);
       await new Promise(r => setTimeout(r, broadcastDelay * 1000));
-      sendMessage(id, body);
-      setBroadcastResults(p => [...p, { contact:c, success:true }]);
+      let success = true;
+      try {
+        if (c?.phone) await sendWhatsApp(c.phone, body);
+        sendMessage(id, body);
+      } catch { success = false; }
+      setBroadcastResults(p => [...p, { contact:c, success }]);
     }
     setBroadcasting(false);
     showToast(`✅ Diffusion terminée: ${ids.length} envoyés!`, "whatsapp");
