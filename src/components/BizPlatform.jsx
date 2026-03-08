@@ -1,5 +1,16 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import logoDrc from "@/assets/logo-drc.png";
+import { supabase } from "@/integrations/supabase/client";
+
+// ─── TWILIO WHATSAPP HELPER ────────────────────────────────────────────────────
+const sendWhatsApp = async (to, message) => {
+  const { data, error } = await supabase.functions.invoke("send-whatsapp", {
+    body: { to, message },
+  });
+  if (error) throw new Error(error.message || "Failed to send WhatsApp");
+  if (data && !data.success) throw new Error(data.error || "Twilio error");
+  return data;
+};
 
 // ─── FONTS & DATA ──────────────────────────────────────────────────────────────
 const FONT_URL = "https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,300;12..96,400;12..96,500;12..96,600;12..96,700;12..96,800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&display=swap";
