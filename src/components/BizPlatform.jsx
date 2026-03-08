@@ -1110,6 +1110,15 @@ function ProductsPage({ data, setData, showToast }) {
 
   return (
     <div className="page-bg page-content fade-in">
+      <KpiBanner kpis={[
+        { icon:"📦", label:"Total Produits", value:String(data.products.length), color:"#1A56FF" },
+        { icon:"💰", label:"Valeur Stock", value:fmt(data.products.reduce((a,p)=>a+p.unit_price*p.stock_quantity,0)), color:"#16C55E" },
+        { icon:"⚠️", label:"Stock Bas", value:String(data.products.filter(p=>p.stock_quantity<=p.low_stock_alert).length), sub:"articles en alerte", color:"#D42B3A" },
+        { icon:"📊", label:"Coût Stock", value:fmt(data.products.reduce((a,p)=>a+p.cogs*p.stock_quantity,0)), sub:"valeur d'achat", color:"#F5C518" },
+        { icon:"🔄", label:"Unités Totales", value:String(data.products.reduce((a,p)=>a+p.stock_quantity,0)), color:"#1A56FF" },
+        { icon:"📈", label:"Marge Moyenne", value:pct(data.products.reduce((a,p)=>a+(p.unit_price-p.cogs),0), data.products.reduce((a,p)=>a+p.unit_price,0)), color:"#16C55E" },
+        { icon:"🏷️", label:"Catégories", value:String(new Set(data.products.map(p=>p.type)).size), sub:"types de produits", color:"#F5C518" },
+      ]} />
       <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:20, flexWrap:"wrap", gap:10 }}>
         <h1 style={{ fontFamily:"'Bricolage Grotesque'", fontSize:22, fontWeight:800 }}>◻ Produits & Stock</h1>
         <button className="btn btn-primary" onClick={() => setShowAdd(true)}>➕ Nouveau Produit</button>
