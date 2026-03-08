@@ -1992,6 +1992,7 @@ function MarketingPage({ data, setData, showToast, kpiGoals, updateGoal }) {
   const [hovPost, setHovPost] = useState(null);
   const [weekOff, setWeekOff] = useState(0);
   const [composer, setComposer] = useState({ title:"", content:"", platform:"instagram", scheduled_date:"" });
+  const [editPost, setEditPost] = useState(null); // { ...post, isAI:bool }
   const tooltipRef = useRef(null);
 
   const PLATFORMS = [
