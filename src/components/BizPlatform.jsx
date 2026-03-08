@@ -650,7 +650,7 @@ function DonutChart({ segments, size = 120, strokeWidth = 14, centerLabel, cente
   );
 }
 
-function SparkLine({ data, width = 100, height = 32, color = "#1A56FF", fill = true }) {
+const SparkLine = ({ data, width = 100, height = 32, color = "#1A56FF", fill = true }) => {
   if (!data || data.length < 2) return null;
   const max = Math.max(...data);
   const min = Math.min(...data);
@@ -662,7 +662,7 @@ function SparkLine({ data, width = 100, height = 32, color = "#1A56FF", fill = t
       <polyline points={points} fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
   );
-}
+};
 
 function MiniBarChartViz({ data, height = 48, barColor = "#1A56FF" }) {
   const max = Math.max(...data.map(d => d.value));
