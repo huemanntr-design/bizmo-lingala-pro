@@ -6,12 +6,12 @@ const FONT_URL = "https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:o
 const initialData = {
   user: { name: "Jean-Baptiste Mukendi", company: "Mukendi Enterprises", avatar: "JM", role: "Directeur Général", phone: "+243812000001" },
   products: [
-    { id: 1, name: "Eau Minérale 1.5L", type: "Boisson", unit_price: 1.5, currency: "USD", cogs: 0.8, stock_quantity: 120, low_stock_alert: 20, has_expiry: true, emoji: "💧" },
-    { id: 2, name: "Bière Primus 65cl",  type: "Boisson", unit_price: 2.0, currency: "USD", cogs: 1.1, stock_quantity: 8,   low_stock_alert: 15, has_expiry: true, emoji: "🍺" },
-    { id: 3, name: "Sac de Riz 25kg",    type: "Alimentaire", unit_price: 22, currency: "USD", cogs: 16, stock_quantity: 45, low_stock_alert: 10, has_expiry: false, emoji: "🌾" },
-    { id: 4, name: "Huile Végétale 5L",  type: "Alimentaire", unit_price: 8.5, currency: "USD", cogs: 5.5, stock_quantity: 3, low_stock_alert: 10, has_expiry: true, emoji: "🫙" },
-    { id: 5, name: "Savon Monganga",      type: "Hygiène", unit_price: 0.75, currency: "USD", cogs: 0.4, stock_quantity: 200, low_stock_alert: 50, has_expiry: false, emoji: "🧼" },
-    { id: 6, name: "Farine Manioc 10kg", type: "Alimentaire", unit_price: 6, currency: "USD", cogs: 3.8, stock_quantity: 30, low_stock_alert: 15, has_expiry: true, emoji: "🥣" },
+    { id: 1, name: "Eau Minérale 1.5L", type: "Boisson", unit_price: 1.5, currency: "USD", cogs: 0.8, stock_quantity: 120, low_stock_alert: 20, has_expiry: true, emoji: "💧", image: null },
+    { id: 2, name: "Bière Primus 65cl",  type: "Boisson", unit_price: 2.0, currency: "USD", cogs: 1.1, stock_quantity: 8,   low_stock_alert: 15, has_expiry: true, emoji: "🍺", image: null },
+    { id: 3, name: "Sac de Riz 25kg",    type: "Alimentaire", unit_price: 22, currency: "USD", cogs: 16, stock_quantity: 45, low_stock_alert: 10, has_expiry: false, emoji: "🌾", image: null },
+    { id: 4, name: "Huile Végétale 5L",  type: "Alimentaire", unit_price: 8.5, currency: "USD", cogs: 5.5, stock_quantity: 3, low_stock_alert: 10, has_expiry: true, emoji: "🫙", image: null },
+    { id: 5, name: "Savon Monganga",      type: "Hygiène", unit_price: 0.75, currency: "USD", cogs: 0.4, stock_quantity: 200, low_stock_alert: 50, has_expiry: false, emoji: "🧼", image: null },
+    { id: 6, name: "Farine Manioc 10kg", type: "Alimentaire", unit_price: 6, currency: "USD", cogs: 3.8, stock_quantity: 30, low_stock_alert: 15, has_expiry: true, emoji: "🥣", image: null },
   ],
   clients: [
     { id: 1, name: "Marie Kabila",          email: "marie@example.com",   phone: "+243812345678", status: "vip",    credit_limit: 500,  credit_balance: 120,  total_revenue: 3200,  address: "Gombe, Kinshasa" },
