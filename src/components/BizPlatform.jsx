@@ -4353,30 +4353,24 @@ export default function BizPlatform() {
               {["#1A56FF","#F5C518","#D42B3A"].map(c => <div key={c} style={{ width:7, height:7, borderRadius:"50%", background:c, boxShadow:`0 0 6px ${c}50` }} />)}
             </div>
 
-            {/* Currency toggle */}
-            <button className="theme-btn" onClick={() => setCurrency(c => c === "USD" ? "CDF" : "USD")} title={currency === "USD" ? "Afficher en Francs Congolais" : "Afficher en Dollars"} style={{ fontSize:12, fontWeight:700, letterSpacing:0.3 }}>
-              {currency === "USD" ? "🇺🇸$" : "🇨🇩FC"}
-            </button>
-
-            {/* Theme toggle */}
-            <button className="theme-btn" onClick={() => setDark(d => !d)} title={dark?"Mode Clair":"Mode Sombre"}>
-              {dark ? "☀️" : "🌙"}
-            </button>
-
-            {/* Notifications */}
-            <button className="theme-btn" onClick={() => showToast("🔔 Aucune nouvelle alerte", "info")} title="Notifications" style={{ position:"relative" }}>
-              🔔
-              <div style={{ position:"absolute", top:6, right:6, width:6, height:6, borderRadius:"50%", background:"#D42B3A", boxShadow:"0 0 6px rgba(212,43,58,0.5)" }} />
-            </button>
-
-            {/* WA status indicator */}
-            <div style={{ display:"flex", alignItems:"center", gap:6, padding:"6px 14px",
-              background:"rgba(37,211,102,0.06)", backdropFilter:"blur(12px)",
-              border:"1px solid rgba(37,211,102,0.15)", borderRadius:22, cursor:"pointer",
-              transition:"all 0.2s" }}
-              onClick={() => setActivePage("whatsapp")}>
-              <div style={{ width:7, height:7, borderRadius:"50%", background:"#25D366", animation:"pulse 2s infinite", boxShadow:"0 0 8px rgba(37,211,102,0.4)" }} />
-              <span style={{ fontSize:11, fontWeight:600, color:"#25D366" }}>WA Bot</span>
+            {/* Currency toggle + rate */}
+            <div style={{ display:"flex", alignItems:"center", gap:4 }}>
+              <button className="theme-btn" onClick={() => setCurrency(c => c === "USD" ? "CDF" : "USD")} title={currency === "USD" ? "Afficher en Francs Congolais" : "Afficher en Dollars"} style={{ fontSize:12, fontWeight:700, letterSpacing:0.3 }}>
+                {currency === "USD" ? "🇺🇸$" : "🇨🇩FC"}
+              </button>
+              {currency === "CDF" && (
+                <div style={{ display:"flex", alignItems:"center", gap:3, padding:"4px 8px", borderRadius:10, background: dark?"rgba(26,86,255,0.08)":"rgba(26,86,255,0.06)", border:"1px solid rgba(26,86,255,0.12)" }}>
+                  <span style={{ fontSize:10, color:"#7B91C4", fontWeight:600 }}>1$=</span>
+                  <input
+                    type="number"
+                    value={exchangeRate}
+                    onChange={e => { const v = parseInt(e.target.value); if (v > 0) setExchangeRate(v); }}
+                    style={{ width:60, padding:"2px 4px", fontSize:11, fontWeight:700, color:"#1A56FF", borderRadius:6, border:"1px solid rgba(26,86,255,0.15)", background:"transparent", textAlign:"center" }}
+                    min="1"
+                  />
+                  <span style={{ fontSize:10, color:"#7B91C4", fontWeight:600 }}>FC</span>
+                </div>
+              )}
             </div>
 
             {/* Avatar */}
