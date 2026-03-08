@@ -306,6 +306,46 @@ const buildStyles = (dark) => {
   .kpi-banner-arrow.right { right: -12px; }
   .kpi-banner-arrow.hidden { opacity: 0; pointer-events: none; }
 
+  /* ── HERO BANNER ── */
+  .hero-banner {
+    background: linear-gradient(135deg, ${dark ? "rgba(26,86,255,0.15)" : "rgba(26,86,255,0.08)"} 0%, ${dark ? "rgba(26,86,255,0.04)" : "rgba(26,86,255,0.02)"} 100%);
+    border: 1px solid ${dark ? "rgba(26,86,255,0.25)" : "rgba(26,86,255,0.18)"};
+    border-radius: 18px; padding: 24px 28px; position: relative; overflow: hidden;
+    margin-bottom: 16px;
+  }
+  .hero-banner::before {
+    content: ''; position: absolute; top: -40%; right: -10%; width: 260px; height: 260px;
+    border-radius: 50%; background: rgba(26,86,255,0.08); filter: blur(60px); pointer-events: none;
+  }
+  .hero-banner-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: ${t.text2}; margin-bottom: 8px; }
+  .hero-banner-value { font-family: 'Bricolage Grotesque', sans-serif; font-size: 42px; font-weight: 800; letter-spacing: -1px; line-height: 1; color: ${t.text}; }
+  .hero-banner-sub { font-size: 13px; color: ${t.text2}; margin-top: 8px; }
+  .hero-progress { height: 8px; background: ${dark ? "rgba(26,86,255,0.12)" : "rgba(26,86,255,0.08)"}; border-radius: 4px; overflow: hidden; margin-top: 16px; }
+  .hero-progress-fill { height: 100%; border-radius: 4px; transition: width 0.8s ease; background: linear-gradient(90deg, #1A56FF, #4B7BFF); }
+
+  /* ── MINI KPI GRID ── */
+  .mini-kpi-grid { display: flex; gap: 12px; margin-bottom: 20px; flex-wrap: wrap; }
+  .mini-kpi {
+    flex: 1; min-width: 140px; background: ${t.surface}; border: 1px solid ${t.border};
+    border-radius: 14px; padding: 16px; text-align: center; position: relative; overflow: hidden;
+    transition: transform 0.18s, box-shadow 0.18s;
+  }
+  .mini-kpi:hover { transform: translateY(-2px); box-shadow: ${t.shadow}; }
+  .mini-kpi-icon { font-size: 22px; margin-bottom: 8px; }
+  .mini-kpi-val { font-family: 'Bricolage Grotesque', sans-serif; font-size: 22px; font-weight: 700; line-height: 1; }
+  .mini-kpi-label { font-size: 11px; color: ${t.text2}; margin-top: 4px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.3px; }
+  .mini-kpi-trend { font-size: 10px; margin-top: 6px; font-weight: 700; }
+
+  /* ── INSIGHT CARD ── */
+  .insight-card {
+    background: ${dark ? "rgba(26,86,255,0.04)" : "rgba(26,86,255,0.02)"};
+    border: 1px solid ${t.border}; border-radius: 12px; padding: 14px 16px;
+    display: flex; align-items: flex-start; gap: 12px; margin-bottom: 8px;
+    transition: background 0.18s;
+  }
+  .insight-card:hover { background: ${dark ? "rgba(26,86,255,0.08)" : "rgba(26,86,255,0.05)"}; }
+  .insight-icon { width: 36px; height: 36px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 16px; flex-shrink: 0; }
+
   /* ── TABS ── */
   .tabs { display: flex; gap: 2px; background: ${t.glass3}; border-radius: 11px; padding: 4px; overflow-x: auto; flex-shrink: 0; }
   .tabs::-webkit-scrollbar { display: none; }
