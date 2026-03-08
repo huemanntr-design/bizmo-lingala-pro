@@ -2282,6 +2282,7 @@ function MarketingPage({ data, setData, showToast, kpiGoals, updateGoal }) {
         <MiniKpiCard icon="✨" label="IA" value={aiPosts.filter(p=>p.status==="ai_proposed").length} color="#F5C518" />
         <MiniKpiCard icon="🔄" label="Partages" value={data.posts.reduce((s,p)=>s+p.shares,0)} color="#69C9D0" />
       </div>
+      <HelpText icon="📣">Le Marketing, c'est comment vous faites connaître vos produits. Ici, l'IA vous aide à créer des publications pour Facebook, Instagram et TikTok. Vous pouvez programmer à l'avance et l'IA propose les meilleurs moments pour publier.</HelpText>
       <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:20 }}>
         <h1 style={{ fontFamily:"'Bricolage Grotesque'", fontSize:22, fontWeight:800 }}>◉ Marketing Hub</h1>
         <button className="btn btn-primary" onClick={() => showToast("Analytics...", "info")}>📊 Analytics</button>
