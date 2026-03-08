@@ -1270,9 +1270,10 @@ function SalesPage({ data, setData, showToast, kpiGoals, updateGoal }) {
         <MiniKpiCard icon="📱" label="Mobile Money" value={data.sales.filter(s=>s.payment_method==="mobile_money").length} color="#25D366" />
         <MiniKpiCard icon="💳" label="Crédit" value={fmt(data.sales.filter(s=>s.payment_method==="credit").reduce((s,x)=>s+x.total_amount,0))} color="#D42B3A" />
       </div>
+      <HelpText icon="🛒">Ici vous enregistrez vos ventes. Le «Point de Vente» c'est comme votre caisse : vous choisissez les produits, le client paie, et tout est noté automatiquement. L'historique garde la trace de toutes vos ventes passées.</HelpText>
       <div className="sec-head"><h1 style={{ fontFamily:"'Bricolage Grotesque'", fontSize:22, fontWeight:800 }}>◈ Ventes & POS</h1></div>
       <div className="tabs" style={{ marginBottom: 20 }}>
-        {[["pos","🛒 Point de Vente"],["history","📋 Historique"],["invoices","🧾 Factures"]].map(([k,l]) => (
+        {[["pos","🛒 Point de Vente"],["gambiste","📱 Gambiste M-Pesa"],["history","📋 Historique"],["invoices","🧾 Factures"]].map(([k,l]) => (
           <div key={k} className={`tab ${tab===k?"active":""}`} onClick={() => setTab(k)}>{l}</div>
         ))}
       </div>
