@@ -1446,8 +1446,16 @@ function HomePage({ data, setData, showToast, dark, kpiGoals, updateGoal }) {
           <div style={{ fontSize: 12, color: "#1A56FF", fontWeight: 600, marginBottom: 8 }}>Rapport Business · {new Date().toLocaleDateString("fr-FR")}</div>
           <textarea readOnly rows={8} style={{ fontFamily:"monospace", fontSize: 11, marginBottom: 14 }}
             value={`📊 RAPPORT — ${data.user.company}\n\n💰 Revenus: ${fmt(totalRevenue)}\n📉 Dépenses: ${fmt(totalExpenses)}\n✨ Profit: ${fmt(totalProfit)}\n🛍️ Ventes: ${data.sales.length}\n\n_Mukendi BizPlatform_ 🇨🇩`} />
-          <div className="form-group"><label className="form-label">Numéro destinataire</label><input placeholder="+243 8XX XXX XXX" /></div>
-          <button className="btn btn-wa" style={{ width:"100%", justifyContent:"center" }} onClick={() => { showToast("Rapport envoyé via WhatsApp!", "whatsapp"); setShowWAModal(false); }}>📤 Envoyer</button>
+          <div className="form-group"><label className="form-label">Numéro destinataire</label><input id="wa-report-num" placeholder="+243 8XX XXX XXX" /></div>
+          <button className="btn btn-wa" style={{ width:"100%", justifyContent:"center" }} onClick={async () => {
+            const num = document.getElementById("wa-report-num")?.value;
+            if (!num) return showToast("Entrez un numéro", "error");
+            try {
+              await sendWhatsApp(num, `📊 RAPPORT — ${data.user.company}\n\n💰 Revenus: ${fmt(totalRevenue)}\n📉 Dépenses: ${fmt(totalExpenses)}\n✨ Profit: ${fmt(totalProfit)}\n🛍️ Ventes: ${data.sales.length}\n\n_Mukendi BizPlatform_ 🇨🇩`);
+              showToast("✅ Rapport envoyé via WhatsApp!", "whatsapp");
+              setShowWAModal(false);
+            } catch (e) { showToast(`❌ Erreur: ${e.message}`, "error"); }
+          }}>📤 Envoyer</button>
         </Modal>
       )}
     </div>
