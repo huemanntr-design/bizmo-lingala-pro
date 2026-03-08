@@ -2481,8 +2481,8 @@ function ClientsPage({ data, setData, showToast, kpiGoals, updateGoal }) {
           </div>
           <div style={{ display:"flex", gap:10 }}>
             <button className="btn btn-primary" style={{ flex:1, justifyContent:"center" }} onClick={() => showToast("Message envoyé!", "info")}>📧 Email</button>
-            <button className="btn btn-wa" style={{ flex:1, justifyContent:"center" }} onClick={() => showToast(`WhatsApp à ${selected.name}!`, "whatsapp")}>💬 WhatsApp</button>
-            <button className="btn btn-red" onClick={() => showToast("Rappel de paiement envoyé!", "whatsapp")}>⚠️ Rappel</button>
+            <button className="btn btn-wa" style={{ flex:1, justifyContent:"center" }} onClick={async () => { try { await sendWhatsApp(selected.phone, `Bonjour ${selected.name}! — ${data.user.company} 🇨🇩`); showToast(`✅ WhatsApp à ${selected.name}!`, "whatsapp"); } catch(err) { showToast(`❌ ${err.message}`, "error"); } }}>💬 WhatsApp</button>
+            <button className="btn btn-red" onClick={async () => { try { await sendWhatsApp(selected.phone, `⚠️ *RAPPEL DE PAIEMENT*\nBonjour *${selected.name}*,\nSolde: *${fmt(selected.credit_balance)}*\nMerci de régulariser.\n_${data.user.company}_ 🇨🇩`); showToast("✅ Rappel de paiement envoyé!", "whatsapp"); } catch(err) { showToast(`❌ ${err.message}`, "error"); } }}>⚠️ Rappel</button>
           </div>
           <div style={{ display:"flex", gap:8, marginTop:12 }}>
             <button className="btn btn-ghost" style={{ flex:1, justifyContent:"center" }} onClick={() => setEditingClient({...selected})}>✏️ Modifier</button>
