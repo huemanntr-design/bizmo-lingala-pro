@@ -465,6 +465,47 @@ function Tag({ status }) {
   return <span className="tag" style={{ background: m.bg, color: m.color }}>{m.label}</span>;
 }
 
+function KpiBanner({ kpis }) {
+  const scrollRef = useRef(null);
+  const [canLeft, setCanLeft] = useState(false);
+  const [canRight, setCanRight] = useState(false);
+
+  const checkScroll = useCallback(() => {
+    const el = scrollRef.current;
+    if (!el) return;
+    setCanLeft(el.scrollLeft > 4);
+    setCanRight(el.scrollLeft < el.scrollWidth - el.clientWidth - 4);
+  }, []);
+
+  useEffect(() => {
+    const el = scrollRef.current;
+    if (!el) return;
+    checkScroll();
+    el.addEventListener("scroll", checkScroll, { passive: true });
+    const ro = new ResizeObserver(checkScroll);
+    ro.observe(el);
+    return () => { el.removeEventListener("scroll", checkScroll); ro.disconnect(); };
+  }, [checkScroll, kpis]);
+
+  const scroll = (dir) => {
+    const el = scrollRef.current;
+    if (!el) return;
+    el.scrollBy({ left: dir * 240, behavior: "smooth" });
+  };
+
+  return (
+    <div className="kpi-banner">
+      <div className={`kpi-banner-arrow left ${!canLeft ? "hidden" : ""}`} onClick={() => scroll(-1)}>◀</div>
+      <div className="kpi-banner-scroll" ref={scrollRef}>
+        {kpis.map((k, i) => (
+          <Kpi key={i} icon={k.icon} label={k.label} value={k.value} trend={k.trend} trendUp={k.trendUp} color={k.color} />
+        ))}
+      </div>
+      <div className={`kpi-banner-arrow right ${!canRight ? "hidden" : ""}`} onClick={() => scroll(1)}>▶</div>
+    </div>
+  );
+
+
 function Spinner() { return <span className="spinner" />; }
 
 function Avatar({ name, size = 36, color = "#1A56FF" }) {
