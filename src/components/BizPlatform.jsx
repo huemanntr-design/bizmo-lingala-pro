@@ -993,7 +993,7 @@ function HomePage({ data, setData, showToast, dark }) {
       </div>
 
       {/* ── VISUAL ANALYTICS ROW ── */}
-      <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr 1fr", gap:16, marginBottom:16 }}>
+      <div className="g3" style={{ marginBottom:16 }}>
         {/* Profit Breakdown Donut */}
         <div className="card card-pad">
           <div className="sec-title" style={{ marginBottom:14 }}>💰 Répartition Profit</div>
