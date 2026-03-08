@@ -602,7 +602,10 @@ function Kpi({ icon, label, value, trend, trendUp = true, color = "#1A56FF" }) {
 }
 
 // ─── HERO BANNER COMPONENT ─────────────────────────────────────────────────────
-function HeroBanner({ label, value, subtitle, progress, progressLabel, progressColor, trend, trendUp, icon, children }) {
+function HeroBanner({ label, value, subtitle, progress, progressLabel, progressColor, trend, trendUp, icon, children, onEditGoal, goalLabel }) {
+  const [editOpen, setEditOpen] = useState(false);
+  const [tempVal, setTempVal] = useState("");
+
   return (
     <div className="hero-banner fade-in">
       <div style={{ position:"relative", zIndex:1 }}>
@@ -617,6 +620,12 @@ function HeroBanner({ label, value, subtitle, progress, progressLabel, progressC
               <span style={{ padding:"4px 10px", borderRadius:20, fontSize:12, fontWeight:700, background: trendUp ? "rgba(22,197,94,0.12)" : "rgba(212,43,58,0.12)", color: trendUp ? "#16C55E" : "#D42B3A" }}>
                 {trendUp ? "↗" : "↘"} {trend}
               </span>
+            )}
+            {onEditGoal && (
+              <button onClick={() => { setTempVal(""); setEditOpen(true); }}
+                style={{ padding:"6px 12px", borderRadius:9, background:"rgba(26,86,255,0.1)", border:"1px solid rgba(26,86,255,0.25)", color:"#1A56FF", fontSize:11, fontWeight:700, cursor:"pointer", fontFamily:"'DM Sans'", display:"flex", alignItems:"center", gap:4 }}>
+                🎯 Modifier objectif
+              </button>
             )}
             {icon && <div style={{ width:48, height:48, borderRadius:14, background:"rgba(26,86,255,0.12)", display:"flex", alignItems:"center", justifyContent:"center", fontSize:24 }}>{icon}</div>}
           </div>
@@ -634,6 +643,16 @@ function HeroBanner({ label, value, subtitle, progress, progressLabel, progressC
         )}
         {children}
       </div>
+      {editOpen && onEditGoal && (
+        <div style={{ marginTop:14, padding:14, background:"rgba(26,86,255,0.06)", borderRadius:12, border:"1px solid rgba(26,86,255,0.15)" }}>
+          <div style={{ fontSize:11, fontWeight:700, color:"#7B91C4", marginBottom:8, textTransform:"uppercase", letterSpacing:0.5 }}>🎯 {goalLabel || "Modifier l'objectif"}</div>
+          <div style={{ display:"flex", gap:8, alignItems:"center" }}>
+            <input type="number" value={tempVal} onChange={e => setTempVal(e.target.value)} placeholder="Nouvel objectif..." style={{ flex:1, padding:"8px 12px", borderRadius:8 }} />
+            <button className="btn btn-primary" style={{ fontSize:12, padding:"8px 16px" }} onClick={() => { if(tempVal) { onEditGoal(Number(tempVal)); setEditOpen(false); } }}>✅ Sauvegarder</button>
+            <button className="btn btn-ghost" style={{ fontSize:12, padding:"8px 12px" }} onClick={() => setEditOpen(false)}>✕</button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
