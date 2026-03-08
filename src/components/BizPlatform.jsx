@@ -88,7 +88,7 @@ const NAV = [
   { id: "marketing",  icon: "◉",  label: "Marketing",        short: "Marketing"},
   { id: "accounting", icon: "⊛",  label: "Comptabilité",     short: "Compta"   },
   { id: "personal",   icon: "◷",  label: "Finance Perso",    short: "Finances" },
-  { id: "bizplan",    icon: "📋", label: "Business Plan",     short: "Plan"     },
+  { id: "bizplan",    icon: "◇",  label: "Business Plan",     short: "Plan"     },
   { id: "whatsapp",   icon: "◈",  label: "WhatsApp Bot",     short: "WA Bot"   },
   { id: "settings",   icon: "◉",  label: "Paramètres",       short: "Config"   },
 ];
