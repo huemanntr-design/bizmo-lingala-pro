@@ -1464,28 +1464,102 @@ function ProductsPage({ data, setData, showToast }) {
       )}
 
       {tab === "analytics" && (
-        <div className="g2">
-          {data.products.map(p => {
-            const sold = data.sales.filter(s => s.product_name === p.name).reduce((a,s) => a + s.quantity, 0);
-            const rev  = data.sales.filter(s => s.product_name === p.name).reduce((a,s) => a + s.total_amount, 0);
-            return (
-              <div key={p.id} className="card card-pad">
-                <div style={{ display:"flex", alignItems:"center", gap:12, marginBottom:14 }}>
-                  <span style={{ fontSize:28 }}>{p.emoji}</span>
-                  <div><div style={{ fontWeight:700 }}>{p.name}</div><div style={{ fontSize:12, color:"#7B91C4" }}>{p.type}</div></div>
-                </div>
-                <div className="g2">
-                  {[["Vendus",sold+"u","#1A56FF"],["Revenus",fmt(rev),"#16C55E"],["Stock",p.stock_quantity+"u",p.stock_quantity<=p.low_stock_alert?"#D42B3A":"#F5C518"],["Marge",((p.unit_price-p.cogs)/p.unit_price*100).toFixed(0)+"%","#1A56FF"]].map(([k,v,c]) => (
-                    <div key={k} style={{ padding:"10px", background:`${c}0A`, borderRadius:9, border:`1px solid ${c}22` }}>
-                      <div style={{ fontSize:11, color:"#7B91C4", marginBottom:3 }}>{k}</div>
-                      <div style={{ fontFamily:"'Bricolage Grotesque'", fontWeight:700, color:c, fontSize:16 }}>{v}</div>
+        <>
+          {/* Overview Charts */}
+          <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr 1fr", gap:16, marginBottom:16 }}>
+            {/* Stock Distribution Donut */}
+            <div className="card card-pad">
+              <div className="sec-title" style={{ marginBottom:14 }}>📦 Distribution Stock</div>
+              {(() => {
+                const totalStock = data.products.reduce((s,p) => s+p.stock_quantity, 0) || 1;
+                const colors = ["#1A56FF","#D42B3A","#F5C518","#16C55E","#25D366","#7B91C4"];
+                return (
+                  <div style={{ display:"flex", alignItems:"center", gap:14 }}>
+                    <DonutChart
+                      segments={data.products.map((p,i) => ({ value:(p.stock_quantity/totalStock)*100, color:colors[i%colors.length] }))}
+                      size={100} strokeWidth={14} centerValue={totalStock+""} centerLabel="unités"
+                    />
+                    <div style={{ flex:1 }}>
+                      {data.products.map((p,i) => (
+                        <div key={p.id} style={{ display:"flex", alignItems:"center", gap:6, padding:"3px 0", fontSize:11 }}>
+                          <div style={{ width:8, height:8, borderRadius:2, background:colors[i%colors.length] }} />
+                          <span style={{ flex:1, color:"#7B91C4" }}>{p.emoji} {p.name.split(" ")[0]}</span>
+                          <span style={{ fontWeight:700 }}>{p.stock_quantity}u</span>
+                        </div>
+                      ))}
                     </div>
-                  ))}
-                </div>
+                  </div>
+                );
+              })()}
+            </div>
+
+            {/* Margin Comparison */}
+            <div className="card card-pad">
+              <div className="sec-title" style={{ marginBottom:14 }}>📈 Comparaison Marges</div>
+              <MiniBarChartViz
+                data={data.products.map(p => ({
+                  value: ((p.unit_price-p.cogs)/p.unit_price)*100,
+                  label: p.emoji,
+                  highlight: ((p.unit_price-p.cogs)/p.unit_price)*100 === Math.max(...data.products.map(pr=>((pr.unit_price-pr.cogs)/pr.unit_price)*100))
+                }))}
+                height={70}
+                barColor="#16C55E"
+              />
+              <div style={{ fontSize:11, color:"#7B91C4", marginTop:8 }}>
+                Marge moyenne: <strong style={{ color:"#16C55E" }}>{(data.products.reduce((s,p)=>s+((p.unit_price-p.cogs)/p.unit_price*100),0)/data.products.length).toFixed(0)}%</strong>
               </div>
-            );
-          })}
-        </div>
+            </div>
+
+            {/* Revenue per Product */}
+            <div className="card card-pad">
+              <div className="sec-title" style={{ marginBottom:14 }}>💰 Revenus par Produit</div>
+              {(() => {
+                const prodRevs = data.products.map(p => ({
+                  name: p.name, emoji: p.emoji,
+                  rev: data.sales.filter(s=>s.product_name===p.name).reduce((a,s)=>a+s.total_amount,0)
+                })).sort((a,b) => b.rev - a.rev);
+                const maxR = prodRevs[0]?.rev || 1;
+                return prodRevs.map(p => (
+                  <div key={p.name} style={{ marginBottom:8 }}>
+                    <div style={{ display:"flex", justifyContent:"space-between", fontSize:11, marginBottom:3 }}>
+                      <span>{p.emoji} {p.name.split(" ")[0]}</span>
+                      <span style={{ fontWeight:700, color:"#1A56FF" }}>{fmt(p.rev)}</span>
+                    </div>
+                    <div className="progress" style={{ height:6 }}>
+                      <div className="progress-fill" style={{ width:`${(p.rev/maxR)*100}%`, background:"#1A56FF" }} />
+                    </div>
+                  </div>
+                ));
+              })()}
+            </div>
+          </div>
+
+          {/* Per-product detail cards */}
+          <div className="g2">
+            {data.products.map(p => {
+              const sold = data.sales.filter(s => s.product_name === p.name).reduce((a,s) => a + s.quantity, 0);
+              const rev  = data.sales.filter(s => s.product_name === p.name).reduce((a,s) => a + s.total_amount, 0);
+              const margin = ((p.unit_price-p.cogs)/p.unit_price*100);
+              return (
+                <div key={p.id} className="card card-pad">
+                  <div style={{ display:"flex", alignItems:"center", gap:12, marginBottom:14 }}>
+                    <span style={{ fontSize:28 }}>{p.emoji}</span>
+                    <div style={{ flex:1 }}><div style={{ fontWeight:700 }}>{p.name}</div><div style={{ fontSize:12, color:"#7B91C4" }}>{p.type}</div></div>
+                    <DonutChart segments={[{ value: margin, color: margin>50?"#16C55E":margin>30?"#1A56FF":"#D42B3A" }]} size={48} strokeWidth={6} centerValue={margin.toFixed(0)+"%"} />
+                  </div>
+                  <div className="g2">
+                    {[["Vendus",sold+"u","#1A56FF"],["Revenus",fmt(rev),"#16C55E"],["Stock",p.stock_quantity+"u",p.stock_quantity<=p.low_stock_alert?"#D42B3A":"#F5C518"],["Marge",margin.toFixed(0)+"%","#1A56FF"]].map(([k,v,c]) => (
+                      <div key={k} style={{ padding:"10px", background:`${c}0A`, borderRadius:9, border:`1px solid ${c}22` }}>
+                        <div style={{ fontSize:11, color:"#7B91C4", marginBottom:3 }}>{k}</div>
+                        <div style={{ fontFamily:"'Bricolage Grotesque'", fontWeight:700, color:c, fontSize:16 }}>{v}</div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </>
       )}
 
       {/* Product detail modal */}
