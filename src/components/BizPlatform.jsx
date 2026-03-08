@@ -1218,7 +1218,7 @@ function HomePage({ data, setData, showToast, dark, kpiGoals, updateGoal }) {
 }
 
 // ─── SALES PAGE ────────────────────────────────────────────────────────────────
-function SalesPage({ data, setData, showToast }) {
+function SalesPage({ data, setData, showToast, kpiGoals, updateGoal }) {
   const [tab, setTab] = useState("pos");
   const [cart, setCart] = useState([]);
   const [search, setSearch] = useState("");
@@ -1229,6 +1229,7 @@ function SalesPage({ data, setData, showToast }) {
   const filtered = data.products.filter(p => p.name.toLowerCase().includes(search.toLowerCase()));
   const cartTotal = cart.reduce((s, i) => s + i.unit_price * i.qty, 0);
   const cartProfit = cart.reduce((s, i) => s + (i.unit_price - i.cogs) * i.qty, 0);
+  const salesGoal = kpiGoals.sales_daily;
 
   const addToCart = (p) => {
     setCart(prev => { const ex = prev.find(i => i.id === p.id); return ex ? prev.map(i => i.id === p.id ? { ...i, qty: i.qty + 1 } : i) : [...prev, { ...p, qty: 1 }]; });
@@ -1250,12 +1251,14 @@ function SalesPage({ data, setData, showToast }) {
       <HeroBanner
         label="OBJECTIF VENTES QUOTIDIEN"
         value={fmt(data.sales.reduce((s,x)=>s+x.total_amount,0))}
-        subtitle={`Objectif: ${fmt(1500)}`}
-        progress={(data.sales.reduce((s,x)=>s+x.total_amount,0) / 1500) * 100}
-        progressLabel={`${fmt(data.sales.reduce((s,x)=>s+x.total_amount,0))} sur ${fmt(1500)}`}
-        trend="+18%"
+        subtitle={`Objectif: ${fmt(salesGoal)}`}
+        progress={(data.sales.reduce((s,x)=>s+x.total_amount,0) / salesGoal) * 100}
+        progressLabel={`${fmt(data.sales.reduce((s,x)=>s+x.total_amount,0))} sur ${fmt(salesGoal)}`}
+        trend={kpiGoals.sales_trend}
         trendUp={true}
         icon="🛒"
+        onEditGoal={(v) => { updateGoal("sales_daily", v); showToast(`🎯 Objectif ventes mis à jour: ${fmt(v)}`, "success"); }}
+        goalLabel="Objectif ventes quotidien ($)"
       />
       <div className="mini-kpi-grid">
         <MiniKpiCard icon="✨" label="Profit" value={fmt(data.sales.reduce((s,x)=>s+x.profit,0))} trend="+23%" trendUp={true} color="#16C55E" />
