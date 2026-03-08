@@ -1,6 +1,8 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import logoDrc from "@/assets/logo-drc.png";
 import { supabase } from "@/integrations/supabase/client";
+import { jsPDF } from "jspdf";
+import html2canvas from "html2canvas";
 
 // ─── TWILIO WHATSAPP HELPER ────────────────────────────────────────────────────
 const sendWhatsApp = async (to, message) => {
@@ -139,6 +141,32 @@ const WA_TEMPLATES = [
 ];
 
 // ─── STYLES ────────────────────────────────────────────────────────────────────
+export const generatePDF = async (elementId, filename) => {
+  const element = document.getElementById(elementId);
+  if (!element) return;
+  try {
+    const canvas = await html2canvas(element, { scale: 2, useCORS: true, logging: false });
+    const imgWidth = 210;
+    const pageHeight = 297;
+    const imgHeight = (canvas.height * imgWidth) / canvas.width;
+    const pdf = new jsPDF("p", "mm", "a4");
+    const imgData = canvas.toDataURL("image/png");
+    let heightLeft = imgHeight;
+    let position = 0;
+    pdf.addImage(imgData, "PNG", 0, position, imgWidth, imgHeight);
+    heightLeft -= pageHeight;
+    while (heightLeft > 0) {
+      position = heightLeft - imgHeight;
+      pdf.addPage();
+      pdf.addImage(imgData, "PNG", 0, position, imgWidth, imgHeight);
+      heightLeft -= pageHeight;
+    }
+    pdf.save(filename);
+  } catch (error) {
+    console.error("Error generating PDF:", error);
+  }
+};
+
 const buildStyles = (dark) => {
   const t = dark ? {
     bg:       "#070B1A",
@@ -1911,7 +1939,7 @@ function SalesPage({ data, setData, showToast, kpiGoals, updateGoal, exchangeRat
       {receipt && (
         <div style={{ position:"fixed", inset:0, zIndex:9999, display:"flex", alignItems:"center", justifyContent:"center", background:"rgba(0,0,0,0.7)", backdropFilter:"blur(6px)" }} onClick={() => setReceipt(null)}>
           <div style={{ background:"#fff", color:"#111", borderRadius:16, width:"min(360px, 92vw)", maxHeight:"85vh", overflow:"auto", boxShadow:"0 20px 60px rgba(0,0,0,0.5)" }} onClick={e => e.stopPropagation()}>
-            <div ref={receiptRef} style={{ padding:"24px 20px" }}>
+            <div ref={receiptRef} id="receipt-content" style={{ padding:"24px 20px" }}>
               {/* Header */}
               <div style={{ textAlign:"center", marginBottom:16 }}>
                 <div style={{ fontSize:28, fontWeight:900, fontFamily:"'Bricolage Grotesque'", letterSpacing:"-0.5px" }}>{receipt.company}</div>
@@ -1963,6 +1991,7 @@ function SalesPage({ data, setData, showToast, kpiGoals, updateGoal, exchangeRat
             </div>
             {/* Actions */}
             <div style={{ display:"flex", gap:8, padding:"0 20px 20px", flexWrap:"wrap" }}>
+              <button onClick={() => generatePDF("receipt-content", `Recu_${receipt?.id || 'bizmo'}.pdf`)} style={{ flex:1, padding:"10px", background:"#D42B3A", color:"#fff", border:"none", borderRadius:10, fontWeight:700, fontSize:13, cursor:"pointer", fontFamily:"'DM Sans'" }}>📥 PDF</button>
               <button onClick={printReceipt} style={{ flex:1, padding:"10px", background:"#1A56FF", color:"#fff", border:"none", borderRadius:10, fontWeight:700, fontSize:13, cursor:"pointer", fontFamily:"'DM Sans'" }}>🖨️ Imprimer</button>
               <button onClick={async () => {
                 const client = data.clients.find(c => c.name === receipt.client_name);
@@ -3007,7 +3036,7 @@ function AccountingPage({ data, setData, showToast, kpiGoals, updateGoal }) {
   ].sort((a,b) => new Date(b.date)-new Date(a.date));
 
   return (
-    <div className="page-bg page-content fade-in">
+    <div className="page-bg page-content fade-in" id="accounting-content">
       <HeroBanner
         label="PROFIT NET"
         value={fmt(netProfit)}
@@ -3030,7 +3059,7 @@ function AccountingPage({ data, setData, showToast, kpiGoals, updateGoal }) {
       <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:20 }}>
         <h1 style={{ fontFamily:"'Bricolage Grotesque'", fontSize:22, fontWeight:800 }}>⊛ Comptabilité</h1>
         <div style={{ display:"flex", gap:10 }}>
-          <button className="btn btn-ghost" onClick={() => showToast("Export comptable...", "info")}>📥 Export</button>
+          <button className="btn btn-ghost" onClick={() => { showToast("Génération PDF en cours...", "info"); generatePDF("accounting-content", "Comptabilite.pdf"); }}>📥 Export PDF</button>
           <button className="btn btn-primary" onClick={() => setShowAdd(true)}>➕ Dépense</button>
         </div>
       </div>
@@ -4127,7 +4156,7 @@ function BusinessPlanPage({ data, showToast, dark }) {
   if (step === 7 && plan) {
     return (
       <div className="page-bg page-content fade-in">
-        <div style={{ maxWidth:800, margin:"0 auto" }}>
+        <div id="business-plan-content" style={{ maxWidth:800, margin:"0 auto", padding: "20px", background: "inherit" }}>
           {/* Plan Header */}
           <div className="hero-banner" style={{ marginBottom:24, textAlign:"center" }}>
             <div style={{ position:"relative", zIndex:1 }}>
@@ -4135,7 +4164,7 @@ function BusinessPlanPage({ data, showToast, dark }) {
               <h1 style={{ fontFamily:"'Bricolage Grotesque'", fontSize:28, fontWeight:800, letterSpacing:"-0.5px", marginBottom:8 }}>{plan.title}</h1>
               <div style={{ fontSize:13, color:"#7B91C4" }}>{plan.date} · Kinshasa, RDC 🇨🇩</div>
               <div style={{ display:"flex", gap:10, justifyContent:"center", marginTop:20 }}>
-                <button className="btn btn-primary" onClick={() => showToast("📥 Export PDF en cours...", "info")}>📥 Télécharger PDF</button>
+                <button className="btn btn-primary" onClick={() => { showToast("📥 Export PDF en cours...", "info"); generatePDF("business-plan-content", "Business_Plan.pdf"); }}>📥 Télécharger PDF</button>
                 <button className="btn btn-wa" onClick={() => showToast("📤 Envoyé via WhatsApp!", "whatsapp")}>💬 Envoyer WA</button>
                 <button className="btn btn-ghost" onClick={() => { setStep(0); setPlan(null); setAnswers({businessType:"",sector:"",targetMarket:"",uniqueValue:"",shortTermGoal:"",longTermGoal:"",challenges:"",teamSize:"",monthlyBudget:"",fundingNeeded:false,fundingAmount:""}); }}>🔄 Recommencer</button>
               </div>
