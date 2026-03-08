@@ -4258,13 +4258,12 @@ export default function BizPlatform() {
 
   const pages = {
     home:       <HomePage       data={data} setData={setData} showToast={showToast} dark={dark} kpiGoals={kpiGoals} updateGoal={updateGoal} />,
-    sales:      <SalesPage      data={data} setData={setData} showToast={showToast} kpiGoals={kpiGoals} updateGoal={updateGoal} />,
+    sales:      <SalesPage      data={data} setData={setData} showToast={showToast} kpiGoals={kpiGoals} updateGoal={updateGoal} exchangeRate={exchangeRate} />,
     products:   <ProductsPage   data={data} setData={setData} showToast={showToast} />,
     clients:    <ClientsPage    data={data} setData={setData} showToast={showToast} kpiGoals={kpiGoals} updateGoal={updateGoal} />,
     marketing:  <MarketingPage  data={data} setData={setData} showToast={showToast} kpiGoals={kpiGoals} updateGoal={updateGoal} />,
     accounting: <AccountingPage data={data} setData={setData} showToast={showToast} kpiGoals={kpiGoals} updateGoal={updateGoal} />,
     personal:   <PersonalPage   data={data} setData={setData} showToast={showToast} kpiGoals={kpiGoals} updateGoal={updateGoal} />,
-    whatsapp:   <WhatsAppPage   data={data} showToast={showToast} kpiGoals={kpiGoals} updateGoal={updateGoal} />,
     bizplan:    <BusinessPlanPage data={data} showToast={showToast} dark={dark} />,
     settings:   <SettingsPage   data={data} setData={setData} showToast={showToast} dark={dark} setDark={setDark} />,
   };
