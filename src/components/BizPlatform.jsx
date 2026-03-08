@@ -3210,7 +3210,7 @@ export default function BizPlatform() {
     clients:    <ClientsPage    data={data} setData={setData} showToast={showToast} />,
     marketing:  <MarketingPage  data={data} setData={setData} showToast={showToast} />,
     accounting: <AccountingPage data={data} setData={setData} showToast={showToast} />,
-    personal:   <PersonalPage   data={data} showToast={showToast} />,
+    personal:   <PersonalPage   data={data} setData={setData} showToast={showToast} />,
     whatsapp:   <WhatsAppPage   data={data} showToast={showToast} />,
     settings:   <SettingsPage   data={data} setData={setData} showToast={showToast} dark={dark} setDark={setDark} />,
   };
