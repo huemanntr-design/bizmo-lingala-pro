@@ -2381,7 +2381,7 @@ function SettingsPage({ data, setData, showToast, dark, setDark }) {
 }
 
 // ─── MAIN APP ──────────────────────────────────────────────────────────────────
-export default function App() {
+export default function BizPlatform() {
   const [dark, setDark]             = useState(true);
   const [data, setData]             = useState(initialData);
   const [activePage, setActivePage] = useState("home");
