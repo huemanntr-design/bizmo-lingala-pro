@@ -2605,6 +2605,7 @@ function AccountingPage({ data, setData, showToast, kpiGoals, updateGoal }) {
         <MiniKpiCard icon="🧾" label="Nb Dépenses" value={data.expenses.length} color="#7B91C4" />
         <MiniKpiCard icon="✅" label="Approuvées" value={data.expenses.filter(e=>e.status==="approved").length} color="#16C55E" />
       </div>
+      <HelpText icon="🧾">La comptabilité c'est le suivi de tout l'argent qui entre et sort de votre business. Le «journal» note chaque mouvement. Les «revenus» c'est l'argent gagné, les «dépenses» c'est l'argent dépensé, et le «profit net» c'est ce qui vous reste à la fin.</HelpText>
       <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:20 }}>
         <h1 style={{ fontFamily:"'Bricolage Grotesque'", fontSize:22, fontWeight:800 }}>⊛ Comptabilité</h1>
         <div style={{ display:"flex", gap:10 }}>
