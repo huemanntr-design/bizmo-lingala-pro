@@ -92,16 +92,16 @@ const statusMeta = {
 
 // ─── NAV ───────────────────────────────────────────────────────────────────────
 const NAV = [
-  { id: "home",       icon: "⊞",  label: "Tableau de Bord", short: "Accueil"  },
-  { id: "sales",      icon: "◈",  label: "Ventes & POS",    short: "Ventes"   },
-  { id: "products",   icon: "◻",  label: "Produits",         short: "Stock",   badge: "2" },
-  { id: "clients",    icon: "◎",  label: "Clients",          short: "Clients"  },
-  { id: "marketing",  icon: "◉",  label: "Marketing",        short: "Marketing"},
-  { id: "accounting", icon: "⊛",  label: "Comptabilité",     short: "Compta"   },
-  { id: "personal",   icon: "◷",  label: "Finance Perso",    short: "Finances" },
-  { id: "bizplan",    icon: "◇",  label: "Business Plan",     short: "Plan"     },
-  { id: "whatsapp",   icon: "◈",  label: "WhatsApp Bot",     short: "WA Bot"   },
-  { id: "settings",   icon: "◉",  label: "Paramètres",       short: "Config"   },
+  { id: "home",       icon: "🏠",  label: "Tableau de Bord", short: "Accueil"  },
+  { id: "sales",      icon: "🛍️",  label: "Ventes & POS",    short: "Ventes"   },
+  { id: "products",   icon: "📦",  label: "Produits",         short: "Stock",   badge: "2" },
+  { id: "clients",    icon: "👥",  label: "Clients",          short: "Clients"  },
+  { id: "marketing",  icon: "📣",  label: "Marketing",        short: "Marketing"},
+  { id: "accounting", icon: "💰",  label: "Comptabilité",     short: "Compta"   },
+  { id: "personal",   icon: "🏦",  label: "Finance Perso",    short: "Finances" },
+  { id: "bizplan",    icon: "📋",  label: "Business Plan",     short: "Plan"     },
+  { id: "whatsapp",   icon: "💬",  label: "WhatsApp Bot",     short: "WA Bot"   },
+  { id: "settings",   icon: "⚙️",  label: "Paramètres",       short: "Config"   },
 ];
 
 const DEFAULT_KPI_GOALS = {
@@ -1482,6 +1482,10 @@ function SalesPage({ data, setData, showToast, kpiGoals, updateGoal }) {
     setCart(prev => { const ex = prev.find(i => i.id === p.id); return ex ? prev.map(i => i.id === p.id ? { ...i, qty: i.qty + 1 } : i) : [...prev, { ...p, qty: 1 }]; });
   };
   const changeQty = (id, d) => setCart(prev => prev.map(i => i.id === id ? { ...i, qty: Math.max(1, i.qty + d) } : i).filter(i => i.qty > 0));
+  const changePrice = (id, newPrice) => {
+    const val = parseFloat(newPrice);
+    if (!isNaN(val) && val >= 0) setCart(prev => prev.map(i => i.id === id ? { ...i, unit_price: val } : i));
+  };
   const clearCart = () => setCart([]);
 
   const printReceipt = () => {
@@ -1581,7 +1585,18 @@ function SalesPage({ data, setData, showToast, kpiGoals, updateGoal }) {
                     <span style={{ fontSize:18 }}>{item.emoji}</span>
                     <div style={{ flex:1, minWidth:0 }}>
                       <div style={{ fontSize:12, fontWeight:600, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{item.name}</div>
-                      <div style={{ fontSize:11, color:"#1A56FF" }}>{fmt(item.unit_price)} × {item.qty}</div>
+                      <div style={{ display:"flex", alignItems:"center", gap:4, marginTop:2 }}>
+                        <span style={{ fontSize:11, color:"#7B91C4" }}>$</span>
+                        <input
+                          type="number"
+                          value={item.unit_price}
+                          onChange={e => changePrice(item.id, e.target.value)}
+                          style={{ width:58, padding:"2px 6px", fontSize:11, fontWeight:600, color:"#1A56FF", borderRadius:6, border:"1px solid rgba(26,86,255,0.15)", background:"rgba(26,86,255,0.05)", textAlign:"center" }}
+                          step="0.01"
+                          min="0"
+                        />
+                        <span style={{ fontSize:11, color:"#7B91C4" }}>× {item.qty}</span>
+                      </div>
                     </div>
                     <div style={{ display:"flex", alignItems:"center", gap:4 }}>
                       <button className="btn btn-ghost btn-icon" style={{ padding:"3px 7px", fontSize:14 }} onClick={() => changeQty(item.id,-1)}>−</button>
