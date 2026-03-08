@@ -504,7 +504,7 @@ function KpiBanner({ kpis }) {
       <div className={`kpi-banner-arrow right ${!canRight ? "hidden" : ""}`} onClick={() => scroll(1)}>▶</div>
     </div>
   );
-
+}
 
 function Spinner() { return <span className="spinner" />; }
 
