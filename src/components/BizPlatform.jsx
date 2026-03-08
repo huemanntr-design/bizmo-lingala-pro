@@ -4164,7 +4164,7 @@ function BusinessPlanPage({ data, showToast, dark }) {
               <h1 style={{ fontFamily:"'Bricolage Grotesque'", fontSize:28, fontWeight:800, letterSpacing:"-0.5px", marginBottom:8 }}>{plan.title}</h1>
               <div style={{ fontSize:13, color:"#7B91C4" }}>{plan.date} · Kinshasa, RDC 🇨🇩</div>
               <div style={{ display:"flex", gap:10, justifyContent:"center", marginTop:20 }}>
-                <button className="btn btn-primary" onClick={() => showToast("📥 Export PDF en cours...", "info")}>📥 Télécharger PDF</button>
+                <button className="btn btn-primary" onClick={() => { showToast("📥 Export PDF en cours...", "info"); generatePDF("business-plan-content", "Business_Plan.pdf"); }}>📥 Télécharger PDF</button>
                 <button className="btn btn-wa" onClick={() => showToast("📤 Envoyé via WhatsApp!", "whatsapp")}>💬 Envoyer WA</button>
                 <button className="btn btn-ghost" onClick={() => { setStep(0); setPlan(null); setAnswers({businessType:"",sector:"",targetMarket:"",uniqueValue:"",shortTermGoal:"",longTermGoal:"",challenges:"",teamSize:"",monthlyBudget:"",fundingNeeded:false,fundingAmount:""}); }}>🔄 Recommencer</button>
               </div>
