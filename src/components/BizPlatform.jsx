@@ -4373,6 +4373,17 @@ export default function BizPlatform() {
               )}
             </div>
 
+            {/* Theme toggle */}
+            <button className="theme-btn" onClick={() => setDark(d => !d)} title={dark?"Mode Clair":"Mode Sombre"}>
+              {dark ? "☀️" : "🌙"}
+            </button>
+
+            {/* Notifications */}
+            <button className="theme-btn" onClick={() => showToast("🔔 Aucune nouvelle alerte", "info")} title="Notifications" style={{ position:"relative" }}>
+              🔔
+              <div style={{ position:"absolute", top:6, right:6, width:6, height:6, borderRadius:"50%", background:"#D42B3A", boxShadow:"0 0 6px rgba(212,43,58,0.5)" }} />
+            </button>
+
             {/* Avatar */}
             <div style={{ cursor:"pointer", transition:"transform 0.2s" }}
               onClick={() => setActivePage("settings")}
