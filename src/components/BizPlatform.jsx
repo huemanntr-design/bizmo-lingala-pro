@@ -968,6 +968,15 @@ function SalesPage({ data, setData, showToast }) {
 
   return (
     <div className="page-bg page-content fade-in">
+      <KpiBanner kpis={[
+        { icon:"💰", label:"Ventes Aujourd'hui", value:fmt(data.sales.filter(s=>s.sale_date===new Date().toISOString().split("T")[0]).reduce((a,s)=>a+s.total_amount,0)), color:"#1A56FF" },
+        { icon:"🛒", label:"Total Ventes", value:fmt(data.sales.reduce((a,s)=>a+s.total_amount,0)), trend:"+18%", trendUp:true, color:"#16C55E" },
+        { icon:"✨", label:"Profit Total", value:fmt(data.sales.reduce((a,s)=>a+s.profit,0)), trend:"+23%", trendUp:true, color:"#F5C518" },
+        { icon:"📊", label:"Panier Moyen", value:fmt(data.sales.reduce((a,s)=>a+s.total_amount,0)/Math.max(data.sales.length,1)), color:"#1A56FF" },
+        { icon:"💵", label:"Cash", value:fmt(data.sales.filter(s=>s.payment_method==="cash").reduce((a,s)=>a+s.total_amount,0)), sub:`${data.sales.filter(s=>s.payment_method==="cash").length} trans.`, color:"#16C55E" },
+        { icon:"📱", label:"Mobile Money", value:fmt(data.sales.filter(s=>s.payment_method==="mobile_money").reduce((a,s)=>a+s.total_amount,0)), sub:`${data.sales.filter(s=>s.payment_method==="mobile_money").length} trans.`, color:"#25D366" },
+        { icon:"🏦", label:"Crédit", value:fmt(data.sales.filter(s=>s.payment_method==="credit").reduce((a,s)=>a+s.total_amount,0)), sub:`${data.sales.filter(s=>s.payment_method==="credit").length} trans.`, color:"#D42B3A" },
+      ]} />
       <div className="sec-head"><h1 style={{ fontFamily:"'Bricolage Grotesque'", fontSize:22, fontWeight:800 }}>◈ Ventes & POS</h1></div>
       <div className="tabs" style={{ marginBottom: 20 }}>
         {[["pos","🛒 Point de Vente"],["history","📋 Historique"],["invoices","🧾 Factures"]].map(([k,l]) => (
