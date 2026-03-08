@@ -1193,6 +1193,7 @@ function ClientsPage({ data, setData, showToast }) {
   const [search, setSearch] = useState("");
   const [selected, setSelected] = useState(null);
   const [showAdd, setShowAdd] = useState(false);
+  const [editingClient, setEditingClient] = useState(null);
   const [newClient, setNewClient] = useState({ name:"", email:"", phone:"", address:"", status:"active", credit_limit:200, credit_balance:0, total_revenue:0 });
 
   const filtered = data.clients.filter(c => c.name.toLowerCase().includes(search.toLowerCase()) || c.phone.includes(search));
