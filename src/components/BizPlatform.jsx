@@ -742,6 +742,62 @@ function RevenueChart({ data: chartData, dark }) {
   );
 }
 
+// ─── KPI BANNER COMPONENT ───────────────────────────────────────────────────
+function KpiBanner({ kpis }) {
+  const trackRef = useRef(null);
+  const [canLeft, setCanLeft] = useState(false);
+  const [canRight, setCanRight] = useState(true);
+
+  const checkScroll = useCallback(() => {
+    const el = trackRef.current;
+    if (!el) return;
+    setCanLeft(el.scrollLeft > 4);
+    setCanRight(el.scrollLeft < el.scrollWidth - el.clientWidth - 4);
+  }, []);
+
+  useEffect(() => {
+    const el = trackRef.current;
+    if (!el) return;
+    checkScroll();
+    el.addEventListener("scroll", checkScroll, { passive: true });
+    window.addEventListener("resize", checkScroll);
+    return () => { el.removeEventListener("scroll", checkScroll); window.removeEventListener("resize", checkScroll); };
+  }, [checkScroll]);
+
+  const scroll = (dir) => {
+    const el = trackRef.current;
+    if (!el) return;
+    el.scrollBy({ left: dir * 240, behavior: "smooth" });
+  };
+
+  if (!kpis || !kpis.length) return null;
+
+  return (
+    <div className="kpi-banner fade-in">
+      {canLeft && <button className="kpi-banner-arrow left" onClick={() => scroll(-1)}>‹</button>}
+      {canRight && <button className="kpi-banner-arrow right" onClick={() => scroll(1)}>›</button>}
+      <div className="kpi-banner-track" ref={trackRef}>
+        {kpis.map((k, i) => (
+          <div className="kpi-banner-item" key={i}>
+            <div className="kpi-banner-glow" style={{ background: k.color || "#1A56FF" }} />
+            <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 10 }}>
+              <div style={{ width: 36, height: 36, borderRadius: 9, background: `${k.color || "#1A56FF"}18`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 16 }}>{k.icon}</div>
+              <div style={{ fontSize: 11, color: "#7B91C4", fontWeight: 600 }}>{k.label}</div>
+            </div>
+            <div style={{ fontFamily: "'Bricolage Grotesque'", fontSize: 22, fontWeight: 700, lineHeight: 1, letterSpacing: "-0.4px" }}>{k.value}</div>
+            {k.trend && (
+              <div style={{ fontSize: 11, marginTop: 8, display: "flex", alignItems: "center", gap: 4, fontWeight: 600, color: k.trendUp ? "#16C55E" : "#D42B3A" }}>
+                {k.trendUp ? "▲" : "▼"} {k.trend}
+              </div>
+            )}
+            {k.sub && <div style={{ fontSize: 10, color: "#7B91C4", marginTop: 4 }}>{k.sub}</div>}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 // ─── HOME PAGE ─────────────────────────────────────────────────────────────────
 function HomePage({ data, setData, showToast, dark }) {
   const [showWAModal, setShowWAModal] = useState(false);
