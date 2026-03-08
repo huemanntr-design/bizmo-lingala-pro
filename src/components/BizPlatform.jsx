@@ -1939,7 +1939,7 @@ function SalesPage({ data, setData, showToast, kpiGoals, updateGoal, exchangeRat
       {receipt && (
         <div style={{ position:"fixed", inset:0, zIndex:9999, display:"flex", alignItems:"center", justifyContent:"center", background:"rgba(0,0,0,0.7)", backdropFilter:"blur(6px)" }} onClick={() => setReceipt(null)}>
           <div style={{ background:"#fff", color:"#111", borderRadius:16, width:"min(360px, 92vw)", maxHeight:"85vh", overflow:"auto", boxShadow:"0 20px 60px rgba(0,0,0,0.5)" }} onClick={e => e.stopPropagation()}>
-            <div ref={receiptRef} style={{ padding:"24px 20px" }}>
+            <div ref={receiptRef} id="receipt-content" style={{ padding:"24px 20px" }}>
               {/* Header */}
               <div style={{ textAlign:"center", marginBottom:16 }}>
                 <div style={{ fontSize:28, fontWeight:900, fontFamily:"'Bricolage Grotesque'", letterSpacing:"-0.5px" }}>{receipt.company}</div>
