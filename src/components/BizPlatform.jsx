@@ -956,16 +956,23 @@ function HomePage({ data, setData, showToast, dark }) {
         </div>
       </div>
 
-      {/* KPIs */}
-      <KpiBanner kpis={[
-        { icon:"💵", label:"Revenus Totaux", value:fmt(totalRevenue), trend:"+18.4%", trendUp:true, color:"#1A56FF" },
-        { icon:"📉", label:"Dépenses", value:fmt(totalExpenses), trend:"+5.1%", trendUp:false, color:"#D42B3A" },
-        { icon:"✨", label:"Profit Net", value:fmt(totalProfit), trend:"+23.7%", trendUp:true, color:"#16C55E" },
-        { icon:"🛍️", label:"Nb Transactions", value:data.sales.length, trend:"+12%", trendUp:true, color:"#F5C518" },
-        { icon:"👥", label:"Clients Actifs", value:data.clients.filter(c=>c.status!=="inactive").length, trend:"+3", trendUp:true, color:"#25D366" },
-        { icon:"📦", label:"Produits", value:data.products.length, color:"#7B91C4" },
-        { icon:"⚠️", label:"Stock Bas", value:lowStock.length, trendUp:false, color:lowStock.length>0?"#D42B3A":"#16C55E" },
-      ]} />
+      {/* Hero KPI */}
+      <HeroBanner
+        label="REVENUS TOTAUX"
+        value={fmt(totalRevenue)}
+        subtitle={`Objectif: ${fmt(2000)} · ${data.user.company}`}
+        progress={(totalRevenue / 2000) * 100}
+        progressLabel={`${fmt(totalRevenue)} sur ${fmt(2000)}`}
+        trend="+18.4%"
+        trendUp={true}
+        icon="📊"
+      />
+      <div className="mini-kpi-grid">
+        <MiniKpiCard icon="📉" label="Dépenses" value={fmt(totalExpenses)} trend="+5.1%" trendUp={false} color="#D42B3A" />
+        <MiniKpiCard icon="✨" label="Profit Net" value={fmt(totalProfit)} trend="+23.7%" trendUp={true} color="#16C55E" />
+        <MiniKpiCard icon="🛍️" label="Ventes" value={data.sales.length} trend="+12%" trendUp={true} color="#F5C518" />
+        <MiniKpiCard icon="⚠️" label="Stock Bas" value={lowStock.length} trendUp={false} color={lowStock.length>0?"#D42B3A":"#16C55E"} />
+      </div>
 
       <div style={{ display: "grid", gridTemplateColumns: "1fr 360px", gap: 16, marginBottom: 16 }}>
         {/* Chart */}
