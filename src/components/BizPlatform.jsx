@@ -1405,35 +1405,99 @@ function SalesPage({ data, setData, showToast, kpiGoals, updateGoal }) {
         </>
       )}
 
-      {/* ─ GAMBISTE M-PESA MODULE ─ */}
+      {/* ─ GAMBISTE MODULE ─ */}
       {tab === "gambiste" && (() => {
-        const SERVICES = [
-          { id:"unites", emoji:"📞", name:"Unités (Crédit Airtime)", desc:"Vente de crédit téléphonique", networks:[
-            { id:"vodacom", name:"Vodacom", color:"#E60000", amounts:[100,200,500,1000,2000,5000] },
-            { id:"airtel", name:"Airtel", color:"#FF0000", amounts:[100,200,500,1000,2000,5000] },
-            { id:"orange", name:"Orange", color:"#FF6600", amounts:[100,200,500,1000,2000,5000] },
-            { id:"africell", name:"Africell", color:"#6B21A8", amounts:[100,200,500,1000,2000,5000] },
-          ]},
-          { id:"data", emoji:"🌐", name:"Forfaits Internet (Data)", desc:"Bundles data mobile", networks:[
-            { id:"vodacom", name:"Vodacom", color:"#E60000", packs:[{name:"500MB/jour",price:500},{name:"1GB/7j",price:1500},{name:"3GB/30j",price:5000},{name:"10GB/30j",price:12000}] },
-            { id:"airtel", name:"Airtel", color:"#FF0000", packs:[{name:"500MB/jour",price:400},{name:"1GB/7j",price:1200},{name:"3GB/30j",price:4000},{name:"10GB/30j",price:10000}] },
-            { id:"orange", name:"Orange", color:"#FF6600", packs:[{name:"500MB/jour",price:450},{name:"1GB/7j",price:1300},{name:"5GB/30j",price:6000},{name:"15GB/30j",price:15000}] },
-          ]},
-          { id:"transfert", emoji:"💸", name:"Envoi d'Argent", desc:"Transfert M-Pesa, Airtel Money, Orange Money" },
-          { id:"paiement", emoji:"🏦", name:"Paiements de Factures", desc:"SNEL, REGIDESO, Canal+, DSTV" },
+        const NETWORKS = [
+          { id:"vodacom", name:"Vodacom", color:"#E60000", ussd:"*100#", amounts:[50,100,200,500,1000,2000,5000,10000],
+            packs:[
+              {name:"30 Mo",price:200,validity:"24h",code:"*330*1#"},
+              {name:"100 Mo",price:500,validity:"24h",code:"*330*2#"},
+              {name:"1.5 Go",price:1500,validity:"7 jours",code:"*330*3#"},
+              {name:"7 Go",price:7000,validity:"30 jours",code:"*330*5#"},
+              {name:"15 Go",price:14000,validity:"30 jours",code:"*330*6#"},
+              {name:"30 Go",price:25000,validity:"30 jours",code:"*330*7#"},
+              {name:"Nuit 2 Go",price:500,validity:"6h (00h-06h)",code:"*330*9#"},
+            ]},
+          { id:"airtel", name:"Airtel", color:"#FF0000", ussd:"*425#", amounts:[50,100,200,500,1000,2000,5000,10000],
+            packs:[
+              {name:"135 Mo",price:50,validity:"24h",code:"*425*1#"},
+              {name:"1 Go",price:1000,validity:"24h",code:"*425*2#"},
+              {name:"5 Go",price:4000,validity:"7 jours",code:"*425*3#"},
+              {name:"8.5 Go",price:10000,validity:"30 jours",code:"*425*5#"},
+              {name:"30 Go",price:20000,validity:"30 jours",code:"*425*7#"},
+              {name:"Nuit Illimitée",price:250,validity:"6h (00h-06h)",code:"*425*9#"},
+            ]},
+          { id:"orange", name:"Orange", color:"#FF6600", ussd:"*144#", amounts:[50,100,200,500,1000,2000,5000,10000],
+            packs:[
+              {name:"2 Go",price:100,validity:"24h",code:"*144*1#"},
+              {name:"4 Go",price:400,validity:"7 jours",code:"*144*3#"},
+              {name:"10 Go",price:1000,validity:"30 jours",code:"*144*5#"},
+              {name:"35 Go",price:2000,validity:"30 jours",code:"*144*7#"},
+              {name:"Réseaux Sociaux 1 Go",price:200,validity:"24h",code:"*144*11#"},
+            ]},
+          { id:"africell", name:"Africell", color:"#6B21A8", ussd:"*1000#", amounts:[20,50,100,200,500,1000,2000,10000],
+            packs:[
+              {name:"35 Mo",price:10,validity:"72h",code:"*345*1#"},
+              {name:"100 Mo",price:20,validity:"72h",code:"*345*2#"},
+              {name:"300 Mo",price:50,validity:"72h",code:"*345*3#"},
+              {name:"600 Mo",price:100,validity:"7 jours",code:"*345*4#"},
+              {name:"1.2 Go",price:200,validity:"7 jours",code:"*345*5#"},
+              {name:"5 Go",price:500,validity:"30 jours",code:"*345*6#"},
+              {name:"25 Go",price:2000,validity:"30 jours",code:"*345*7#"},
+            ]},
+        ];
+        const WALLETS = [
+          { id:"mpesa", name:"M-Pesa", operator:"Vodacom", color:"#E60000", emoji:"📱", ussd:"*150#", connected:false },
+          { id:"airtel_money", name:"Airtel Money", operator:"Airtel", color:"#FF0000", emoji:"📲", ussd:"*501#", connected:false },
+          { id:"orange_money", name:"Orange Money", operator:"Orange", color:"#FF6600", emoji:"🟠", ussd:"*144#", connected:false },
+          { id:"afrimoney", name:"Afri Money", operator:"Africell", color:"#6B21A8", emoji:"💜", ussd:"*789#", connected:false },
         ];
         return (
           <div>
-            <HelpText icon="📱">Le module <strong>Gambiste</strong> c'est pour ceux qui vendent des unités (crédit téléphonique), des forfaits internet, ou qui font des transferts d'argent M-Pesa. Notez chaque transaction ici pour suivre vos commissions et votre bénéfice.</HelpText>
+            <HelpText icon="📱">Le module <strong>Gambiste</strong> c'est pour ceux qui vendent des unités (crédit téléphonique), des forfaits internet, ou qui font des transferts d'argent. Notez chaque transaction ici pour suivre vos commissions et votre bénéfice.</HelpText>
 
+            {/* ── CONNECT MOBILE MONEY ACCOUNTS ── */}
+            <div className="card card-pad" style={{ marginBottom:16, borderColor:"rgba(245,197,24,0.25)" }}>
+              <div className="sec-title" style={{ marginBottom:6 }}>🔗 Connecter vos comptes Mobile Money</div>
+              <div style={{ fontSize:11, color:"#7B91C4", marginBottom:14 }}>Liez votre numéro de téléphone pour envoyer directement des unités, data et transferts depuis l'app. Vos identifiants sont sécurisés.</div>
+              <div className="g2">
+                {WALLETS.map(w => (
+                  <div key={w.id} className="card card-pad-sm" style={{ borderColor:`${w.color}30` }}>
+                    <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:10 }}>
+                      <div style={{ display:"flex", alignItems:"center", gap:10 }}>
+                        <span style={{ fontSize:22 }}>{w.emoji}</span>
+                        <div>
+                          <div style={{ fontWeight:700, fontSize:13, color:w.color }}>{w.name}</div>
+                          <div style={{ fontSize:10, color:"#7B91C4" }}>{w.operator} · Code: {w.ussd}</div>
+                        </div>
+                      </div>
+                      <span style={{ fontSize:10, fontWeight:700, color:w.connected?"#16C55E":"#7B91C4", background:w.connected?"rgba(22,197,94,0.12)":"rgba(107,114,128,0.12)", padding:"3px 8px", borderRadius:20 }}>{w.connected?"✅ Connecté":"⭕ Non lié"}</span>
+                    </div>
+                    <div style={{ display:"flex", gap:8 }}>
+                      <input placeholder={`+243 8XX XXX XXX (${w.operator})`} style={{ flex:1, fontSize:12 }} />
+                      <button className="btn btn-primary" style={{ fontSize:11, padding:"6px 12px", whiteSpace:"nowrap" }}
+                        onClick={() => showToast(`📲 Vérification envoyée par SMS sur votre ${w.name}. Entrez le code reçu pour confirmer.`, "info")}>
+                        🔗 Lier
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* ── SERVICE OVERVIEW ── */}
             <div className="g2" style={{ marginBottom:20 }}>
-              {SERVICES.map(svc => (
-                <div key={svc.id} className="card card-pad card-hover" style={{ cursor:"pointer" }}
-                  onClick={() => showToast(`${svc.name} sélectionné`, "info")}>
-                  <div style={{ display:"flex", alignItems:"center", gap:12, marginBottom:8 }}>
-                    <div style={{ width:48, height:48, borderRadius:12, background:"rgba(26,86,255,0.08)", display:"flex", alignItems:"center", justifyContent:"center", fontSize:24 }}>{svc.emoji}</div>
+              {[
+                { emoji:"📞", name:"Vente d'Unités", desc:"Crédit téléphonique tous réseaux" },
+                { emoji:"🌐", name:"Forfaits Internet", desc:"Data, nuit, réseaux sociaux" },
+                { emoji:"💸", name:"Transfert d'Argent", desc:"M-Pesa, Airtel Money, Orange Money, Afri Money" },
+                { emoji:"🏦", name:"Paiement Factures", desc:"SNEL, REGIDESO, Canal+, DSTV, école" },
+              ].map(svc => (
+                <div key={svc.name} className="card card-pad card-hover" style={{ cursor:"pointer" }}>
+                  <div style={{ display:"flex", alignItems:"center", gap:12 }}>
+                    <div style={{ width:44, height:44, borderRadius:11, background:"rgba(26,86,255,0.08)", display:"flex", alignItems:"center", justifyContent:"center", fontSize:22 }}>{svc.emoji}</div>
                     <div>
-                      <div style={{ fontWeight:700, fontSize:14 }}>{svc.name}</div>
+                      <div style={{ fontWeight:700, fontSize:13 }}>{svc.name}</div>
                       <div style={{ fontSize:11, color:"#7B91C4" }}>{svc.desc}</div>
                     </div>
                   </div>
@@ -1441,22 +1505,23 @@ function SalesPage({ data, setData, showToast, kpiGoals, updateGoal }) {
               ))}
             </div>
 
-            {/* Quick Sale: Unités */}
+            {/* ── VENTE D'UNITÉS ── */}
             <div className="card card-pad" style={{ marginBottom:16 }}>
               <div className="sec-title" style={{ marginBottom:6 }}>📞 Vente Rapide d'Unités</div>
-              <div style={{ fontSize:11, color:"#7B91C4", marginBottom:14 }}>Choisissez le réseau et le montant. La commission est calculée automatiquement (environ 3-5% selon le réseau).</div>
+              <div style={{ fontSize:11, color:"#7B91C4", marginBottom:14 }}>Choisissez le réseau et le montant en unités. Commission moyenne: 3-5% selon le réseau et le volume.</div>
               <div style={{ display:"flex", gap:8, marginBottom:14, flexWrap:"wrap" }}>
-                {SERVICES[0].networks.map(net => (
+                {NETWORKS.map(net => (
                   <div key={net.id} style={{ padding:"10px 16px", borderRadius:10, background:`${net.color}12`, border:`1px solid ${net.color}40`, cursor:"pointer", textAlign:"center", minWidth:80 }}>
                     <div style={{ fontWeight:700, fontSize:13, color:net.color }}>{net.name}</div>
+                    <div style={{ fontSize:9, color:"#7B91C4", marginTop:2 }}>{net.ussd}</div>
                   </div>
                 ))}
               </div>
-              <div style={{ display:"flex", gap:8, flexWrap:"wrap", marginBottom:14 }}>
-                {[100,200,500,1000,2000,5000].map(amt => (
-                  <button key={amt} className="btn btn-ghost" style={{ fontSize:12, padding:"8px 14px" }}
-                    onClick={() => showToast(`Vente ${amt} FC enregistrée! Commission: ${(amt*0.04).toFixed(0)} FC`, "success")}>
-                    {amt.toLocaleString()} FC
+              <div style={{ display:"flex", gap:6, flexWrap:"wrap", marginBottom:14 }}>
+                {[20,50,100,200,500,1000,2000,5000,10000].map(amt => (
+                  <button key={amt} className="btn btn-ghost" style={{ fontSize:12, padding:"7px 12px" }}
+                    onClick={() => showToast(`✅ Vente ${amt}u enregistrée! Commission: ~${Math.round(amt*0.04)}u`, "success")}>
+                    {amt.toLocaleString()}u
                   </button>
                 ))}
               </div>
@@ -1466,26 +1531,31 @@ function SalesPage({ data, setData, showToast, kpiGoals, updateGoal }) {
               </div>
               <div style={{ display:"flex", gap:8 }}>
                 <button className="btn btn-primary" style={{ flex:1, justifyContent:"center" }}
-                  onClick={() => showToast("✅ Transaction enregistrée!", "success")}>📱 Envoyer Unités</button>
+                  onClick={() => showToast("✅ Unités envoyées!", "success")}>📱 Envoyer</button>
                 <button className="btn btn-wa" style={{ justifyContent:"center" }}
                   onClick={() => showToast("Reçu envoyé par WhatsApp!", "whatsapp")}>💬 Reçu WA</button>
               </div>
             </div>
 
-            {/* Data Bundles */}
+            {/* ── FORFAITS DATA — REAL PLANS ── */}
             <div className="card card-pad" style={{ marginBottom:16 }}>
-              <div className="sec-title" style={{ marginBottom:6 }}>🌐 Forfaits Internet (Data)</div>
-              <div style={{ fontSize:11, color:"#7B91C4", marginBottom:14 }}>Vendez des forfaits data. Votre commission est la différence entre le prix d'achat (ce que vous payez) et le prix de vente (ce que le client paie).</div>
-              {SERVICES[1].networks.map(net => (
-                <div key={net.id} style={{ marginBottom:12 }}>
-                  <div style={{ fontSize:12, fontWeight:700, color:net.color, marginBottom:8 }}>{net.name}</div>
+              <div className="sec-title" style={{ marginBottom:6 }}>🌐 Forfaits Internet — Tarifs Réels DRC</div>
+              <div style={{ fontSize:11, color:"#7B91C4", marginBottom:14 }}>Prix en unités (u). 1 unité ≈ $0.01. Votre commission est la différence entre prix d'achat et prix de revente au client.</div>
+              {NETWORKS.map(net => (
+                <div key={net.id} style={{ marginBottom:16 }}>
+                  <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom:8 }}>
+                    <div style={{ width:8, height:8, borderRadius:"50%", background:net.color }} />
+                    <span style={{ fontSize:13, fontWeight:700, color:net.color }}>{net.name}</span>
+                    <span style={{ fontSize:10, color:"#7B91C4" }}>— Code USSD: {net.ussd}</span>
+                  </div>
                   <div style={{ display:"flex", gap:8, flexWrap:"wrap" }}>
                     {net.packs.map(pk => (
-                      <div key={pk.name} className="card card-pad-sm card-hover" style={{ cursor:"pointer", flex:"1 1 140px", minWidth:130 }}
-                        onClick={() => showToast(`Forfait ${pk.name} vendu! Prix: ${pk.price.toLocaleString()} FC`, "success")}>
+                      <div key={pk.name+pk.price} className="card card-pad-sm card-hover" style={{ cursor:"pointer", flex:"1 1 140px", minWidth:130 }}
+                        onClick={() => showToast(`✅ Forfait ${pk.name} (${net.name}) vendu! Prix: ${pk.price}u · Code: ${pk.code}`, "success")}>
                         <div style={{ fontWeight:700, fontSize:13, marginBottom:2 }}>{pk.name}</div>
-                        <div style={{ fontSize:12, color:net.color, fontWeight:700 }}>{pk.price.toLocaleString()} FC</div>
-                        <div style={{ fontSize:10, color:"#16C55E", marginTop:2 }}>Commission: ~{(pk.price*0.05).toLocaleString()} FC</div>
+                        <div style={{ fontSize:13, color:net.color, fontWeight:800 }}>{pk.price.toLocaleString()}u</div>
+                        <div style={{ fontSize:10, color:"#7B91C4", marginTop:2 }}>{pk.validity}</div>
+                        <div style={{ fontSize:9, color:"#16C55E", marginTop:3, fontFamily:"monospace" }}>{pk.code}</div>
                       </div>
                     ))}
                   </div>
@@ -1493,54 +1563,47 @@ function SalesPage({ data, setData, showToast, kpiGoals, updateGoal }) {
               ))}
             </div>
 
-            {/* Money Transfers */}
+            {/* ── TRANSFERT D'ARGENT ── */}
             <div className="card card-pad" style={{ marginBottom:16 }}>
-              <div className="sec-title" style={{ marginBottom:6 }}>💸 Transfert d'Argent</div>
-              <div style={{ fontSize:11, color:"#7B91C4", marginBottom:14 }}>Envoyez de l'argent pour vos clients via M-Pesa, Airtel Money ou Orange Money. Vous gagnez une commission sur chaque transfert.</div>
-              <div className="g2">
-                {[
-                  { name:"M-Pesa (Vodacom)", color:"#E60000", emoji:"📱" },
-                  { name:"Airtel Money", color:"#FF0000", emoji:"📲" },
-                  { name:"Orange Money", color:"#FF6600", emoji:"🟠" },
-                  { name:"Afri Money", color:"#6B21A8", emoji:"💜" },
-                ].map(wallet => (
-                  <div key={wallet.name} className="card card-pad-sm card-hover" style={{ cursor:"pointer", borderColor:`${wallet.color}30` }}
-                    onClick={() => showToast(`${wallet.name} — saisissez le montant`, "info")}>
+              <div className="sec-title" style={{ marginBottom:6 }}>💸 Transfert d'Argent Mobile</div>
+              <div style={{ fontSize:11, color:"#7B91C4", marginBottom:14 }}>Envoyez de l'argent pour vos clients. Frais de transfert M-Pesa: ~1% (min 25 FC). Airtel Money: ~0.5%. Orange Money: ~1%. Votre commission en plus.</div>
+              <div className="g2" style={{ marginBottom:14 }}>
+                {WALLETS.map(w => (
+                  <div key={w.id} className="card card-pad-sm card-hover" style={{ cursor:"pointer", borderColor:`${w.color}30` }}
+                    onClick={() => showToast(`${w.name} sélectionné — Composez ${w.ussd}`, "info")}>
                     <div style={{ display:"flex", alignItems:"center", gap:10 }}>
-                      <span style={{ fontSize:24 }}>{wallet.emoji}</span>
+                      <span style={{ fontSize:22 }}>{w.emoji}</span>
                       <div>
-                        <div style={{ fontWeight:700, fontSize:13, color:wallet.color }}>{wallet.name}</div>
-                        <div style={{ fontSize:10, color:"#7B91C4" }}>Transfert · Retrait · Dépôt</div>
+                        <div style={{ fontWeight:700, fontSize:13, color:w.color }}>{w.name}</div>
+                        <div style={{ fontSize:10, color:"#7B91C4" }}>USSD: {w.ussd} · {w.operator}</div>
                       </div>
                     </div>
                   </div>
                 ))}
               </div>
-              <div style={{ marginTop:14 }}>
-                <div className="g2">
-                  <div className="form-group"><label className="form-label">Numéro envoyeur</label><input placeholder="+243..." /></div>
-                  <div className="form-group"><label className="form-label">Numéro receveur</label><input placeholder="+243..." /></div>
-                </div>
-                <div className="g2">
-                  <div className="form-group"><label className="form-label">Montant (FC)</label><input type="number" placeholder="50000" /></div>
-                  <div className="form-group"><label className="form-label">Commission (FC)</label><input type="number" placeholder="Auto: ~2%" /></div>
-                </div>
-                <button className="btn btn-primary" style={{ width:"100%", justifyContent:"center" }}
-                  onClick={() => showToast("✅ Transfert enregistré!", "success")}>💸 Enregistrer le Transfert</button>
+              <div className="g2">
+                <div className="form-group"><label className="form-label">Numéro envoyeur</label><input placeholder="+243..." /></div>
+                <div className="form-group"><label className="form-label">Numéro receveur</label><input placeholder="+243..." /></div>
               </div>
+              <div className="g2">
+                <div className="form-group"><label className="form-label">Montant (FC)</label><input type="number" placeholder="Ex: 50 000" /></div>
+                <div className="form-group"><label className="form-label">Votre commission (FC)</label><input type="number" placeholder="Ex: 500" /></div>
+              </div>
+              <button className="btn btn-primary" style={{ width:"100%", justifyContent:"center" }}
+                onClick={() => showToast("✅ Transfert enregistré!", "success")}>💸 Enregistrer le Transfert</button>
             </div>
 
-            {/* Bill Payments */}
+            {/* ── PAIEMENT FACTURES ── */}
             <div className="card card-pad">
               <div className="sec-title" style={{ marginBottom:6 }}>🏦 Paiement de Factures</div>
-              <div style={{ fontSize:11, color:"#7B91C4", marginBottom:14 }}>Payez les factures de vos clients : électricité (SNEL), eau (REGIDESO), TV (Canal+, DSTV). Vous gagnez une petite commission.</div>
+              <div style={{ fontSize:11, color:"#7B91C4", marginBottom:14 }}>Payez les factures de vos clients et gagnez une commission. Saisissez la référence client du service concerné.</div>
               <div style={{ display:"flex", gap:8, flexWrap:"wrap" }}>
-                {[["⚡","SNEL","Électricité","#F5C518"],["💧","REGIDESO","Eau","#1A56FF"],["📺","Canal+","Télévision","#000"],["📡","DSTV","Satellite","#0066CC"],["🎓","Frais Scolaires","École","#16C55E"],["🏥","INSS","Assurance","#D42B3A"]].map(([ico,name,desc,col]) => (
-                  <div key={name} className="card card-pad-sm card-hover" style={{ cursor:"pointer", flex:"1 1 120px", minWidth:110, textAlign:"center" }}
-                    onClick={() => showToast(`Paiement ${name} — saisissez la référence`, "info")}>
-                    <div style={{ fontSize:24, marginBottom:4 }}>{ico}</div>
-                    <div style={{ fontWeight:700, fontSize:12, color:col }}>{name}</div>
-                    <div style={{ fontSize:10, color:"#7B91C4" }}>{desc}</div>
+                {[["⚡","SNEL","Électricité","#F5C518"],["💧","REGIDESO","Eau","#1A56FF"],["📺","Canal+","Télévision","#000"],["📡","DSTV","Satellite","#0066CC"],["🎓","Frais Scolaires","École","#16C55E"],["🏥","INSS","Assurance","#D42B3A"],["📶","Startimes","TV Numérique","#FF6600"],["🎮","Bet243","Paris Sportifs","#16C55E"]].map(([ico,name,desc,col]) => (
+                  <div key={name} className="card card-pad-sm card-hover" style={{ cursor:"pointer", flex:"1 1 100px", minWidth:100, textAlign:"center" }}
+                    onClick={() => showToast(`Paiement ${name} — entrez le numéro de référence`, "info")}>
+                    <div style={{ fontSize:22, marginBottom:3 }}>{ico}</div>
+                    <div style={{ fontWeight:700, fontSize:11, color:col }}>{name}</div>
+                    <div style={{ fontSize:9, color:"#7B91C4" }}>{desc}</div>
                   </div>
                 ))}
               </div>
