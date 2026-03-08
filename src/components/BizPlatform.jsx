@@ -3059,7 +3059,7 @@ function AccountingPage({ data, setData, showToast, kpiGoals, updateGoal }) {
       <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:20 }}>
         <h1 style={{ fontFamily:"'Bricolage Grotesque'", fontSize:22, fontWeight:800 }}>⊛ Comptabilité</h1>
         <div style={{ display:"flex", gap:10 }}>
-          <button className="btn btn-ghost" onClick={() => showToast("Export comptable...", "info")}>📥 Export</button>
+          <button className="btn btn-ghost" onClick={() => { showToast("Génération PDF en cours...", "info"); generatePDF("accounting-content", "Comptabilite.pdf"); }}>📥 Export PDF</button>
           <button className="btn btn-primary" onClick={() => setShowAdd(true)}>➕ Dépense</button>
         </div>
       </div>
