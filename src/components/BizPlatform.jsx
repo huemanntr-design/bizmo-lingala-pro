@@ -1886,6 +1886,15 @@ function AccountingPage({ data, setData, showToast }) {
 
   return (
     <div className="page-bg page-content fade-in">
+      <KpiBanner kpis={[
+        { icon:"💵", label:"Revenus Totaux", value:fmt(totalRev), trend:"+18%", trendUp:true, color:"#1A56FF" },
+        { icon:"📉", label:"Dépenses Totales", value:fmt(totalExp), trend:"+5%", trendUp:false, color:"#D42B3A" },
+        { icon:"✨", label:"Profit Net", value:fmt(netProfit), trend:"+23%", trendUp:true, color:"#16C55E" },
+        { icon:"📊", label:"Marge Nette", value:pct(netProfit, totalRev), color:"#F5C518" },
+        { icon:"🧾", label:"Nb Dépenses", value:String(data.expenses.length), sub:`${data.expenses.filter(e=>e.status==="pending").length} en attente`, color:"#1A56FF" },
+        { icon:"💸", label:"Dépense Moyenne", value:fmt(totalExp/Math.max(data.expenses.filter(e=>e.status==="approved").length,1)), color:"#D42B3A" },
+        { icon:"🏛️", label:"TVA Estimée", value:fmt(totalRev*0.16), sub:"16% sur revenus", color:"#F5C518" },
+      ]} />
       <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:20 }}>
         <h1 style={{ fontFamily:"'Bricolage Grotesque'", fontSize:22, fontWeight:800 }}>⊛ Comptabilité</h1>
         <div style={{ display:"flex", gap:10 }}>
