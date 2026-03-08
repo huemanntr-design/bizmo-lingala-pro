@@ -730,6 +730,15 @@ function InsightCard({ icon, iconBg, title, description, action, onAction }) {
   );
 }
 
+function HelpText({ children, icon = "💡" }) {
+  return (
+    <div style={{ display:"flex", alignItems:"flex-start", gap:8, padding:"10px 14px", background:"rgba(26,86,255,0.04)", border:"1px solid rgba(26,86,255,0.1)", borderRadius:10, marginBottom:16, fontSize:12, color:"#7B91C4", lineHeight:1.6 }}>
+      <span style={{ flexShrink:0, fontSize:14 }}>{icon}</span>
+      <span>{children}</span>
+    </div>
+  );
+}
+
 function Modal({ title, onClose, children, maxWidth = 560 }) {
   return (
     <div className="modal-overlay" onClick={e => e.target === e.currentTarget && onClose()}>
