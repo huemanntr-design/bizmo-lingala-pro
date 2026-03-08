@@ -1314,6 +1314,15 @@ function ClientsPage({ data, setData, showToast }) {
 
   return (
     <div className="page-bg page-content fade-in">
+      <KpiBanner kpis={[
+        { icon:"👥", label:"Total Clients", value:String(data.clients.length), color:"#1A56FF" },
+        { icon:"👑", label:"Clients VIP", value:String(data.clients.filter(c=>c.status==="vip").length), color:"#F5C518" },
+        { icon:"🟢", label:"Clients Actifs", value:String(data.clients.filter(c=>c.status==="active").length), color:"#16C55E" },
+        { icon:"💳", label:"Crédit Total", value:fmt(data.clients.reduce((a,c)=>a+c.credit_balance,0)), sub:"en cours", color:"#D42B3A" },
+        { icon:"💰", label:"Revenus Clients", value:fmt(data.clients.reduce((a,c)=>a+c.total_revenue,0)), trend:"+15%", trendUp:true, color:"#1A56FF" },
+        { icon:"🎯", label:"Leads", value:String(data.clients.filter(c=>c.status==="lead").length), sub:"à convertir", color:"#F5C518" },
+        { icon:"🏦", label:"Limite Crédit", value:fmt(data.clients.reduce((a,c)=>a+c.credit_limit,0)), sub:"total autorisé", color:"#16C55E" },
+      ]} />
       <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:20, flexWrap:"wrap", gap:10 }}>
         <h1 style={{ fontFamily:"'Bricolage Grotesque'", fontSize:22, fontWeight:800 }}>◎ Clients</h1>
         <button className="btn btn-primary" onClick={() => setShowAdd(true)}>➕ Nouveau Client</button>
