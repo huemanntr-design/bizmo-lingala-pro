@@ -1032,7 +1032,8 @@ function HomePage({ data, setData, showToast, dark, kpiGoals, updateGoal }) {
       <div className="g3" style={{ marginBottom:16 }}>
         {/* Profit Breakdown Donut */}
         <div className="card card-pad">
-          <div className="sec-title" style={{ marginBottom:14 }}>💰 Répartition Profit</div>
+          <div className="sec-title" style={{ marginBottom:8 }}>💰 Répartition Profit</div>
+          <div style={{ fontSize:10, color:"#7B91C4", marginBottom:8 }}>Comment votre argent se divise : ce que vous gardez (profit), ce que vous dépensez, et le coût des marchandises</div>
           <div style={{ display:"flex", alignItems:"center", gap:16 }}>
             <DonutChart
               segments={[
