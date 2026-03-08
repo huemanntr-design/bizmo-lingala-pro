@@ -1585,7 +1585,18 @@ function SalesPage({ data, setData, showToast, kpiGoals, updateGoal }) {
                     <span style={{ fontSize:18 }}>{item.emoji}</span>
                     <div style={{ flex:1, minWidth:0 }}>
                       <div style={{ fontSize:12, fontWeight:600, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{item.name}</div>
-                      <div style={{ fontSize:11, color:"#1A56FF" }}>{fmt(item.unit_price)} × {item.qty}</div>
+                      <div style={{ display:"flex", alignItems:"center", gap:4, marginTop:2 }}>
+                        <span style={{ fontSize:11, color:"#7B91C4" }}>$</span>
+                        <input
+                          type="number"
+                          value={item.unit_price}
+                          onChange={e => changePrice(item.id, e.target.value)}
+                          style={{ width:58, padding:"2px 6px", fontSize:11, fontWeight:600, color:"#1A56FF", borderRadius:6, border:"1px solid rgba(26,86,255,0.15)", background:"rgba(26,86,255,0.05)", textAlign:"center" }}
+                          step="0.01"
+                          min="0"
+                        />
+                        <span style={{ fontSize:11, color:"#7B91C4" }}>× {item.qty}</span>
+                      </div>
                     </div>
                     <div style={{ display:"flex", alignItems:"center", gap:4 }}>
                       <button className="btn btn-ghost btn-icon" style={{ padding:"3px 7px", fontSize:14 }} onClick={() => changeQty(item.id,-1)}>−</button>
