@@ -919,7 +919,7 @@ function Toast({ message, type, onClose }) {
   );
 }
 
-function RevenueChart({ data: chartData, dark }) {
+const RevenueChart = ({ data: chartData, dark }) => {
   const max = Math.max(...chartData.map(d => d.amount));
   return (
     <div style={{ display: "flex", alignItems: "flex-end", gap: 6, height: 120, paddingTop: 10 }}>
@@ -937,7 +937,7 @@ function RevenueChart({ data: chartData, dark }) {
       })}
     </div>
   );
-}
+};
 
 // ─── HOME PAGE ─────────────────────────────────────────────────────────────────
 function HomePage({ data, setData, showToast, dark }) {
