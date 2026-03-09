@@ -4331,103 +4331,295 @@ function SettingsPage({ data, setData, showToast, dark, setDark }) {
 // ─── TUTORIALS PAGE ──────────────────────────────────────────────────────────────
 function TutorialsPage({ data, showToast, setActivePage }) {
   const [activeTutorial, setActiveTutorial] = useState(null);
+  const [activeStep, setActiveStep] = useState(0);
+  const [completedSteps, setCompletedSteps] = useState({});
+
+  const markStep = (tutId, stepIdx) => {
+    setCompletedSteps(prev => ({ ...prev, [`${tutId}-${stepIdx}`]: true }));
+    showToast("Étape marquée comme terminée ✅", "success");
+  };
 
   const tutorials = [
-    { id: "t1", title: "Faire sa première vente", category: "Ventes", duration: "2 min", difficulty: "Facile", icon: "🛒", steps: [
-      { text: "Allez dans l'onglet 'Ventes & POS'", action: "sales" },
-      { text: "Sélectionnez un produit dans la liste", action: "sales" },
-      { text: "Choisissez un client (optionnel)", action: "sales" },
-      { text: "Cliquez sur 'Encaisser'", action: "sales" }
-    ]},
-    { id: "t2", title: "Gérer son stock", category: "Stock", duration: "3 min", difficulty: "Moyen", icon: "📦", steps: [
-      { text: "Allez dans l'onglet 'Produits'", action: "products" },
-      { text: "Cliquez sur 'Nouveau Produit'", action: "products" },
-      { text: "Remplissez les détails (nom, prix, quantité)", action: "products" },
-      { text: "Sauvegardez pour mettre à jour l'inventaire", action: "products" }
-    ]},
-    { id: "t3", title: "Suivre ses finances", category: "Comptabilité", duration: "4 min", difficulty: "Avancé", icon: "💰", steps: [
-      { text: "Consultez le 'Tableau de bord' pour une vue globale", action: "home" },
-      { text: "Allez dans 'Comptabilité' pour voir le Journal", action: "accounting" },
-      { text: "Enregistrez vos dépenses pour calculer le profit net", action: "accounting" }
-    ]},
-    { id: "t4", title: "Créer un Business Plan", category: "Stratégie", duration: "10 min", difficulty: "Moyen", icon: "📋", steps: [
-      { text: "Ouvrez l'onglet 'Business Plan'", action: "bizplan" },
-      { text: "Remplissez le 'Résumé Exécutif' (Vision, Mission, Valeurs)", action: "bizplan" },
-      { text: "Analysez le 'Marché & Concurrence' pour vous positionner", action: "bizplan" },
-      { text: "Définissez votre 'Stratégie & Opérations'", action: "bizplan" },
-      { text: "Établissez votre 'Plan Financier' (Revenus, Dépenses)", action: "bizplan" },
-      { text: "Exportez le document complet en PDF", action: "bizplan" }
-    ], videos: [
-      { title: "1. Introduction au Business Plan", duration: "2:30" },
-      { title: "2. Comment analyser son marché", duration: "3:15" },
-      { title: "3. Remplir le Plan Financier", duration: "4:20" }
-    ]}
+    { id: "t1", title: "Faire sa première vente", category: "Ventes", duration: "5 min", difficulty: "Facile", icon: "🛒",
+      description: "Apprenez à enregistrer une vente complète, du choix du produit jusqu'à l'encaissement. Ce tutoriel couvre le processus POS complet.",
+      steps: [
+        { text: "Accéder au module Ventes & POS", action: "sales",
+          screenshot: { bg: "linear-gradient(135deg, #1A56FF22, #1A56FF08)", icon: "🖥️", label: "Écran d'accueil → Menu latéral" },
+          detail: "Dans le menu de navigation à gauche, cliquez sur l'icône 'Ventes & POS'. C'est le module principal pour enregistrer toutes vos transactions.",
+          tip: "💡 Raccourci : Vous pouvez aussi utiliser la barre de recherche (Ctrl+K) et taper 'ventes' pour y accéder rapidement." },
+        { text: "Sélectionner un produit", action: "sales",
+          screenshot: { bg: "linear-gradient(135deg, #16C55E22, #16C55E08)", icon: "📋", label: "Liste des produits disponibles" },
+          detail: "La grille affiche tous vos produits avec leur prix, stock et emoji. Cliquez sur un produit pour l'ajouter au panier. Vous pouvez en ajouter plusieurs.",
+          tip: "💡 Les produits avec un stock faible sont signalés en rouge. Vérifiez le stock avant de vendre.",
+          note: "⚠️ Si un produit a un stock de 0, il ne pourra pas être vendu." },
+        { text: "Choisir un client (optionnel)", action: "sales",
+          screenshot: { bg: "linear-gradient(135deg, #F5C51822, #F5C51808)", icon: "👤", label: "Sélecteur de client" },
+          detail: "Cliquez sur le menu déroulant 'Client' pour associer cette vente à un client existant. Cela permet de suivre l'historique d'achat et de gérer le crédit.",
+          tip: "💡 Les clients VIP ont des limites de crédit plus élevées et bénéficient de réductions automatiques." },
+        { text: "Choisir le mode de paiement", action: "sales",
+          screenshot: { bg: "linear-gradient(135deg, #9B59B622, #9B59B608)", icon: "💳", label: "Options de paiement" },
+          detail: "Sélectionnez le mode de paiement : Espèces (💵), Mobile Money (📱), Crédit (🏦), ou Banque (🏛️). Chaque mode est enregistré dans la comptabilité.",
+          note: "⚠️ Le paiement à crédit augmente le solde créditeur du client. Assurez-vous que le client n'a pas dépassé sa limite." },
+        { text: "Confirmer et encaisser", action: "sales",
+          screenshot: { bg: "linear-gradient(135deg, #D42B3A22, #D42B3A08)", icon: "✅", label: "Bouton Encaisser" },
+          detail: "Vérifiez le récapitulatif : produits, quantités, total. Cliquez sur 'Encaisser' pour finaliser la vente. Le stock sera automatiquement mis à jour.",
+          tip: "💡 Après l'encaissement, vous pouvez générer un reçu en PDF pour le client." }
+      ]},
+    { id: "t2", title: "Gérer son inventaire", category: "Stock", duration: "6 min", difficulty: "Moyen", icon: "📦",
+      description: "Maîtrisez la gestion de vos produits : ajout, modification, alertes de stock bas et suivi des dates d'expiration.",
+      steps: [
+        { text: "Ouvrir le module Produits", action: "products",
+          screenshot: { bg: "linear-gradient(135deg, #1A56FF22, #1A56FF08)", icon: "📦", label: "Menu → Produits" },
+          detail: "Naviguez vers l'onglet 'Produits' dans le menu latéral. Vous verrez la liste complète de vos articles avec stock, prix et catégorie.",
+          tip: "💡 La barre de recherche en haut permet de filtrer rapidement par nom ou catégorie." },
+        { text: "Ajouter un nouveau produit", action: "products",
+          screenshot: { bg: "linear-gradient(135deg, #16C55E22, #16C55E08)", icon: "➕", label: "Formulaire Nouveau Produit" },
+          detail: "Cliquez sur 'Nouveau Produit'. Remplissez le nom, le type (Boisson, Alimentaire, Hygiène...), le prix unitaire, le coût d'achat (COGS), et la quantité initiale en stock.",
+          tip: "💡 Le COGS (coût d'achat) est important : il permet de calculer automatiquement votre marge bénéficiaire sur chaque vente.",
+          note: "⚠️ N'oubliez pas de définir le seuil d'alerte stock bas pour être prévenu quand il faut recommander." },
+        { text: "Configurer les alertes de stock", action: "products",
+          screenshot: { bg: "linear-gradient(135deg, #F5C51822, #F5C51808)", icon: "🔔", label: "Paramètre d'alerte stock" },
+          detail: "Pour chaque produit, définissez un 'seuil d'alerte stock bas'. Quand le stock descend en dessous de ce seuil, une alerte apparaît sur le tableau de bord.",
+          tip: "💡 Recommandation : mettez le seuil à la quantité que vous vendez en une semaine pour avoir le temps de recommander." },
+        { text: "Surveiller les produits à date d'expiration", action: "products",
+          screenshot: { bg: "linear-gradient(135deg, #D42B3A22, #D42B3A08)", icon: "📅", label: "Produits avec expiration" },
+          detail: "Les produits marqués 'has_expiry' sont surveillés. Le système vous prévient si un produit approche de sa date d'expiration pour éviter les pertes.",
+          note: "⚠️ Vendez en priorité les produits qui expirent bientôt (méthode FIFO : First In, First Out)." },
+        { text: "Mettre à jour le stock manuellement", action: "products",
+          screenshot: { bg: "linear-gradient(135deg, #9B59B622, #9B59B608)", icon: "✏️", label: "Modifier quantité" },
+          detail: "Cliquez sur un produit existant pour modifier sa quantité en stock (livraison reçue, ajustement d'inventaire). Tout changement est enregistré.",
+          tip: "💡 Faites un inventaire physique régulier (hebdomadaire) et ajustez les quantités dans l'app pour rester précis." }
+      ]},
+    { id: "t3", title: "Suivre ses finances", category: "Comptabilité", duration: "8 min", difficulty: "Avancé", icon: "💰",
+      description: "Comprenez vos finances : journal comptable, suivi des dépenses, calcul du profit net et gestion du budget mensuel.",
+      steps: [
+        { text: "Consulter le tableau de bord financier", action: "home",
+          screenshot: { bg: "linear-gradient(135deg, #1A56FF22, #1A56FF08)", icon: "📊", label: "Dashboard → KPIs financiers" },
+          detail: "Le tableau de bord affiche vos KPIs clés : chiffre d'affaires, profit net, nombre de ventes, et le graphique des revenus de la semaine.",
+          tip: "💡 Les flèches vertes/rouges à côté des chiffres indiquent la tendance par rapport à la période précédente." },
+        { text: "Ouvrir le journal comptable", action: "accounting",
+          screenshot: { bg: "linear-gradient(135deg, #16C55E22, #16C55E08)", icon: "📒", label: "Module Comptabilité → Journal" },
+          detail: "Dans 'Comptabilité', le journal liste toutes les écritures : ventes (revenus), achats (dépenses), et le profit/perte pour chaque transaction.",
+          tip: "💡 Utilisez les filtres par date et catégorie pour analyser une période spécifique.",
+          note: "⚠️ Les écritures sont automatiquement générées à chaque vente ou dépense enregistrée." },
+        { text: "Enregistrer une dépense", action: "accounting",
+          screenshot: { bg: "linear-gradient(135deg, #F5C51822, #F5C51808)", icon: "💸", label: "Formulaire de dépense" },
+          detail: "Cliquez sur 'Nouvelle Dépense'. Choisissez la catégorie (Loyer, Transport, RH, Communication...), entrez le montant et la date. Validez.",
+          tip: "💡 Catégorisez toujours vos dépenses pour mieux comprendre où va votre argent à la fin du mois." },
+        { text: "Analyser le budget mensuel", action: "personal",
+          screenshot: { bg: "linear-gradient(135deg, #9B59B622, #9B59B608)", icon: "📈", label: "Budget → Suivi par catégorie" },
+          detail: "L'onglet budget montre votre budget alloué vs dépensé par catégorie. Les barres de progression indiquent le pourcentage utilisé.",
+          tip: "💡 Si une catégorie dépasse 90% du budget, réduisez les dépenses ou réallouez depuis une catégorie sous-utilisée.",
+          note: "⚠️ Les catégories en rouge (>100%) signifient un dépassement de budget. Attention aux dépenses récurrentes !" },
+        { text: "Exporter un rapport financier", action: "accounting",
+          screenshot: { bg: "linear-gradient(135deg, #D42B3A22, #D42B3A08)", icon: "📄", label: "Bouton Export PDF" },
+          detail: "Générez un rapport PDF complet de vos finances en cliquant sur 'Exporter PDF'. Idéal pour les réunions, les banques, ou les investisseurs.",
+          tip: "💡 Exportez un rapport mensuel pour garder une trace et comparer les performances mois par mois." }
+      ]},
+    { id: "t4", title: "Créer un Business Plan", category: "Stratégie", duration: "15 min", difficulty: "Avancé", icon: "📋",
+      description: "Rédigez un business plan professionnel étape par étape : vision, analyse de marché, plan financier et export PDF.",
+      steps: [
+        { text: "Ouvrir le module Business Plan", action: "bizplan",
+          screenshot: { bg: "linear-gradient(135deg, #1A56FF22, #1A56FF08)", icon: "📋", label: "Menu → Business Plan" },
+          detail: "Accédez au module 'Business Plan' depuis le menu. Vous trouverez un formulaire structuré en sections à remplir progressivement.",
+          tip: "💡 Vous n'avez pas besoin de tout remplir d'un coup. Sauvegardez et revenez plus tard." },
+        { text: "Rédiger le Résumé Exécutif", action: "bizplan",
+          screenshot: { bg: "linear-gradient(135deg, #16C55E22, #16C55E08)", icon: "🎯", label: "Section Vision & Mission" },
+          detail: "Commencez par votre Vision (où voulez-vous aller ?), votre Mission (comment y arriver ?), et vos Valeurs (ce qui guide vos décisions).",
+          tip: "💡 Soyez concis et ambitieux. Un bon résumé exécutif tient en 2-3 paragraphes et donne envie de lire la suite.",
+          note: "⚠️ C'est la section la plus lue par les investisseurs et les banquiers. Soignez-la !" },
+        { text: "Analyser le marché et la concurrence", action: "bizplan",
+          screenshot: { bg: "linear-gradient(135deg, #F5C51822, #F5C51808)", icon: "🔍", label: "Analyse SWOT & Concurrence" },
+          detail: "Identifiez vos forces, faiblesses, opportunités et menaces (SWOT). Listez vos 3-5 principaux concurrents et expliquez votre avantage compétitif.",
+          tip: "💡 Visitez les boutiques concurrentes, notez leurs prix et leurs points forts. Cette info rend votre plan crédible." },
+        { text: "Définir la stratégie opérationnelle", action: "bizplan",
+          screenshot: { bg: "linear-gradient(135deg, #9B59B622, #9B59B608)", icon: "⚙️", label: "Stratégie & Opérations" },
+          detail: "Décrivez comment vous allez fonctionner : approvisionnement, logistique, gestion du personnel, horaires, processus de vente.",
+          tip: "💡 Incluez un organigramme simple même si vous êtes seul. Montrez comment vous allez grandir." },
+        { text: "Établir le plan financier", action: "bizplan",
+          screenshot: { bg: "linear-gradient(135deg, #D42B3A22, #D42B3A08)", icon: "💰", label: "Projections financières" },
+          detail: "Remplissez vos projections de revenus mensuels, vos coûts fixes et variables, et votre point mort (break-even). Utilisez vos données réelles de vente comme base.",
+          tip: "💡 L'app peut pré-remplir certains chiffres depuis votre historique de ventes. Vérifiez et ajustez.",
+          note: "⚠️ Soyez réaliste dans vos projections. Les investisseurs préfèrent des chiffres conservateurs mais crédibles." },
+        { text: "Exporter le Business Plan en PDF", action: "bizplan",
+          screenshot: { bg: "linear-gradient(135deg, #1A56FF22, #1A56FF08)", icon: "📥", label: "Export → PDF professionnel" },
+          detail: "Une fois toutes les sections remplies, cliquez sur 'Exporter PDF'. Le document sera formaté professionnellement avec votre logo et les données financières.",
+          tip: "💡 Relisez le PDF avant de l'envoyer. Faites-le lire par un ami ou un mentor pour des retours." }
+      ],
+      videos: [
+        { title: "1. Introduction au Business Plan", duration: "2:30" },
+        { title: "2. Comment analyser son marché", duration: "3:15" },
+        { title: "3. Remplir le Plan Financier", duration: "4:20" }
+      ]},
+    { id: "t5", title: "Gérer ses clients (CRM)", category: "Clients", duration: "5 min", difficulty: "Moyen", icon: "👥",
+      description: "Organisez votre base client : ajout, segmentation VIP/actif/lead, suivi du crédit et historique d'achat.",
+      steps: [
+        { text: "Accéder au module Clients (CRM)", action: "clients",
+          screenshot: { bg: "linear-gradient(135deg, #1A56FF22, #1A56FF08)", icon: "👥", label: "Menu → Clients" },
+          detail: "Naviguez vers 'Clients' dans le menu. Vous verrez la liste de tous vos clients avec leur statut, solde crédit, et revenu total généré.",
+          tip: "💡 Triez par 'Revenu total' pour identifier vos meilleurs clients rapidement." },
+        { text: "Ajouter un nouveau client", action: "clients",
+          screenshot: { bg: "linear-gradient(135deg, #16C55E22, #16C55E08)", icon: "➕", label: "Formulaire nouveau client" },
+          detail: "Cliquez sur 'Nouveau Client'. Renseignez le nom, téléphone, email, adresse, et définissez sa limite de crédit et son statut initial (Lead, Actif, VIP).",
+          tip: "💡 Commencez tous les nouveaux contacts comme 'Lead' et passez-les en 'Actif' après leur premier achat." },
+        { text: "Comprendre les statuts client", action: "clients",
+          screenshot: { bg: "linear-gradient(135deg, #F5C51822, #F5C51808)", icon: "🏷️", label: "Statuts : Lead → Actif → VIP" },
+          detail: "Lead = prospect pas encore client. Actif = client régulier. VIP = gros acheteur fidèle. Inactif = n'a pas acheté depuis longtemps.",
+          note: "⚠️ Les clients VIP méritent une attention particulière : appelez-les régulièrement et offrez-leur des avantages." },
+        { text: "Suivre le crédit client", action: "clients",
+          screenshot: { bg: "linear-gradient(135deg, #D42B3A22, #D42B3A08)", icon: "🏦", label: "Solde crédit & limite" },
+          detail: "Chaque client a une limite de crédit et un solde actuel. Quand vous vendez à crédit, le solde augmente. Suivez les paiements pour le réduire.",
+          tip: "💡 N'accordez du crédit qu'aux clients avec un historique d'achat positif. Commencez avec des petites limites." }
+      ]},
+    { id: "t6", title: "Marketing & Réseaux sociaux", category: "Marketing", duration: "4 min", difficulty: "Facile", icon: "📣",
+      description: "Créez et programmez des publications pour promouvoir vos produits sur Facebook, Instagram et WhatsApp.",
+      steps: [
+        { text: "Ouvrir le module Marketing", action: "marketing",
+          screenshot: { bg: "linear-gradient(135deg, #1A56FF22, #1A56FF08)", icon: "📣", label: "Menu → Marketing" },
+          detail: "Dans le module Marketing, vous pouvez créer des publications, les programmer, et suivre leurs performances (likes, partages).",
+          tip: "💡 Publiez régulièrement (2-3 fois par semaine) pour garder votre audience engagée." },
+        { text: "Créer une nouvelle publication", action: "marketing",
+          screenshot: { bg: "linear-gradient(135deg, #16C55E22, #16C55E08)", icon: "✍️", label: "Éditeur de publication" },
+          detail: "Cliquez 'Nouveau Post'. Donnez un titre, rédigez le contenu avec des emojis, choisissez la plateforme (Facebook, Instagram, WhatsApp) et la date de publication.",
+          tip: "💡 Utilisez des emojis et des appels à l'action ('Commandez maintenant !', 'Quantités limitées !') pour plus d'engagement." },
+        { text: "Programmer et publier", action: "marketing",
+          screenshot: { bg: "linear-gradient(135deg, #F5C51822, #F5C51808)", icon: "📅", label: "Calendrier de publication" },
+          detail: "Programmez vos posts à l'avance ou publiez immédiatement. Les posts programmés passent automatiquement au statut 'Publié' à la date choisie.",
+          note: "⚠️ Les meilleurs moments pour publier au Congo : 7h-9h (matin), 12h-14h (pause), 18h-21h (soir)." }
+      ]}
   ];
 
+  const progress = (tutId, stepsCount) => {
+    let done = 0;
+    for (let i = 0; i < stepsCount; i++) if (completedSteps[`${tutId}-${i}`]) done++;
+    return done;
+  };
+
   if (activeTutorial) {
+    const step = activeTutorial.steps[activeStep];
+    const totalDone = progress(activeTutorial.id, activeTutorial.steps.length);
+    const pctDone = Math.round((totalDone / activeTutorial.steps.length) * 100);
+
     return (
       <div className="fade-in" style={{ paddingBottom: 40, height: "100%", display: "flex", flexDirection: "column" }}>
-        <div style={{ display:"flex", alignItems:"center", gap:16, marginBottom:24 }}>
-          <button className="btn btn-outline" onClick={() => setActiveTutorial(null)}>← Retour</button>
-          <div>
+        {/* Header */}
+        <div style={{ display:"flex", alignItems:"center", gap:16, marginBottom:16 }}>
+          <button className="btn btn-outline" onClick={() => { setActiveTutorial(null); setActiveStep(0); }}>← Retour</button>
+          <div style={{ flex:1 }}>
             <div style={{ display:"flex", alignItems:"center", gap:8 }}>
               <span style={{ fontSize:24 }}>{activeTutorial.icon}</span>
-              <h2 style={{ fontSize:24, margin:0 }}>{activeTutorial.title}</h2>
+              <h2 style={{ fontSize:22, margin:0 }}>{activeTutorial.title}</h2>
             </div>
             <div style={{ fontSize:13, color:"#7B91C4", marginTop:4 }}>
               {activeTutorial.category} · {activeTutorial.duration} · {activeTutorial.difficulty}
             </div>
           </div>
-        </div>
-
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 2fr", gap: 24, flex: 1 }}>
-          <div className="card" style={{ padding:24, height: "fit-content" }}>
-            <h3 style={{ fontSize:16, marginBottom:16 }}>Étapes interactives</h3>
-            <div style={{ display:"flex", flexDirection:"column", gap:12 }}>
-              {activeTutorial.steps.map((step, idx) => (
-                <div key={idx} style={{ display:"flex", alignItems:"center", gap:16, padding:16, background:"var(--surface)", borderRadius:12, border:"1px solid var(--border)" }}>
-                  <div style={{ width:32, height:32, minWidth:32, borderRadius:"50%", background:"#1A56FF", color:"white", display:"flex", alignItems:"center", justifyContent:"center", fontWeight:700 }}>
-                    {idx + 1}
-                  </div>
-                  <div style={{ flex:1, fontSize:14 }}>{step.text}</div>
-                  <button className="btn btn-outline" style={{ padding: "6px 12px", fontSize: 12 }} onClick={() => {
-                    showToast(`Navigation vers ${step.action}...`, "info");
-                    setActivePage(step.action);
-                  }}>Aller</button>
-                </div>
-              ))}
+          <div style={{ textAlign:"right" }}>
+            <div style={{ fontSize:13, color:"#7B91C4", marginBottom:4 }}>{totalDone}/{activeTutorial.steps.length} étapes</div>
+            <div style={{ width:120, height:6, background:"var(--border)", borderRadius:3, overflow:"hidden" }}>
+              <div style={{ width:`${pctDone}%`, height:"100%", background:"#16C55E", borderRadius:3, transition:"width 0.3s" }} />
             </div>
           </div>
+        </div>
 
-          <div className="card" style={{ padding:24, display:"flex", flexDirection:"column", gap:16, background:"var(--surface2)", border:"1px dashed var(--border)", minHeight: 400 }}>
-            <div style={{ display:"flex", alignItems:"center", gap: 12, marginBottom: 8, justifyContent: activeTutorial.videos?.length ? "flex-start" : "center" }}>
-              <span style={{ fontSize: activeTutorial.videos?.length ? 24 : 64 }}>🎥</span>
-              <h3 style={{ fontSize:20, margin: 0 }}>{activeTutorial.videos?.length ? "Vidéos de démonstration" : "Vidéo de démonstration"}</h3>
-            </div>
-            
-            {activeTutorial.videos && activeTutorial.videos.length > 0 ? (
-              <div style={{ display:"flex", flexDirection:"column", gap:12, overflowY:"auto" }}>
-                {activeTutorial.videos.map((vid, idx) => (
-                  <div key={idx} style={{ display:"flex", alignItems:"center", justifyContent:"space-between", padding:16, background:"var(--surface)", borderRadius:12, border:"1px solid var(--border)" }}>
-                    <div style={{ display:"flex", alignItems:"center", gap:12 }}>
-                      <div style={{ width:40, height:40, borderRadius:8, background:"rgba(212,43,58,0.1)", color:"#D42B3A", display:"flex", alignItems:"center", justifyContent:"center", fontSize:18 }}>▶</div>
-                      <div>
-                        <div style={{ fontSize:14, fontWeight:600 }}>{vid.title}</div>
-                        <div style={{ fontSize:12, color:"#7B91C4" }}>Durée : {vid.duration}</div>
-                      </div>
-                    </div>
-                    <button className="btn btn-outline" style={{ padding: "6px 12px", fontSize: 12 }}>Regarder</button>
+        {/* Description */}
+        <div className="card" style={{ padding:16, marginBottom:20, background:"var(--surface2)", border:"1px solid var(--border)" }}>
+          <p style={{ margin:0, fontSize:14, color:"var(--text2)", lineHeight:1.6 }}>{activeTutorial.description}</p>
+        </div>
+
+        <div style={{ display: "grid", gridTemplateColumns: "280px 1fr", gap: 20, flex: 1, minHeight: 0 }}>
+          {/* Step sidebar */}
+          <div style={{ display:"flex", flexDirection:"column", gap:8, overflowY:"auto" }}>
+            {activeTutorial.steps.map((s, idx) => {
+              const isDone = completedSteps[`${activeTutorial.id}-${idx}`];
+              const isActive = idx === activeStep;
+              return (
+                <div key={idx} onClick={() => setActiveStep(idx)}
+                  style={{ display:"flex", alignItems:"center", gap:12, padding:12, borderRadius:12, cursor:"pointer",
+                    background: isActive ? "rgba(26,86,255,0.12)" : "transparent",
+                    border: isActive ? "1px solid rgba(26,86,255,0.3)" : "1px solid transparent",
+                    transition:"all 0.2s" }}>
+                  <div style={{ width:28, height:28, minWidth:28, borderRadius:"50%",
+                    background: isDone ? "#16C55E" : isActive ? "#1A56FF" : "var(--border)",
+                    color:"white", display:"flex", alignItems:"center", justifyContent:"center", fontWeight:700, fontSize:12 }}>
+                    {isDone ? "✓" : idx + 1}
                   </div>
-                ))}
+                  <span style={{ fontSize:13, fontWeight: isActive ? 600 : 400, color: isActive ? "var(--text)" : "var(--text2)", lineHeight:1.3 }}>{s.text}</span>
+                </div>
+              );
+            })}
+          </div>
+
+          {/* Step detail panel */}
+          <div style={{ display:"flex", flexDirection:"column", gap:16, overflowY:"auto" }}>
+            {/* Screenshot mockup */}
+            <div className="card" style={{ padding:0, overflow:"hidden", border:"1px solid var(--border)" }}>
+              <div style={{ background: step.screenshot?.bg || "var(--surface2)", padding:48, display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", minHeight:220, position:"relative" }}>
+                <div style={{ position:"absolute", top:12, left:16, display:"flex", gap:6 }}>
+                  <div style={{ width:10, height:10, borderRadius:"50%", background:"#D42B3A" }} />
+                  <div style={{ width:10, height:10, borderRadius:"50%", background:"#F5C518" }} />
+                  <div style={{ width:10, height:10, borderRadius:"50%", background:"#16C55E" }} />
+                </div>
+                <div style={{ position:"absolute", top:10, right:16, fontSize:11, color:"var(--text3)", background:"var(--glass2)", padding:"4px 10px", borderRadius:6 }}>
+                  📸 Capture d'écran
+                </div>
+                <span style={{ fontSize:56, marginBottom:12 }}>{step.screenshot?.icon || "📸"}</span>
+                <div style={{ fontSize:16, fontWeight:600, color:"var(--text)", textAlign:"center" }}>{step.screenshot?.label || step.text}</div>
+                <div style={{ marginTop:12, display:"flex", gap:8, flexWrap:"wrap", justifyContent:"center" }}>
+                  <span style={{ fontSize:11, background:"rgba(26,86,255,0.15)", color:"#1A56FF", padding:"4px 10px", borderRadius:20, fontWeight:600 }}>
+                    Étape {activeStep + 1} / {activeTutorial.steps.length}
+                  </span>
+                </div>
               </div>
-            ) : (
-              <div style={{ display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", flex: 1, textAlign:"center" }}>
-                <p style={{ color:"#7B91C4", maxWidth:400, fontSize: 15, lineHeight: 1.6 }}>Regardez cette courte vidéo pour voir comment utiliser cette fonctionnalité en temps réel.</p>
-                <button className="theme-btn" style={{ marginTop:24, background:"#D42B3A", color:"white", border:"none", padding: "12px 24px", fontSize: 16 }}>
-                  ▶ Lancer la vidéo générale
+              {/* Annotation bar */}
+              <div style={{ padding:"12px 20px", background:"var(--surface)", borderTop:"1px solid var(--border)", display:"flex", alignItems:"center", gap:8 }}>
+                <span style={{ fontSize:16 }}>👆</span>
+                <span style={{ fontSize:13, color:"var(--text2)", fontStyle:"italic" }}>{step.text}</span>
+              </div>
+            </div>
+
+            {/* Detailed explanation */}
+            <div className="card" style={{ padding:20 }}>
+              <h4 style={{ fontSize:16, marginBottom:12, display:"flex", alignItems:"center", gap:8 }}>📝 Explication détaillée</h4>
+              <p style={{ fontSize:14, color:"var(--text2)", lineHeight:1.7, margin:0 }}>{step.detail}</p>
+            </div>
+
+            {/* Tip & Note */}
+            <div style={{ display:"flex", gap:12, flexWrap:"wrap" }}>
+              {step.tip && (
+                <div style={{ flex:1, minWidth:240, padding:16, borderRadius:12, background:"rgba(26,86,255,0.06)", border:"1px solid rgba(26,86,255,0.15)" }}>
+                  <div style={{ fontSize:14, lineHeight:1.6, color:"var(--text)" }}>{step.tip}</div>
+                </div>
+              )}
+              {step.note && (
+                <div style={{ flex:1, minWidth:240, padding:16, borderRadius:12, background:"rgba(245,197,24,0.08)", border:"1px solid rgba(245,197,24,0.2)" }}>
+                  <div style={{ fontSize:14, lineHeight:1.6, color:"var(--text)" }}>{step.note}</div>
+                </div>
+              )}
+            </div>
+
+            {/* Action buttons */}
+            <div style={{ display:"flex", gap:12, alignItems:"center", marginTop:8 }}>
+              <button className="btn btn-outline" style={{ padding:"8px 16px", fontSize:13 }}
+                onClick={() => { showToast(`Navigation vers ${step.action}...`, "info"); setActivePage(step.action); }}>
+                🚀 Essayer maintenant
+              </button>
+              {!completedSteps[`${activeTutorial.id}-${activeStep}`] && (
+                <button className="theme-btn" style={{ padding:"8px 16px", fontSize:13, background:"#16C55E", color:"white", border:"none", borderRadius:8 }}
+                  onClick={() => markStep(activeTutorial.id, activeStep)}>
+                  ✅ Marquer comme fait
                 </button>
-              </div>
-            )}
+              )}
+              <div style={{ flex:1 }} />
+              {activeStep > 0 && (
+                <button className="btn btn-outline" style={{ padding:"8px 16px", fontSize:13 }}
+                  onClick={() => setActiveStep(activeStep - 1)}>← Précédent</button>
+              )}
+              {activeStep < activeTutorial.steps.length - 1 && (
+                <button className="theme-btn" style={{ padding:"8px 16px", fontSize:13, background:"#1A56FF", color:"white", border:"none", borderRadius:8 }}
+                  onClick={() => setActiveStep(activeStep + 1)}>Suivant →</button>
+              )}
+            </div>
           </div>
         </div>
       </div>
@@ -4438,28 +4630,43 @@ function TutorialsPage({ data, showToast, setActivePage }) {
     <div className="fade-in" style={{ paddingBottom: 40 }}>
       <div style={{ marginBottom: 32 }}>
         <h2 style={{ fontSize: 28, marginBottom: 8, display:"flex", alignItems:"center", gap:12 }}>🎓 Centre d'Apprentissage</h2>
-        <p style={{ color: "#7B91C4", fontSize: 16 }}>Découvrez comment maîtriser BizPlatform grâce à nos tutoriels interactifs.</p>
+        <p style={{ color: "#7B91C4", fontSize: 16 }}>Découvrez comment maîtriser BizPlatform grâce à nos tutoriels interactifs détaillés.</p>
       </div>
 
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(320px, 1fr))", gap: 24 }}>
-        {tutorials.map(tut => (
-          <div key={tut.id} className="card card-hover" onClick={() => setActiveTutorial(tut)} style={{ padding: 24, cursor: "pointer", display:"flex", flexDirection:"column", gap:16, border: "1px solid var(--border)", transition: "all 0.2s ease" }}>
-            <div style={{ display:"flex", alignItems:"flex-start", justifyContent:"space-between" }}>
-              <div style={{ fontSize:32, background:"var(--surface2)", width:64, height:64, display:"flex", alignItems:"center", justifyContent:"center", borderRadius:16, boxShadow: "0 4px 12px rgba(0,0,0,0.05)" }}>
-                {tut.icon}
+        {tutorials.map(tut => {
+          const done = progress(tut.id, tut.steps.length);
+          const pctDone = Math.round((done / tut.steps.length) * 100);
+          return (
+            <div key={tut.id} className="card card-hover" onClick={() => { setActiveTutorial(tut); setActiveStep(0); }}
+              style={{ padding: 24, cursor: "pointer", display:"flex", flexDirection:"column", gap:14, border: "1px solid var(--border)", transition: "all 0.2s ease" }}>
+              <div style={{ display:"flex", alignItems:"flex-start", justifyContent:"space-between" }}>
+                <div style={{ fontSize:32, background:"var(--surface2)", width:64, height:64, display:"flex", alignItems:"center", justifyContent:"center", borderRadius:16, boxShadow: "0 4px 12px rgba(0,0,0,0.05)" }}>
+                  {tut.icon}
+                </div>
+                <span className="tag" style={{ background:"rgba(26,86,255,0.1)", color:"#1A56FF", fontWeight:700, padding: "6px 12px" }}>{tut.difficulty}</span>
               </div>
-              <span className="tag" style={{ background:"rgba(26,86,255,0.1)", color:"#1A56FF", fontWeight:700, padding: "6px 12px" }}>{tut.difficulty}</span>
+              <div>
+                <h3 style={{ fontSize:19, marginBottom:6, fontWeight: 600 }}>{tut.title}</h3>
+                <p style={{ fontSize:13, color:"#7B91C4", lineHeight:1.5, margin:0 }}>{tut.description}</p>
+              </div>
+              {/* Progress bar */}
+              {done > 0 && (
+                <div style={{ display:"flex", alignItems:"center", gap:10 }}>
+                  <div style={{ flex:1, height:5, background:"var(--border)", borderRadius:3, overflow:"hidden" }}>
+                    <div style={{ width:`${pctDone}%`, height:"100%", background:"#16C55E", borderRadius:3 }} />
+                  </div>
+                  <span style={{ fontSize:12, color:"#16C55E", fontWeight:600 }}>{pctDone}%</span>
+                </div>
+              )}
+              <div style={{ display:"flex", alignItems:"center", gap:16, marginTop:"auto", paddingTop:16, borderTop:"1px solid var(--border)" }}>
+                <span style={{ fontSize:13, color:"#7B91C4", display:"flex", alignItems:"center", gap:6, fontWeight: 500 }}>🏷️ {tut.category}</span>
+                <span style={{ fontSize:13, color:"#7B91C4", display:"flex", alignItems:"center", gap:6, fontWeight: 500 }}>⏱️ {tut.duration}</span>
+                <span style={{ fontSize:13, color:"#7B91C4", display:"flex", alignItems:"center", gap:6, fontWeight: 500 }}>📖 {tut.steps.length} étapes</span>
+              </div>
             </div>
-            <div style={{ marginTop: 8 }}>
-              <h3 style={{ fontSize:19, marginBottom:6, fontWeight: 600 }}>{tut.title}</h3>
-              <p style={{ fontSize:14, color:"#7B91C4" }}>{tut.steps.length} étapes pour apprendre</p>
-            </div>
-            <div style={{ display:"flex", alignItems:"center", gap:16, marginTop:"auto", paddingTop:20, borderTop:"1px solid var(--border)" }}>
-              <span style={{ fontSize:13, color:"#7B91C4", display:"flex", alignItems:"center", gap:6, fontWeight: 500 }}>🏷️ {tut.category}</span>
-              <span style={{ fontSize:13, color:"#7B91C4", display:"flex", alignItems:"center", gap:6, fontWeight: 500 }}>⏱️ {tut.duration}</span>
-            </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
     </div>
   );
