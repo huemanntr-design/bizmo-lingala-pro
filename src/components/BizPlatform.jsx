@@ -106,6 +106,7 @@ const NAV = [
   { id: "accounting", icon: "💰",  label: "Comptabilité",     short: "Compta"   },
   { id: "personal",   icon: "🏦",  label: "Finance Perso",    short: "Finances" },
   { id: "bizplan",    icon: "📋",  label: "Business Plan",     short: "Plan"     },
+  { id: "tutorials",  icon: "🎓",  label: "Tutoriels",        short: "Tutos"    },
   { id: "settings",   icon: "⚙️",  label: "Paramètres",       short: "Config"   },
 ];
 
