@@ -4390,6 +4390,7 @@ export default function BizPlatform() {
     accounting: <AccountingPage data={data} setData={setData} showToast={showToast} kpiGoals={kpiGoals} updateGoal={updateGoal} />,
     personal:   <PersonalPage   data={data} setData={setData} showToast={showToast} kpiGoals={kpiGoals} updateGoal={updateGoal} />,
     bizplan:    <BusinessPlanPage data={data} showToast={showToast} dark={dark} />,
+    tutorials:  <TutorialsPage  data={data} showToast={showToast} setActivePage={setActivePage} />,
     settings:   <SettingsPage   data={data} setData={setData} showToast={showToast} dark={dark} setDark={setDark} />,
   };
 
