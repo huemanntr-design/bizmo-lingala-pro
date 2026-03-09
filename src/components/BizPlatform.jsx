@@ -4328,6 +4328,115 @@ function SettingsPage({ data, setData, showToast, dark, setDark }) {
   );
 }
 
+// ─── TUTORIALS PAGE ──────────────────────────────────────────────────────────────
+function TutorialsPage({ data, showToast, setActivePage }) {
+  const [activeTutorial, setActiveTutorial] = useState(null);
+
+  const tutorials = [
+    { id: "t1", title: "Faire sa première vente", category: "Ventes", duration: "2 min", difficulty: "Facile", icon: "🛒", steps: [
+      { text: "Allez dans l'onglet 'Ventes & POS'", action: "sales" },
+      { text: "Sélectionnez un produit dans la liste", action: "sales" },
+      { text: "Choisissez un client (optionnel)", action: "sales" },
+      { text: "Cliquez sur 'Encaisser'", action: "sales" }
+    ]},
+    { id: "t2", title: "Gérer son stock", category: "Stock", duration: "3 min", difficulty: "Moyen", icon: "📦", steps: [
+      { text: "Allez dans l'onglet 'Produits'", action: "products" },
+      { text: "Cliquez sur 'Nouveau Produit'", action: "products" },
+      { text: "Remplissez les détails (nom, prix, quantité)", action: "products" },
+      { text: "Sauvegardez pour mettre à jour l'inventaire", action: "products" }
+    ]},
+    { id: "t3", title: "Suivre ses finances", category: "Comptabilité", duration: "4 min", difficulty: "Avancé", icon: "💰", steps: [
+      { text: "Consultez le 'Tableau de bord' pour une vue globale", action: "home" },
+      { text: "Allez dans 'Comptabilité' pour voir le Journal", action: "accounting" },
+      { text: "Enregistrez vos dépenses pour calculer le profit net", action: "accounting" }
+    ]},
+    { id: "t4", title: "Créer un Business Plan", category: "Stratégie", duration: "5 min", difficulty: "Moyen", icon: "📋", steps: [
+      { text: "Ouvrez l'onglet 'Business Plan'", action: "bizplan" },
+      { text: "Remplissez le Résumé Exécutif", action: "bizplan" },
+      { text: "Ajoutez vos objectifs et votre plan financier", action: "bizplan" },
+      { text: "Exportez en PDF pour vos partenaires", action: "bizplan" }
+    ]}
+  ];
+
+  if (activeTutorial) {
+    return (
+      <div className="fade-in" style={{ paddingBottom: 40, height: "100%", display: "flex", flexDirection: "column" }}>
+        <div style={{ display:"flex", alignItems:"center", gap:16, marginBottom:24 }}>
+          <button className="btn btn-outline" onClick={() => setActiveTutorial(null)}>← Retour</button>
+          <div>
+            <div style={{ display:"flex", alignItems:"center", gap:8 }}>
+              <span style={{ fontSize:24 }}>{activeTutorial.icon}</span>
+              <h2 style={{ fontSize:24, margin:0 }}>{activeTutorial.title}</h2>
+            </div>
+            <div style={{ fontSize:13, color:"#7B91C4", marginTop:4 }}>
+              {activeTutorial.category} · {activeTutorial.duration} · {activeTutorial.difficulty}
+            </div>
+          </div>
+        </div>
+
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 2fr", gap: 24, flex: 1 }}>
+          <div className="card" style={{ padding:24, height: "fit-content" }}>
+            <h3 style={{ fontSize:16, marginBottom:16 }}>Étapes interactives</h3>
+            <div style={{ display:"flex", flexDirection:"column", gap:12 }}>
+              {activeTutorial.steps.map((step, idx) => (
+                <div key={idx} style={{ display:"flex", alignItems:"center", gap:16, padding:16, background:"var(--surface)", borderRadius:12, border:"1px solid var(--border)" }}>
+                  <div style={{ width:32, height:32, minWidth:32, borderRadius:"50%", background:"#1A56FF", color:"white", display:"flex", alignItems:"center", justifyContent:"center", fontWeight:700 }}>
+                    {idx + 1}
+                  </div>
+                  <div style={{ flex:1, fontSize:14 }}>{step.text}</div>
+                  <button className="btn btn-outline" style={{ padding: "6px 12px", fontSize: 12 }} onClick={() => {
+                    showToast(`Navigation vers ${step.action}...`, "info");
+                    setActivePage(step.action);
+                  }}>Aller</button>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="card" style={{ padding:24, display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", background:"var(--surface2)", border:"1px dashed var(--border)", textAlign:"center", minHeight: 400 }}>
+            <div style={{ fontSize:64, marginBottom:24 }}>🎥</div>
+            <h3 style={{ fontSize:20, marginBottom:12 }}>Vidéo de démonstration</h3>
+            <p style={{ color:"#7B91C4", maxWidth:400, fontSize: 15, lineHeight: 1.6 }}>Regardez cette courte vidéo pour voir comment utiliser cette fonctionnalité en temps réel.</p>
+            <button className="theme-btn" style={{ marginTop:32, background:"#D42B3A", color:"white", border:"none", padding: "12px 24px", fontSize: 16 }}>
+              ▶ Lancer la vidéo
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="fade-in" style={{ paddingBottom: 40 }}>
+      <div style={{ marginBottom: 32 }}>
+        <h2 style={{ fontSize: 28, marginBottom: 8, display:"flex", alignItems:"center", gap:12 }}>🎓 Centre d'Apprentissage</h2>
+        <p style={{ color: "#7B91C4", fontSize: 16 }}>Découvrez comment maîtriser BizPlatform grâce à nos tutoriels interactifs.</p>
+      </div>
+
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(320px, 1fr))", gap: 24 }}>
+        {tutorials.map(tut => (
+          <div key={tut.id} className="card card-hover" onClick={() => setActiveTutorial(tut)} style={{ padding: 24, cursor: "pointer", display:"flex", flexDirection:"column", gap:16, border: "1px solid var(--border)", transition: "all 0.2s ease" }}>
+            <div style={{ display:"flex", alignItems:"flex-start", justifyContent:"space-between" }}>
+              <div style={{ fontSize:32, background:"var(--surface2)", width:64, height:64, display:"flex", alignItems:"center", justifyContent:"center", borderRadius:16, boxShadow: "0 4px 12px rgba(0,0,0,0.05)" }}>
+                {tut.icon}
+              </div>
+              <span className="tag" style={{ background:"rgba(26,86,255,0.1)", color:"#1A56FF", fontWeight:700, padding: "6px 12px" }}>{tut.difficulty}</span>
+            </div>
+            <div style={{ marginTop: 8 }}>
+              <h3 style={{ fontSize:19, marginBottom:6, fontWeight: 600 }}>{tut.title}</h3>
+              <p style={{ fontSize:14, color:"#7B91C4" }}>{tut.steps.length} étapes pour apprendre</p>
+            </div>
+            <div style={{ display:"flex", alignItems:"center", gap:16, marginTop:"auto", paddingTop:20, borderTop:"1px solid var(--border)" }}>
+              <span style={{ fontSize:13, color:"#7B91C4", display:"flex", alignItems:"center", gap:6, fontWeight: 500 }}>🏷️ {tut.category}</span>
+              <span style={{ fontSize:13, color:"#7B91C4", display:"flex", alignItems:"center", gap:6, fontWeight: 500 }}>⏱️ {tut.duration}</span>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 // ─── MAIN APP ──────────────────────────────────────────────────────────────────
 export default function BizPlatform() {
   const [dark, setDark]             = useState(true);
