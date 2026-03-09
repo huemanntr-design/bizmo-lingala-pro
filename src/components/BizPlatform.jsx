@@ -4350,11 +4350,17 @@ function TutorialsPage({ data, showToast, setActivePage }) {
       { text: "Allez dans 'Comptabilité' pour voir le Journal", action: "accounting" },
       { text: "Enregistrez vos dépenses pour calculer le profit net", action: "accounting" }
     ]},
-    { id: "t4", title: "Créer un Business Plan", category: "Stratégie", duration: "5 min", difficulty: "Moyen", icon: "📋", steps: [
+    { id: "t4", title: "Créer un Business Plan", category: "Stratégie", duration: "10 min", difficulty: "Moyen", icon: "📋", steps: [
       { text: "Ouvrez l'onglet 'Business Plan'", action: "bizplan" },
-      { text: "Remplissez le Résumé Exécutif", action: "bizplan" },
-      { text: "Ajoutez vos objectifs et votre plan financier", action: "bizplan" },
-      { text: "Exportez en PDF pour vos partenaires", action: "bizplan" }
+      { text: "Remplissez le 'Résumé Exécutif' (Vision, Mission, Valeurs)", action: "bizplan" },
+      { text: "Analysez le 'Marché & Concurrence' pour vous positionner", action: "bizplan" },
+      { text: "Définissez votre 'Stratégie & Opérations'", action: "bizplan" },
+      { text: "Établissez votre 'Plan Financier' (Revenus, Dépenses)", action: "bizplan" },
+      { text: "Exportez le document complet en PDF", action: "bizplan" }
+    ], videos: [
+      { title: "1. Introduction au Business Plan", duration: "2:30" },
+      { title: "2. Comment analyser son marché", duration: "3:15" },
+      { title: "3. Remplir le Plan Financier", duration: "4:20" }
     ]}
   ];
 
@@ -4393,13 +4399,35 @@ function TutorialsPage({ data, showToast, setActivePage }) {
             </div>
           </div>
 
-          <div className="card" style={{ padding:24, display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", background:"var(--surface2)", border:"1px dashed var(--border)", textAlign:"center", minHeight: 400 }}>
-            <div style={{ fontSize:64, marginBottom:24 }}>🎥</div>
-            <h3 style={{ fontSize:20, marginBottom:12 }}>Vidéo de démonstration</h3>
-            <p style={{ color:"#7B91C4", maxWidth:400, fontSize: 15, lineHeight: 1.6 }}>Regardez cette courte vidéo pour voir comment utiliser cette fonctionnalité en temps réel.</p>
-            <button className="theme-btn" style={{ marginTop:32, background:"#D42B3A", color:"white", border:"none", padding: "12px 24px", fontSize: 16 }}>
-              ▶ Lancer la vidéo
-            </button>
+          <div className="card" style={{ padding:24, display:"flex", flexDirection:"column", gap:16, background:"var(--surface2)", border:"1px dashed var(--border)", minHeight: 400 }}>
+            <div style={{ display:"flex", alignItems:"center", gap: 12, marginBottom: 8, justifyContent: activeTutorial.videos?.length ? "flex-start" : "center" }}>
+              <span style={{ fontSize: activeTutorial.videos?.length ? 24 : 64 }}>🎥</span>
+              <h3 style={{ fontSize:20, margin: 0 }}>{activeTutorial.videos?.length ? "Vidéos de démonstration" : "Vidéo de démonstration"}</h3>
+            </div>
+            
+            {activeTutorial.videos && activeTutorial.videos.length > 0 ? (
+              <div style={{ display:"flex", flexDirection:"column", gap:12, overflowY:"auto" }}>
+                {activeTutorial.videos.map((vid, idx) => (
+                  <div key={idx} style={{ display:"flex", alignItems:"center", justifyContent:"space-between", padding:16, background:"var(--surface)", borderRadius:12, border:"1px solid var(--border)" }}>
+                    <div style={{ display:"flex", alignItems:"center", gap:12 }}>
+                      <div style={{ width:40, height:40, borderRadius:8, background:"rgba(212,43,58,0.1)", color:"#D42B3A", display:"flex", alignItems:"center", justifyContent:"center", fontSize:18 }}>▶</div>
+                      <div>
+                        <div style={{ fontSize:14, fontWeight:600 }}>{vid.title}</div>
+                        <div style={{ fontSize:12, color:"#7B91C4" }}>Durée : {vid.duration}</div>
+                      </div>
+                    </div>
+                    <button className="btn btn-outline" style={{ padding: "6px 12px", fontSize: 12 }}>Regarder</button>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div style={{ display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", flex: 1, textAlign:"center" }}>
+                <p style={{ color:"#7B91C4", maxWidth:400, fontSize: 15, lineHeight: 1.6 }}>Regardez cette courte vidéo pour voir comment utiliser cette fonctionnalité en temps réel.</p>
+                <button className="theme-btn" style={{ marginTop:24, background:"#D42B3A", color:"white", border:"none", padding: "12px 24px", fontSize: 16 }}>
+                  ▶ Lancer la vidéo générale
+                </button>
+              </div>
+            )}
           </div>
         </div>
       </div>
