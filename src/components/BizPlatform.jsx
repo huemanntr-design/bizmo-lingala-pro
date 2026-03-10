@@ -3037,7 +3037,419 @@ function MarketingPage({ data, setData, showToast, kpiGoals, updateGoal }) {
         </div>
       )}
 
-      {hovPost && <Tooltip post={hovPost.post} rect={hovPost.rect} />}
+      {/* ─ META ANALYTICS TAB ─ */}
+      {tab==="meta" && (
+        <div>
+          {/* Connection Cards */}
+          <div style={{ display:"grid", gridTemplateColumns:"repeat(3,1fr)", gap:14, marginBottom:20 }}>
+            {[
+              { id:"instagram", icon:"📸", name:"Instagram", color:"#E1306C", desc:"Insights, followers, posts & stories" },
+              { id:"facebook", icon:"📘", name:"Facebook Page", color:"#1877F2", desc:"Page likes, reach & post analytics" },
+              { id:"whatsapp", icon:"💬", name:"WhatsApp Business", color:"#25D366", desc:"Messages, templates & conversations" },
+            ].map(p => {
+              const conn = metaConnections[p.id];
+              return (
+                <div key={p.id} className="card card-pad" style={{ borderColor: conn.connected ? `${p.color}40` : undefined, position:"relative", overflow:"hidden" }}>
+                  {conn.connected && <div style={{ position:"absolute", top:0, left:0, right:0, height:3, background:p.color }} />}
+                  <div style={{ display:"flex", alignItems:"center", gap:10, marginBottom:12 }}>
+                    <div style={{ width:44, height:44, borderRadius:12, background:`${p.color}18`, display:"flex", alignItems:"center", justifyContent:"center", fontSize:22 }}>{p.icon}</div>
+                    <div>
+                      <div style={{ fontFamily:"'Bricolage Grotesque'", fontWeight:800, fontSize:14 }}>{p.name}</div>
+                      <div style={{ fontSize:11, color:"#7B91C4" }}>{p.desc}</div>
+                    </div>
+                  </div>
+                  {conn.connected ? (
+                    <div>
+                      <div style={{ display:"flex", alignItems:"center", gap:6, marginBottom:10 }}>
+                        <div style={{ width:8, height:8, borderRadius:4, background:p.color, animation:"pulse 2s infinite" }} />
+                        <span style={{ fontSize:12, fontWeight:700, color:p.color }}>Connecté</span>
+                      </div>
+                      {p.id === "instagram" && metaDemo && (
+                        <div style={{ display:"flex", gap:8 }}>
+                          {[["Followers", metaDemo.instagram.profile.followers.toLocaleString()],["Posts", metaDemo.instagram.profile.posts],["Engage.", metaDemo.instagram.insights.engagement_rate+"%"]].map(([l,v]) => (
+                            <div key={l} style={{ flex:1, background:"rgba(225,48,108,0.06)", borderRadius:8, padding:"6px 8px", textAlign:"center" }}>
+                              <div style={{ fontSize:9, color:"#7B91C4", textTransform:"uppercase" }}>{l}</div>
+                              <div style={{ fontSize:14, fontWeight:800, color:"#E1306C" }}>{v}</div>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                      {p.id === "facebook" && metaDemo && (
+                        <div style={{ display:"flex", gap:8 }}>
+                          {[["Likes", metaDemo.facebook.profile.likes.toLocaleString()],["Followers", metaDemo.facebook.profile.followers.toLocaleString()],["Note", metaDemo.facebook.profile.rating+"⭐"]].map(([l,v]) => (
+                            <div key={l} style={{ flex:1, background:"rgba(24,119,242,0.06)", borderRadius:8, padding:"6px 8px", textAlign:"center" }}>
+                              <div style={{ fontSize:9, color:"#7B91C4", textTransform:"uppercase" }}>{l}</div>
+                              <div style={{ fontSize:14, fontWeight:800, color:"#1877F2" }}>{v}</div>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                      {p.id === "whatsapp" && metaDemo && (
+                        <div style={{ display:"flex", gap:8 }}>
+                          {[["Envoyés", metaDemo.whatsapp.insights.messages_sent.toLocaleString()],["Taux réponse", metaDemo.whatsapp.insights.response_rate+"%"],["Convos", metaDemo.whatsapp.insights.conversations]].map(([l,v]) => (
+                            <div key={l} style={{ flex:1, background:"rgba(37,211,102,0.06)", borderRadius:8, padding:"6px 8px", textAlign:"center" }}>
+                              <div style={{ fontSize:9, color:"#7B91C4", textTransform:"uppercase" }}>{l}</div>
+                              <div style={{ fontSize:14, fontWeight:800, color:"#25D366" }}>{v}</div>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                      <button onClick={() => disconnectMeta(p.id)} style={{ marginTop:10, width:"100%", padding:"7px", background:"rgba(212,43,58,0.08)", border:"1px solid rgba(212,43,58,0.2)", borderRadius:8, color:"#D42B3A", fontSize:11, fontWeight:600, cursor:"pointer", fontFamily:"'DM Sans'" }}>Déconnecter</button>
+                    </div>
+                  ) : (
+                    <button onClick={() => connectMeta(p.id)} disabled={conn.loading}
+                      style={{ width:"100%", padding:"10px", background:conn.loading?"rgba(255,255,255,0.04)":`${p.color}15`, border:`1px solid ${p.color}40`, borderRadius:10, color: conn.loading?"#7B91C4":p.color, fontSize:13, fontWeight:700, cursor: conn.loading?"wait":"pointer", fontFamily:"'DM Sans'", display:"flex", alignItems:"center", justifyContent:"center", gap:8 }}>
+                      {conn.loading ? (
+                        <><span style={{ display:"inline-block", width:14, height:14, border:"2px solid #7B91C4", borderTopColor:"transparent", borderRadius:"50%", animation:"spin 0.8s linear infinite" }} /> Connexion en cours...</>
+                      ) : (
+                        <>{p.icon} Connecter {p.name}</>
+                      )}
+                    </button>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+
+          {/* Detailed Stats - only when connected */}
+          {connectedCount > 0 && metaDemo && (
+            <div>
+              <div className="tabs" style={{ marginBottom:16 }}>
+                {[["overview","📊 Vue d'ensemble"],
+                  ...(metaConnections.instagram.connected ? [["instagram","📸 Instagram"]] : []),
+                  ...(metaConnections.facebook.connected ? [["facebook","📘 Facebook"]] : []),
+                  ...(metaConnections.whatsapp.connected ? [["whatsapp","💬 WhatsApp"]] : []),
+                ].map(([k,l]) => (
+                  <div key={k} className={`tab ${metaSubTab===k?"active":""}`} onClick={() => setMetaSubTab(k)}>{l}</div>
+                ))}
+              </div>
+
+              {/* OVERVIEW */}
+              {metaSubTab === "overview" && (
+                <div>
+                  <div className="card card-pad" style={{ marginBottom:16 }}>
+                    <div className="sec-title" style={{ marginBottom:14 }}>📊 Performance Globale Meta</div>
+                    <div style={{ display:"grid", gridTemplateColumns:"repeat(4,1fr)", gap:12 }}>
+                      {[
+                        ["👁️","Portée Totale", (metaConnections.instagram.connected ? metaDemo.instagram.insights.reach : 0) + (metaConnections.facebook.connected ? metaDemo.facebook.insights.reach : 0), "#1A56FF"],
+                        ["👥","Audience Totale", (metaConnections.instagram.connected ? metaDemo.instagram.profile.followers : 0) + (metaConnections.facebook.connected ? metaDemo.facebook.profile.followers : 0), "#16C55E"],
+                        ["💬","Messages", metaConnections.whatsapp.connected ? metaDemo.whatsapp.insights.messages_sent : 0, "#25D366"],
+                        ["📈","Engagement Moy.", metaConnections.instagram.connected ? metaDemo.instagram.insights.engagement_rate+"%" : metaConnections.facebook.connected ? metaDemo.facebook.insights.post_engagement_rate+"%" : "N/A", "#F5C518"],
+                      ].map(([ico,label,value,color]) => (
+                        <div key={label} style={{ background:`${color}08`, border:`1px solid ${color}20`, borderRadius:12, padding:"14px 12px", textAlign:"center" }}>
+                          <div style={{ fontSize:22, marginBottom:6 }}>{ico}</div>
+                          <div style={{ fontFamily:"'Bricolage Grotesque'", fontSize:20, fontWeight:800, color }}>{typeof value==="number"?value.toLocaleString():value}</div>
+                          <div style={{ fontSize:10, color:"#7B91C4", marginTop:4, textTransform:"uppercase", letterSpacing:0.5 }}>{label}</div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                  <div className="g2">
+                    {metaConnections.instagram.connected && (
+                      <div className="card card-pad">
+                        <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom:12 }}>
+                          <span style={{ fontSize:18 }}>📸</span>
+                          <div className="sec-title" style={{ margin:0 }}>Top Posts Instagram</div>
+                        </div>
+                        {metaDemo.instagram.recentPosts.slice(0,3).map(post => (
+                          <div key={post.id} style={{ padding:"10px 0", borderBottom:"1px solid rgba(26,86,255,0.08)" }}>
+                            <div style={{ fontSize:12, fontWeight:600, marginBottom:4 }}>{post.caption}</div>
+                            <div style={{ display:"flex", gap:12, fontSize:11, color:"#7B91C4" }}>
+                              <span>❤️ {post.likes}</span><span>💬 {post.comments}</span><span>🔄 {post.shares}</span><span>📌 {post.saves}</span><span>👁️ {post.reach.toLocaleString()}</span>
+                            </div>
+                            <div style={{ display:"flex", alignItems:"center", gap:6, marginTop:4 }}>
+                              <span className="tag" style={{ background:"rgba(225,48,108,0.1)", color:"#E1306C", fontSize:9, padding:"2px 6px" }}>{post.type}</span>
+                              <span style={{ fontSize:10, color:"#3A4E7A" }}>{post.date}</span>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                    {metaConnections.facebook.connected && (
+                      <div className="card card-pad">
+                        <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom:12 }}>
+                          <span style={{ fontSize:18 }}>📘</span>
+                          <div className="sec-title" style={{ margin:0 }}>Top Posts Facebook</div>
+                        </div>
+                        {metaDemo.facebook.recentPosts.map(post => (
+                          <div key={post.id} style={{ padding:"10px 0", borderBottom:"1px solid rgba(26,86,255,0.08)" }}>
+                            <div style={{ fontSize:12, fontWeight:600, marginBottom:4 }}>{post.message}</div>
+                            <div style={{ display:"flex", gap:12, fontSize:11, color:"#7B91C4" }}>
+                              <span>👍 {post.reactions.like}</span><span>❤️ {post.reactions.love}</span><span>💬 {post.comments}</span><span>🔄 {post.shares}</span><span>👁️ {post.reach.toLocaleString()}</span>
+                            </div>
+                            <div style={{ display:"flex", alignItems:"center", gap:6, marginTop:4 }}>
+                              <span className="tag" style={{ background:"rgba(24,119,242,0.1)", color:"#1877F2", fontSize:9, padding:"2px 6px" }}>{post.type}</span>
+                              <span style={{ fontSize:10, color:"#3A4E7A" }}>{post.date}</span>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {/* INSTAGRAM DETAIL */}
+              {metaSubTab === "instagram" && metaConnections.instagram.connected && (
+                <div>
+                  {/* Profile Card */}
+                  <div className="card card-pad" style={{ marginBottom:16, borderColor:"rgba(225,48,108,0.2)" }}>
+                    <div style={{ display:"flex", alignItems:"center", gap:16 }}>
+                      <div style={{ width:64, height:64, borderRadius:32, background:"linear-gradient(135deg, #E1306C, #F77737, #FCAF45)", display:"flex", alignItems:"center", justifyContent:"center", fontSize:28 }}>🏢</div>
+                      <div style={{ flex:1 }}>
+                        <div style={{ fontFamily:"'Bricolage Grotesque'", fontSize:18, fontWeight:800 }}>{metaDemo.instagram.profile.username}</div>
+                        <div style={{ fontSize:11, color:"#7B91C4", whiteSpace:"pre-wrap", marginTop:4 }}>{metaDemo.instagram.profile.bio}</div>
+                      </div>
+                      <div style={{ display:"flex", gap:16, textAlign:"center" }}>
+                        {[["Posts", metaDemo.instagram.profile.posts],["Followers", metaDemo.instagram.profile.followers.toLocaleString()],["Following", metaDemo.instagram.profile.following]].map(([l,v]) => (
+                          <div key={l}><div style={{ fontFamily:"'Bricolage Grotesque'", fontSize:18, fontWeight:800 }}>{v}</div><div style={{ fontSize:10, color:"#7B91C4" }}>{l}</div></div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                  {/* Insights Grid */}
+                  <div style={{ display:"grid", gridTemplateColumns:"repeat(3,1fr)", gap:12, marginBottom:16 }}>
+                    {[
+                      ["👁️","Portée", metaDemo.instagram.insights.reach.toLocaleString(), "+12%", true],
+                      ["📊","Impressions", metaDemo.instagram.insights.impressions.toLocaleString(), "+8%", true],
+                      ["💬","Taux d'engagement", metaDemo.instagram.insights.engagement_rate+"%", "+0.3%", true],
+                      ["🔗","Clics site web", metaDemo.instagram.insights.website_clicks, "+24%", true],
+                      ["👤","Visites profil", metaDemo.instagram.insights.profile_visits, "+15%", true],
+                      ["🌐","Comptes atteints", metaDemo.instagram.insights.accounts_reached.toLocaleString(), "+18%", true],
+                    ].map(([ico,label,value,trend,up]) => (
+                      <div key={label} className="card card-pad-sm" style={{ textAlign:"center" }}>
+                        <div style={{ fontSize:20, marginBottom:4 }}>{ico}</div>
+                        <div style={{ fontFamily:"'Bricolage Grotesque'", fontSize:20, fontWeight:800, color:"#E1306C" }}>{value}</div>
+                        <div style={{ fontSize:10, color:"#7B91C4", marginBottom:2 }}>{label}</div>
+                        <div style={{ fontSize:10, color:"#16C55E", fontWeight:700 }}>↑ {trend}</div>
+                      </div>
+                    ))}
+                  </div>
+                  {/* Stories & Audience */}
+                  <div className="g2">
+                    <div className="card card-pad">
+                      <div className="sec-title" style={{ marginBottom:12 }}>📖 Stories (30 derniers jours)</div>
+                      <div style={{ display:"grid", gridTemplateColumns:"repeat(2,1fr)", gap:10 }}>
+                        {[["Stories publiées", metaDemo.instagram.stories.posted],["Vues moyennes", metaDemo.instagram.stories.avgViews],["Réponses moy.", metaDemo.instagram.stories.avgReplies],["Taux complétion", metaDemo.instagram.stories.completionRate+"%"]].map(([l,v]) => (
+                          <div key={l} style={{ background:"rgba(225,48,108,0.05)", borderRadius:10, padding:"10px 12px" }}>
+                            <div style={{ fontSize:10, color:"#7B91C4" }}>{l}</div>
+                            <div style={{ fontFamily:"'Bricolage Grotesque'", fontSize:18, fontWeight:800, color:"#E1306C" }}>{v}</div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                    <div className="card card-pad">
+                      <div className="sec-title" style={{ marginBottom:12 }}>🌍 Audience — Villes</div>
+                      {metaDemo.instagram.audience.cities.map(([city, pct]) => (
+                        <div key={city} style={{ display:"flex", alignItems:"center", gap:10, marginBottom:8 }}>
+                          <span style={{ fontSize:12, minWidth:90 }}>{city}</span>
+                          <div style={{ flex:1, height:8, background:"rgba(225,48,108,0.08)", borderRadius:4, overflow:"hidden" }}>
+                            <div style={{ width:`${pct}%`, height:"100%", background:"#E1306C", borderRadius:4 }} />
+                          </div>
+                          <span style={{ fontSize:11, fontWeight:700, color:"#E1306C", minWidth:30 }}>{pct}%</span>
+                        </div>
+                      ))}
+                      <div className="sec-title" style={{ marginBottom:10, marginTop:16 }}>👥 Âge</div>
+                      {metaDemo.instagram.audience.ageGender.map(([age, pct]) => (
+                        <div key={age} style={{ display:"flex", alignItems:"center", gap:10, marginBottom:6 }}>
+                          <span style={{ fontSize:11, minWidth:50 }}>{age}</span>
+                          <div style={{ flex:1, height:8, background:"rgba(225,48,108,0.08)", borderRadius:4, overflow:"hidden" }}>
+                            <div style={{ width:`${pct}%`, height:"100%", background:"linear-gradient(90deg,#E1306C,#F77737)", borderRadius:4 }} />
+                          </div>
+                          <span style={{ fontSize:11, fontWeight:700, color:"#E1306C", minWidth:30 }}>{pct}%</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                  {/* Recent Posts */}
+                  <div className="card card-pad" style={{ marginTop:16 }}>
+                    <div className="sec-title" style={{ marginBottom:14 }}>📸 Posts Récents</div>
+                    <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fill,minmax(280px,1fr))", gap:12 }}>
+                      {metaDemo.instagram.recentPosts.map(post => (
+                        <div key={post.id} style={{ background:"rgba(225,48,108,0.04)", border:"1px solid rgba(225,48,108,0.12)", borderRadius:12, padding:14 }}>
+                          <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:8 }}>
+                            <span className="tag" style={{ background:"rgba(225,48,108,0.12)", color:"#E1306C", fontSize:10 }}>{post.type}</span>
+                            <span style={{ fontSize:10, color:"#3A4E7A" }}>{post.date}</span>
+                          </div>
+                          <div style={{ fontSize:12, fontWeight:600, marginBottom:10, lineHeight:1.5 }}>{post.caption}</div>
+                          <div style={{ display:"grid", gridTemplateColumns:"repeat(5,1fr)", gap:4 }}>
+                            {[["❤️",post.likes],["💬",post.comments],["🔄",post.shares],["📌",post.saves],["👁️",post.reach.toLocaleString()]].map(([ico,v]) => (
+                              <div key={ico} style={{ textAlign:"center", background:"rgba(225,48,108,0.06)", borderRadius:6, padding:"4px 2px" }}>
+                                <div style={{ fontSize:12 }}>{ico}</div>
+                                <div style={{ fontSize:11, fontWeight:700, color:"#E1306C" }}>{v}</div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* FACEBOOK DETAIL */}
+              {metaSubTab === "facebook" && metaConnections.facebook.connected && (
+                <div>
+                  <div className="card card-pad" style={{ marginBottom:16, borderColor:"rgba(24,119,242,0.2)" }}>
+                    <div style={{ display:"flex", alignItems:"center", gap:16 }}>
+                      <div style={{ width:64, height:64, borderRadius:12, background:"#1877F2", display:"flex", alignItems:"center", justifyContent:"center", fontSize:28, color:"white" }}>🏪</div>
+                      <div style={{ flex:1 }}>
+                        <div style={{ fontFamily:"'Bricolage Grotesque'", fontSize:18, fontWeight:800 }}>{metaDemo.facebook.profile.name}</div>
+                        <div style={{ fontSize:11, color:"#7B91C4" }}>{metaDemo.facebook.profile.category} · ⭐ {metaDemo.facebook.profile.rating} ({metaDemo.facebook.profile.reviews} avis)</div>
+                      </div>
+                      <div style={{ display:"flex", gap:16, textAlign:"center" }}>
+                        {[["Likes", metaDemo.facebook.profile.likes.toLocaleString()],["Followers", metaDemo.facebook.profile.followers.toLocaleString()]].map(([l,v]) => (
+                          <div key={l}><div style={{ fontFamily:"'Bricolage Grotesque'", fontSize:18, fontWeight:800 }}>{v}</div><div style={{ fontSize:10, color:"#7B91C4" }}>{l}</div></div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                  <div style={{ display:"grid", gridTemplateColumns:"repeat(3,1fr)", gap:12, marginBottom:16 }}>
+                    {[
+                      ["👁️","Portée", metaDemo.facebook.insights.reach.toLocaleString()],
+                      ["📊","Impressions", metaDemo.facebook.insights.impressions.toLocaleString()],
+                      ["💬","Engagement", metaDemo.facebook.insights.engagement.toLocaleString()],
+                      ["👤","Vues page", metaDemo.facebook.insights.page_views.toLocaleString()],
+                      ["🖱️","Actions sur page", metaDemo.facebook.insights.actions_on_page],
+                      ["📈","Taux engagement", metaDemo.facebook.insights.post_engagement_rate+"%"],
+                    ].map(([ico,label,value]) => (
+                      <div key={label} className="card card-pad-sm" style={{ textAlign:"center" }}>
+                        <div style={{ fontSize:20, marginBottom:4 }}>{ico}</div>
+                        <div style={{ fontFamily:"'Bricolage Grotesque'", fontSize:20, fontWeight:800, color:"#1877F2" }}>{value}</div>
+                        <div style={{ fontSize:10, color:"#7B91C4" }}>{label}</div>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="g2">
+                    <div className="card card-pad">
+                      <div className="sec-title" style={{ marginBottom:12 }}>📝 Posts Récents</div>
+                      {metaDemo.facebook.recentPosts.map(post => (
+                        <div key={post.id} style={{ padding:"12px 0", borderBottom:"1px solid rgba(26,86,255,0.08)" }}>
+                          <div style={{ fontSize:12, fontWeight:600, marginBottom:6 }}>{post.message}</div>
+                          <div style={{ display:"flex", gap:8, marginBottom:4 }}>
+                            {Object.entries(post.reactions).map(([k,v]) => (
+                              <span key={k} style={{ fontSize:11, color:"#7B91C4" }}>{k==="like"?"👍":k==="love"?"❤️":"😮"} {v}</span>
+                            ))}
+                            <span style={{ fontSize:11, color:"#7B91C4" }}>💬 {post.comments}</span>
+                            <span style={{ fontSize:11, color:"#7B91C4" }}>🔄 {post.shares}</span>
+                          </div>
+                          <div style={{ fontSize:10, color:"#3A4E7A" }}>👁️ Portée: {post.reach.toLocaleString()} · {post.date}</div>
+                        </div>
+                      ))}
+                    </div>
+                    <div className="card card-pad">
+                      <div className="sec-title" style={{ marginBottom:12 }}>🌍 Audience — Villes</div>
+                      {metaDemo.facebook.audience.cities.map(([city, pct]) => (
+                        <div key={city} style={{ display:"flex", alignItems:"center", gap:10, marginBottom:8 }}>
+                          <span style={{ fontSize:12, minWidth:90 }}>{city}</span>
+                          <div style={{ flex:1, height:8, background:"rgba(24,119,242,0.08)", borderRadius:4, overflow:"hidden" }}>
+                            <div style={{ width:`${pct}%`, height:"100%", background:"#1877F2", borderRadius:4 }} />
+                          </div>
+                          <span style={{ fontSize:11, fontWeight:700, color:"#1877F2", minWidth:30 }}>{pct}%</span>
+                        </div>
+                      ))}
+                      <div className="sec-title" style={{ marginBottom:10, marginTop:16 }}>👥 Âge</div>
+                      {metaDemo.facebook.audience.ageGender.map(([age, pct]) => (
+                        <div key={age} style={{ display:"flex", alignItems:"center", gap:10, marginBottom:6 }}>
+                          <span style={{ fontSize:11, minWidth:50 }}>{age}</span>
+                          <div style={{ flex:1, height:8, background:"rgba(24,119,242,0.08)", borderRadius:4, overflow:"hidden" }}>
+                            <div style={{ width:`${pct}%`, height:"100%", background:"#1877F2", borderRadius:4 }} />
+                          </div>
+                          <span style={{ fontSize:11, fontWeight:700, color:"#1877F2", minWidth:30 }}>{pct}%</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* WHATSAPP DETAIL */}
+              {metaSubTab === "whatsapp" && metaConnections.whatsapp.connected && (
+                <div>
+                  <div className="card card-pad" style={{ marginBottom:16, borderColor:"rgba(37,211,102,0.2)" }}>
+                    <div style={{ display:"flex", alignItems:"center", gap:16 }}>
+                      <div style={{ width:64, height:64, borderRadius:12, background:"#25D366", display:"flex", alignItems:"center", justifyContent:"center", fontSize:28, color:"white" }}>💬</div>
+                      <div style={{ flex:1 }}>
+                        <div style={{ fontFamily:"'Bricolage Grotesque'", fontSize:18, fontWeight:800 }}>{metaDemo.whatsapp.profile.name}</div>
+                        <div style={{ fontSize:11, color:"#7B91C4" }}>{metaDemo.whatsapp.profile.phone} · {metaDemo.whatsapp.profile.status}</div>
+                        <div style={{ fontSize:11, color:"#7B91C4" }}>{metaDemo.whatsapp.profile.description}</div>
+                      </div>
+                      <div style={{ background:"rgba(37,211,102,0.08)", borderRadius:10, padding:"8px 14px", textAlign:"center" }}>
+                        <div style={{ fontSize:10, color:"#7B91C4" }}>Heures</div>
+                        <div style={{ fontSize:12, fontWeight:700, color:"#25D366" }}>{metaDemo.whatsapp.profile.businessHours}</div>
+                      </div>
+                    </div>
+                  </div>
+                  <div style={{ display:"grid", gridTemplateColumns:"repeat(3,1fr)", gap:12, marginBottom:16 }}>
+                    {[
+                      ["📤","Messages envoyés", metaDemo.whatsapp.insights.messages_sent.toLocaleString()],
+                      ["✅","Délivrés", metaDemo.whatsapp.insights.messages_delivered.toLocaleString()],
+                      ["👁️","Lus", metaDemo.whatsapp.insights.messages_read.toLocaleString()],
+                      ["💬","Conversations", metaDemo.whatsapp.insights.conversations],
+                      ["⚡","Taux réponse", metaDemo.whatsapp.insights.response_rate+"%"],
+                      ["⏱️","Temps moy.", metaDemo.whatsapp.insights.avg_response_time],
+                    ].map(([ico,label,value]) => (
+                      <div key={label} className="card card-pad-sm" style={{ textAlign:"center" }}>
+                        <div style={{ fontSize:20, marginBottom:4 }}>{ico}</div>
+                        <div style={{ fontFamily:"'Bricolage Grotesque'", fontSize:20, fontWeight:800, color:"#25D366" }}>{value}</div>
+                        <div style={{ fontSize:10, color:"#7B91C4" }}>{label}</div>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="g2">
+                    <div className="card card-pad">
+                      <div className="sec-title" style={{ marginBottom:12 }}>📋 Templates de Messages</div>
+                      {metaDemo.whatsapp.templates.map((t,i) => (
+                        <div key={i} style={{ padding:"10px 0", borderBottom:"1px solid rgba(26,86,255,0.08)" }}>
+                          <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:6 }}>
+                            <div style={{ fontWeight:700, fontSize:13 }}>{t.name.replace(/_/g," ").replace(/\b\w/g,c=>c.toUpperCase())}</div>
+                            <span className="tag" style={{ background: t.status==="approved"?"rgba(22,197,94,0.12)":"rgba(245,197,24,0.12)", color: t.status==="approved"?"#16C55E":"#F5C518", fontSize:9 }}>{t.status==="approved"?"✅ Approuvé":"⏳ En attente"}</span>
+                          </div>
+                          <div style={{ display:"flex", gap:12, fontSize:11, color:"#7B91C4" }}>
+                            <span>📤 {t.sent}</span><span>✅ {t.delivered}</span><span>👁️ {t.read}</span>
+                            <span style={{ marginLeft:"auto", fontSize:10, color:"#3A4E7A" }}>{t.category}</span>
+                          </div>
+                          <div style={{ marginTop:6, height:4, background:"rgba(37,211,102,0.08)", borderRadius:2, overflow:"hidden" }}>
+                            <div style={{ width:`${(t.read/t.sent*100).toFixed(0)}%`, height:"100%", background:"#25D366", borderRadius:2 }} />
+                          </div>
+                          <div style={{ fontSize:9, color:"#3A4E7A", marginTop:2 }}>Taux de lecture: {(t.read/t.sent*100).toFixed(0)}%</div>
+                        </div>
+                      ))}
+                    </div>
+                    <div className="card card-pad">
+                      <div className="sec-title" style={{ marginBottom:12 }}>💬 Conversations Récentes</div>
+                      {metaDemo.whatsapp.topConversations.map((c,i) => (
+                        <div key={i} style={{ display:"flex", alignItems:"center", gap:12, padding:"10px 0", borderBottom:"1px solid rgba(26,86,255,0.08)" }}>
+                          <div style={{ width:40, height:40, borderRadius:20, background:"rgba(37,211,102,0.12)", display:"flex", alignItems:"center", justifyContent:"center", fontWeight:700, fontSize:14, color:"#25D366" }}>{c.name.split(" ").map(w=>w[0]).join("").slice(0,2)}</div>
+                          <div style={{ flex:1 }}>
+                            <div style={{ fontWeight:700, fontSize:13 }}>{c.name}</div>
+                            <div style={{ fontSize:11, color:"#7B91C4", marginTop:2 }}>{c.lastMessage}</div>
+                          </div>
+                          <div style={{ textAlign:"right" }}>
+                            <div style={{ fontSize:10, color:"#3A4E7A" }}>{c.date}</div>
+                            <div style={{ fontSize:11, fontWeight:700, color:"#25D366" }}>{c.messages} msgs</div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Empty state */}
+          {connectedCount === 0 && (
+            <div className="card card-pad" style={{ textAlign:"center", padding:40 }}>
+              <div style={{ fontSize:48, marginBottom:16 }}>🔗</div>
+              <div style={{ fontFamily:"'Bricolage Grotesque'", fontSize:20, fontWeight:800, marginBottom:8 }}>Connectez vos comptes Meta</div>
+              <div style={{ fontSize:13, color:"#7B91C4", maxWidth:400, margin:"0 auto", lineHeight:1.7 }}>
+                Connectez Instagram, Facebook ou WhatsApp Business pour voir vos statistiques, l'engagement de vos posts et les données de votre audience — le tout depuis un seul endroit.
+              </div>
+            </div>
+          )}
+        </div>
+      )}
 
       {/* ─ EDIT POST MODAL ─ */}
       {editPost && (
