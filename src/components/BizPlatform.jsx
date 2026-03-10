@@ -1416,9 +1416,16 @@ function HomePage({ data, setData, showToast, dark, kpiGoals, updateGoal }) {
           {/* Quick actions */}
           <div className="card card-pad-sm">
             <div className="sec-title" style={{ marginBottom: 12 }}>⚡ Actions Rapides</div>
-            <div className="g2">
-              {[["🛒 Nouvelle Vente","btn-primary"],["🧾 Facture","btn-yellow"],["📝 Devis","btn-ghost"],["📦 Réappro","btn-ghost"]].map(([l,c]) => (
-                <button key={l} className={`btn ${c}`} style={{ justifyContent: "center", fontSize: 12, width: "100%" }} onClick={() => showToast(`${l.replace(/[🛒🧾📝📦]/g,"")} lancé`, "info")}>{l}</button>
+            <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:8 }}>
+              {[
+                ["🛒 Nouvelle Vente","btn-primary", () => setActivePage("sales")],
+                ["📦 Nouveau Produit","btn-success", () => setActivePage("products")],
+                ["📊 Rapport","btn-yellow", () => setShowWAModal(true)],
+                ["✍️ Nouveau Post","btn-ghost", () => setActivePage("marketing")],
+                ["💸 Nouvelle Dépense","btn-red", () => setActivePage("accounting")],
+                ["🧾 Facture","btn-ghost", () => setActivePage("sales")],
+              ].map(([l,c,action]) => (
+                <button key={l} className={`btn ${c}`} style={{ justifyContent: "center", fontSize: 11, width: "100%", padding:"9px 8px" }} onClick={action}>{l}</button>
               ))}
             </div>
           </div>
