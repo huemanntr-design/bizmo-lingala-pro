@@ -5277,6 +5277,24 @@ export default function BizPlatform() {
 
   useEffect(() => { const t = setInterval(() => setTime(new Date()), 1000); return () => clearInterval(t); }, []);
 
+  // Auto-fetch exchange rate
+  useEffect(() => {
+    const fetchRate = async () => {
+      try {
+        const { data: rateData, error } = await supabase.functions.invoke("get-exchange-rate");
+        if (!error && rateData?.success && rateData.rate) {
+          setExchangeRate(rateData.rate);
+          console.log(`Exchange rate updated: 1 USD = ${rateData.rate} CDF (${rateData.source})`);
+        }
+      } catch (e) {
+        console.log("Exchange rate fetch failed, using default:", e);
+      }
+    };
+    fetchRate();
+    const interval = setInterval(fetchRate, 3600000); // refresh every hour
+    return () => clearInterval(interval);
+  }, []);
+
   // Global keyboard shortcuts
   useEffect(() => {
     const handler = (e) => {
