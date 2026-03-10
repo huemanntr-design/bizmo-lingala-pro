@@ -1277,25 +1277,54 @@ const RevenueChart = ({ data: chartData, dark }) => {
 };
 
 // ─── HOME PAGE ─────────────────────────────────────────────────────────────────
-function HomePage({ data, setData, showToast, dark, kpiGoals, updateGoal }) {
+function HomePage({ data, setData, showToast, dark, kpiGoals, updateGoal, setActivePage }) {
   const [showWAModal, setShowWAModal] = useState(false);
+  const [expandedCard, setExpandedCard] = useState(null);
+  const [dateFilter, setDateFilter] = useState("all");
   const totalRevenue  = data.sales.reduce((s, x) => s + x.total_amount, 0);
   const totalExpenses = data.expenses.filter(e => e.status === "approved").reduce((s, x) => s + x.amount, 0);
   const totalProfit   = data.sales.reduce((s, x) => s + x.profit, 0);
   const lowStock      = data.products.filter(p => p.stock_quantity <= p.low_stock_alert);
   const revenueGoal   = kpiGoals.home_revenue;
 
+  // Date filtering
+  const filterByDate = (items, dateField) => {
+    if (dateFilter === "all") return items;
+    const now = new Date();
+    const cutoff = new Date();
+    if (dateFilter === "today") cutoff.setDate(now.getDate());
+    else if (dateFilter === "week") cutoff.setDate(now.getDate() - 7);
+    else if (dateFilter === "month") cutoff.setMonth(now.getMonth() - 1);
+    return items.filter(item => new Date(item[dateField]) >= cutoff);
+  };
+
+  const filteredSales = filterByDate(data.sales, "sale_date");
+  const filteredRevenue = filteredSales.reduce((s, x) => s + x.total_amount, 0);
+  const filteredProfit = filteredSales.reduce((s, x) => s + x.profit, 0);
+
   return (
     <div className="page-bg page-content fade-in">
-      {/* Greeting */}
-      <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 24, flexWrap: "wrap", gap: 12 }}>
+      {/* Date Filter Bar */}
+      <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:18, flexWrap:"wrap", gap:10 }}>
         <div>
           <div style={{ fontSize: 13, color: "#7B91C4", marginBottom: 3 }}>Bienvenue 👋</div>
           <h1 style={{ fontFamily: "'Bricolage Grotesque'", fontSize: 28, fontWeight: 800, letterSpacing: "-0.5px" }}>{data.user.name.split(" ").slice(0,2).join(" ")}</h1>
           <div style={{ fontSize: 12, color: "#7B91C4", marginTop: 3 }}>{data.user.company} · {data.user.role}</div>
         </div>
-      <HelpText icon="👋">Ceci est votre tableau de bord — c'est un résumé de tout ce qui se passe dans votre business. Vous voyez combien d'argent vous avez gagné, dépensé et ce qui reste comme profit (bénéfice).</HelpText>
+        <div style={{ display:"flex", gap:4, background:dark?"rgba(15,22,55,0.5)":"rgba(240,244,255,0.7)", padding:4, borderRadius:12, border:"1px solid rgba(26,86,255,0.1)" }}>
+          {[["all","📊 Tout"],["today","📅 Aujourd'hui"],["week","📆 7 jours"],["month","🗓️ 30 jours"]].map(([k,l]) => (
+            <button key={k} onClick={() => setDateFilter(k)}
+              style={{ padding:"6px 14px", borderRadius:9, fontSize:12, fontWeight:dateFilter===k?700:500, cursor:"pointer", border:"none", fontFamily:"'DM Sans'",
+                background: dateFilter===k ? "linear-gradient(135deg,#1A56FF,#2B6BFF)" : "transparent",
+                color: dateFilter===k ? "white" : "#7B91C4",
+                boxShadow: dateFilter===k ? "0 4px 12px rgba(26,86,255,0.3)" : "none",
+                transition:"all 0.2s" }}>
+              {l}
+            </button>
+          ))}
+        </div>
       </div>
+      <HelpText icon="👋">Ceci est votre tableau de bord — c'est un résumé de tout ce qui se passe dans votre business. Utilisez les filtres de date pour voir vos performances sur différentes périodes. Cliquez sur les cartes pour voir plus de détails.</HelpText>
 
       {/* Hero KPI */}
       <HeroBanner
