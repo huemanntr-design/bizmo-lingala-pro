@@ -395,48 +395,56 @@ const buildStyles = (dark) => {
   input::placeholder { color: ${t.text3}; }
   select option { background: ${dark ? "#0A0F22" : "#fff"}; color: ${t.text}; }
 
-  /* ── CARDS — GLASSMORPHIC ── */
+  /* ── CARDS — GLASSMORPHIC LIGHTER BLUE ── */
   .card {
-    background: ${t.surface};
+    background: ${dark ? "rgba(20,30,70,0.45)" : "rgba(220,230,255,0.55)"};
     backdrop-filter: blur(20px) saturate(1.3);
     -webkit-backdrop-filter: blur(20px) saturate(1.3);
-    border: 1px solid ${t.border};
+    border: 1px solid ${dark ? "rgba(100,160,255,0.15)" : "rgba(100,140,255,0.18)"};
     border-radius: 18px;
-    transition: transform 0.25s cubic-bezier(.4,0,.2,1), box-shadow 0.25s ease;
+    transition: transform 0.3s cubic-bezier(.4,0,.2,1), box-shadow 0.3s ease, border-color 0.3s ease;
     box-shadow: ${t.shadowNeo};
     position: relative;
     overflow: hidden;
+    cursor: default;
   }
   .card::before {
     content: ''; position: absolute; top: 0; left: 0; right: 0; height: 1px;
-    background: linear-gradient(90deg, transparent, rgba(255,255,255,${dark?0.06:0.4}), transparent);
+    background: linear-gradient(90deg, transparent, rgba(140,180,255,${dark?0.12:0.45}), transparent);
     pointer-events: none;
   }
   .card-hover:hover {
-    transform: translateY(-4px) scale(1.005);
-    box-shadow: ${t.shadow}, 0 0 40px rgba(26,86,255,0.06);
-    border-color: rgba(26,86,255,0.2);
+    transform: translateY(-6px) scale(1.008);
+    box-shadow: ${t.shadow}, 0 0 50px rgba(26,86,255,0.1);
+    border-color: rgba(26,86,255,0.3);
+  }
+  .card-clickable { cursor: pointer; }
+  .card-clickable:hover {
+    transform: translateY(-6px) scale(1.008);
+    box-shadow: ${t.shadow}, 0 0 50px rgba(26,86,255,0.1);
+    border-color: rgba(26,86,255,0.3);
   }
   .card-pad { padding: 22px; }
   .card-pad-sm { padding: 16px; }
 
   /* ── KPI CARDS — NEOMORPHIC GLASS ── */
   .kpi {
-    background: ${t.surface};
+    background: ${dark ? "rgba(20,30,70,0.45)" : "rgba(220,230,255,0.55)"};
     backdrop-filter: blur(20px) saturate(1.3);
     -webkit-backdrop-filter: blur(20px) saturate(1.3);
-    border: 1px solid ${t.border};
+    border: 1px solid ${dark ? "rgba(100,160,255,0.15)" : "rgba(100,140,255,0.18)"};
     border-radius: 18px; padding: 22px; position: relative; overflow: hidden;
-    transition: transform 0.25s cubic-bezier(.4,0,.2,1), box-shadow 0.25s ease;
+    transition: transform 0.3s cubic-bezier(.4,0,.2,1), box-shadow 0.3s ease;
     min-width: 210px; flex-shrink: 0;
     box-shadow: ${t.shadowNeo};
+    cursor: pointer;
   }
   .kpi::before {
     content: ''; position: absolute; top: 0; left: 0; right: 0; height: 1px;
-    background: linear-gradient(90deg, transparent, rgba(255,255,255,${dark?0.06:0.35}), transparent);
+    background: linear-gradient(90deg, transparent, rgba(140,180,255,${dark?0.12:0.45}), transparent);
     pointer-events: none;
   }
-  .kpi:hover { transform: translateY(-4px); box-shadow: ${t.shadow}, 0 0 30px rgba(26,86,255,0.08); }
+  .kpi:hover { transform: translateY(-6px); box-shadow: ${t.shadow}, 0 0 40px rgba(26,86,255,0.12); border-color: rgba(26,86,255,0.3); }
   .kpi-glow { position: absolute; top: -30px; right: -30px; width: 120px; height: 120px; border-radius: 50%; filter: blur(40px); opacity: 0.2; transition: opacity 0.3s; }
   .kpi:hover .kpi-glow { opacity: 0.35; }
   .kpi-icon {
@@ -1234,17 +1242,34 @@ function Toast({ message, type, onClose }) {
 
 const RevenueChart = ({ data: chartData, dark }) => {
   const max = Math.max(...chartData.map(d => d.amount));
+  const avg = chartData.reduce((s,d) => s + d.amount, 0) / chartData.length;
+  const barColors = [
+    "linear-gradient(180deg, #3B82F6, #1D4ED8)",
+    "linear-gradient(180deg, #60A5FA, #2563EB)",
+    "linear-gradient(180deg, #38BDF8, #0284C7)",
+    "linear-gradient(180deg, #34D399, #059669)",
+    "linear-gradient(180deg, #FBBF24, #D97706)",
+    "linear-gradient(180deg, #F97316, #EA580C)",
+    "linear-gradient(180deg, #F43F5E, #BE123C)",
+  ];
   return (
-    <div style={{ display: "flex", alignItems: "flex-end", gap: 6, height: 120, paddingTop: 10 }}>
+    <div style={{ display: "flex", alignItems: "flex-end", gap: 8, height: 140, paddingTop: 10, position: "relative" }}>
+      {/* Average line */}
+      <div style={{ position: "absolute", left: 0, right: 0, bottom: `${(avg / max) * 100 * 1.3 + 20}px`, borderTop: "1.5px dashed rgba(26,86,255,0.3)", zIndex: 1 }}>
+        <span style={{ position: "absolute", right: 0, top: -14, fontSize: 9, color: "#7B91C4", background: dark ? "#0E1330" : "#EFF2FA", padding: "1px 4px", borderRadius: 3 }}>moy</span>
+      </div>
       {chartData.map((d, i) => {
-        const h = Math.max((d.amount / max) * 100, 6);
+        const h = Math.max((d.amount / max) * 100, 8);
+        const isMax = d.amount === max;
         return (
-          <div key={i} style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: 4 }}>
-            <div style={{ fontSize: 10, fontWeight: 700, color: "#1A56FF", opacity: 0.8 }}>${(d.amount/1000).toFixed(1)}k</div>
-            <div style={{ width: "100%", height: `${h}%`, borderRadius: "6px 6px 0 0", background: i === chartData.length - 1 ? "linear-gradient(180deg,#D42B3A,#A01A27)" : "linear-gradient(180deg,#1A56FF,#0D3DCC)", animation: "barGrow 0.5s ease forwards", animationDelay: `${i * 60}ms`, cursor: "pointer", transition: "opacity 0.18s" }}
+          <div key={i} style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: 4, position: "relative", zIndex: 2 }}>
+            <div style={{ fontSize: 10, fontWeight: 800, color: isMax ? "#F59E0B" : "#60A5FA", opacity: 0.9 }}>${(d.amount/1000).toFixed(1)}k</div>
+            <div style={{ width: "100%", height: `${h}%`, borderRadius: "8px 8px 2px 2px", background: barColors[i % barColors.length], animation: "barGrow 0.6s ease forwards", animationDelay: `${i * 80}ms`, cursor: "pointer", transition: "all 0.25s", boxShadow: isMax ? "0 0 20px rgba(245,158,11,0.4)" : "0 4px 12px rgba(26,86,255,0.15)", border: isMax ? "1px solid rgba(245,158,11,0.5)" : "none" }}
               title={`${d.day}: $${d.amount}`}
+              onMouseEnter={e => e.currentTarget.style.transform = "scaleY(1.06)"}
+              onMouseLeave={e => e.currentTarget.style.transform = "scaleY(1)"}
             />
-            <div style={{ fontSize: 10, color: "#7B91C4", fontWeight: 500 }}>{d.day}</div>
+            <div style={{ fontSize: 11, color: isMax ? "#F59E0B" : "#7B91C4", fontWeight: isMax ? 800 : 600 }}>{d.day}</div>
           </div>
         );
       })}
@@ -1253,25 +1278,54 @@ const RevenueChart = ({ data: chartData, dark }) => {
 };
 
 // ─── HOME PAGE ─────────────────────────────────────────────────────────────────
-function HomePage({ data, setData, showToast, dark, kpiGoals, updateGoal }) {
+function HomePage({ data, setData, showToast, dark, kpiGoals, updateGoal, setActivePage }) {
   const [showWAModal, setShowWAModal] = useState(false);
+  const [expandedCard, setExpandedCard] = useState(null);
+  const [dateFilter, setDateFilter] = useState("all");
   const totalRevenue  = data.sales.reduce((s, x) => s + x.total_amount, 0);
   const totalExpenses = data.expenses.filter(e => e.status === "approved").reduce((s, x) => s + x.amount, 0);
   const totalProfit   = data.sales.reduce((s, x) => s + x.profit, 0);
   const lowStock      = data.products.filter(p => p.stock_quantity <= p.low_stock_alert);
   const revenueGoal   = kpiGoals.home_revenue;
 
+  // Date filtering
+  const filterByDate = (items, dateField) => {
+    if (dateFilter === "all") return items;
+    const now = new Date();
+    const cutoff = new Date();
+    if (dateFilter === "today") cutoff.setDate(now.getDate());
+    else if (dateFilter === "week") cutoff.setDate(now.getDate() - 7);
+    else if (dateFilter === "month") cutoff.setMonth(now.getMonth() - 1);
+    return items.filter(item => new Date(item[dateField]) >= cutoff);
+  };
+
+  const filteredSales = filterByDate(data.sales, "sale_date");
+  const filteredRevenue = filteredSales.reduce((s, x) => s + x.total_amount, 0);
+  const filteredProfit = filteredSales.reduce((s, x) => s + x.profit, 0);
+
   return (
     <div className="page-bg page-content fade-in">
-      {/* Greeting */}
-      <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 24, flexWrap: "wrap", gap: 12 }}>
+      {/* Date Filter Bar */}
+      <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:18, flexWrap:"wrap", gap:10 }}>
         <div>
           <div style={{ fontSize: 13, color: "#7B91C4", marginBottom: 3 }}>Bienvenue 👋</div>
           <h1 style={{ fontFamily: "'Bricolage Grotesque'", fontSize: 28, fontWeight: 800, letterSpacing: "-0.5px" }}>{data.user.name.split(" ").slice(0,2).join(" ")}</h1>
           <div style={{ fontSize: 12, color: "#7B91C4", marginTop: 3 }}>{data.user.company} · {data.user.role}</div>
         </div>
-      <HelpText icon="👋">Ceci est votre tableau de bord — c'est un résumé de tout ce qui se passe dans votre business. Vous voyez combien d'argent vous avez gagné, dépensé et ce qui reste comme profit (bénéfice).</HelpText>
+        <div style={{ display:"flex", gap:4, background:dark?"rgba(15,22,55,0.5)":"rgba(240,244,255,0.7)", padding:4, borderRadius:12, border:"1px solid rgba(26,86,255,0.1)" }}>
+          {[["all","📊 Tout"],["today","📅 Aujourd'hui"],["week","📆 7 jours"],["month","🗓️ 30 jours"]].map(([k,l]) => (
+            <button key={k} onClick={() => setDateFilter(k)}
+              style={{ padding:"6px 14px", borderRadius:9, fontSize:12, fontWeight:dateFilter===k?700:500, cursor:"pointer", border:"none", fontFamily:"'DM Sans'",
+                background: dateFilter===k ? "linear-gradient(135deg,#1A56FF,#2B6BFF)" : "transparent",
+                color: dateFilter===k ? "white" : "#7B91C4",
+                boxShadow: dateFilter===k ? "0 4px 12px rgba(26,86,255,0.3)" : "none",
+                transition:"all 0.2s" }}>
+              {l}
+            </button>
+          ))}
+        </div>
       </div>
+      <HelpText icon="👋">Ceci est votre tableau de bord — c'est un résumé de tout ce qui se passe dans votre business. Utilisez les filtres de date pour voir vos performances sur différentes périodes. Cliquez sur les cartes pour voir plus de détails.</HelpText>
 
       {/* Hero KPI */}
       <HeroBanner
@@ -1392,9 +1446,16 @@ function HomePage({ data, setData, showToast, dark, kpiGoals, updateGoal }) {
           {/* Quick actions */}
           <div className="card card-pad-sm">
             <div className="sec-title" style={{ marginBottom: 12 }}>⚡ Actions Rapides</div>
-            <div className="g2">
-              {[["🛒 Nouvelle Vente","btn-primary"],["🧾 Facture","btn-yellow"],["📝 Devis","btn-ghost"],["📦 Réappro","btn-ghost"]].map(([l,c]) => (
-                <button key={l} className={`btn ${c}`} style={{ justifyContent: "center", fontSize: 12, width: "100%" }} onClick={() => showToast(`${l.replace(/[🛒🧾📝📦]/g,"")} lancé`, "info")}>{l}</button>
+            <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:8 }}>
+              {[
+                ["🛒 Nouvelle Vente","btn-primary", () => setActivePage("sales")],
+                ["📦 Nouveau Produit","btn-success", () => setActivePage("products")],
+                ["📊 Rapport","btn-yellow", () => setShowWAModal(true)],
+                ["✍️ Nouveau Post","btn-ghost", () => setActivePage("marketing")],
+                ["💸 Nouvelle Dépense","btn-red", () => setActivePage("accounting")],
+                ["🧾 Facture","btn-ghost", () => setActivePage("sales")],
+              ].map(([l,c,action]) => (
+                <button key={l} className={`btn ${c}`} style={{ justifyContent: "center", fontSize: 11, width: "100%", padding:"9px 8px" }} onClick={action}>{l}</button>
               ))}
             </div>
           </div>
@@ -1429,22 +1490,49 @@ function HomePage({ data, setData, showToast, dark, kpiGoals, updateGoal }) {
         </div>
       </div>
 
-      {/* Product Performance Mini Bars */}
+      {/* Product Performance Graph */}
       <div className="card card-pad" style={{ marginBottom:16 }}>
-        <div className="sec-title" style={{ marginBottom:14 }}>📦 Performance par Produit</div>
-        <div style={{ display:"flex", alignItems:"flex-end", gap:8, height:100 }}>
-          {data.products.map(p => {
-            const rev = data.sales.filter(s=>s.product_name===p.name).reduce((a,s)=>a+s.total_amount,0);
-            const maxRev = Math.max(...data.products.map(pr => data.sales.filter(s=>s.product_name===pr.name).reduce((a,s)=>a+s.total_amount,0)), 1);
-            return (
-              <div key={p.id} style={{ flex:1, display:"flex", flexDirection:"column", alignItems:"center", gap:4 }}>
-                <div style={{ fontSize:10, fontWeight:700, color:"#1A56FF" }}>{fmt(rev)}</div>
-                <div style={{ width:"100%", height:`${Math.max((rev/maxRev)*100,6)}%`, borderRadius:"6px 6px 0 0", background:"linear-gradient(180deg,#1A56FF,#0D3DCC)", transition:"height 0.5s" }} />
-                <div style={{ fontSize:9, color:"#7B91C4", textAlign:"center", maxWidth:60, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{p.emoji} {p.name.split(" ")[0]}</div>
-              </div>
-            );
-          })}
+        <div className="sec-head">
+          <div className="sec-title">📦 Performance par Produit</div>
+          <span style={{ fontSize:11, color:"#7B91C4" }}>Revenus & Marges</span>
         </div>
+        {(() => {
+          const prodData = data.products.map(p => {
+            const rev = data.sales.filter(s=>s.product_name===p.name).reduce((a,s)=>a+s.total_amount,0);
+            const profit = data.sales.filter(s=>s.product_name===p.name).reduce((a,s)=>a+s.profit,0);
+            const sold = data.sales.filter(s=>s.product_name===p.name).reduce((a,s)=>a+s.quantity,0);
+            const margin = p.unit_price > 0 ? ((p.unit_price-p.cogs)/p.unit_price*100) : 0;
+            return { ...p, rev, profit, sold, margin };
+          }).sort((a,b) => b.rev - a.rev);
+          const maxRev = Math.max(...prodData.map(p => p.rev), 1);
+          const gradients = ["linear-gradient(90deg,#3B82F6,#60A5FA)","linear-gradient(90deg,#10B981,#34D399)","linear-gradient(90deg,#F59E0B,#FBBF24)","linear-gradient(90deg,#F43F5E,#FB7185)","linear-gradient(90deg,#8B5CF6,#A78BFA)","linear-gradient(90deg,#06B6D4,#22D3EE)"];
+          return (
+            <div>
+              {prodData.map((p,i) => (
+                <div key={p.id} style={{ display:"flex", alignItems:"center", gap:12, marginBottom:12, padding:"8px 0", borderBottom: i < prodData.length - 1 ? "1px solid rgba(26,86,255,0.06)" : "none" }}>
+                  <span style={{ fontSize:24, width:32, textAlign:"center" }}>{p.emoji}</span>
+                  <div style={{ flex:1, minWidth:0 }}>
+                    <div style={{ display:"flex", justifyContent:"space-between", marginBottom:4 }}>
+                      <span style={{ fontSize:13, fontWeight:700, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{p.name}</span>
+                      <span style={{ fontSize:13, fontWeight:800, color:"#3B82F6", flexShrink:0, marginLeft:8 }}>{fmt(p.rev)}</span>
+                    </div>
+                    <div style={{ display:"flex", alignItems:"center", gap:8 }}>
+                      <div style={{ flex:1, height:10, background:"rgba(26,86,255,0.06)", borderRadius:5, overflow:"hidden" }}>
+                        <div style={{ width:`${(p.rev/maxRev)*100}%`, height:"100%", background:gradients[i%gradients.length], borderRadius:5, transition:"width 0.8s ease", boxShadow:"0 0 8px rgba(59,130,246,0.2)" }} />
+                      </div>
+                      <span style={{ fontSize:10, color:"#16C55E", fontWeight:700, flexShrink:0 }}>{p.margin.toFixed(0)}%</span>
+                    </div>
+                    <div style={{ display:"flex", gap:12, marginTop:4, fontSize:10, color:"#7B91C4" }}>
+                      <span>{p.sold}u vendues</span>
+                      <span>Profit: <strong style={{ color:"#16C55E" }}>{fmt(p.profit)}</strong></span>
+                      <span>Stock: <strong style={{ color: p.stock_quantity <= p.low_stock_alert ? "#D42B3A" : "#7B91C4" }}>{p.stock_quantity}u</strong></span>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          );
+        })()}
       </div>
 
       {/* Transactions */}
@@ -1986,8 +2074,10 @@ function SalesPage({ data, setData, showToast, kpiGoals, updateGoal, exchangeRat
               {/* Footer */}
               <div style={{ borderTop:"2px dashed #ccc", margin:"14px 0 8px" }} />
               <div style={{ textAlign:"center", fontSize:10, color:"#999" }}>
-                <div>Merci pour votre achat! 🙏</div>
-                <div style={{ marginTop:2 }}>Powered by BizPlatform DRC</div>
+                <div style={{ fontWeight:700, marginBottom:4 }}>Merci de votre fidélité! 🙏🇨🇩</div>
+                <div>Conservez ce reçu comme preuve d'achat</div>
+                <div style={{ marginTop:4, fontStyle:"italic" }}>BizPlatform DRC — Votre partenaire business</div>
+                <div style={{ marginTop:2, fontSize:9 }}>{receipt.phone} · Kinshasa, RDC</div>
               </div>
             </div>
             {/* Actions */}
@@ -2334,7 +2424,8 @@ function ClientsPage({ data, setData, showToast, kpiGoals, updateGoal }) {
         <MiniKpiCard icon="💳" label="Crédit Dû" value={fmt(data.clients.reduce((s,c)=>s+c.credit_balance,0))} trendUp={false} color="#D42B3A" />
         <MiniKpiCard icon="🎯" label="Leads" value={data.clients.filter(c=>c.status==="lead").length} color="#1A56FF" />
       </div>
-      <HelpText icon="👥">Vos clients — les gens et entreprises qui achètent chez vous. Les clients «VIP» 👑 sont ceux qui achètent beaucoup. Le «crédit» c'est l'argent qu'un client vous doit encore. Le «CRM» est un outil pour organiser et suivre vos relations avec chaque client.</HelpText>
+      <HelpText icon="👥">Vos clients — les gens et entreprises qui achètent chez vous. Les clients «VIP» 👑 sont ceux qui achètent beaucoup et méritent un traitement spécial (remises, priorité). Les clients «Actifs» 🟢 achètent régulièrement. Les «Leads» 🎯 sont des prospects pas encore convertis. Le «crédit» c'est l'argent qu'un client vous doit encore — surveillez-le de près pour éviter les impayés! Le «CRM» (Customer Relationship Management) est un outil pour organiser et suivre vos relations avec chaque client. Plus vous connaissez vos clients, mieux vous vendez.</HelpText>
+      <HelpText icon="📊">Conseil: Contactez vos clients VIP au moins 1 fois par semaine. Envoyez des rappels de paiement aux clients ayant un crédit dû. Convertissez les Leads en clients actifs en leur proposant une première commande avec remise.</HelpText>
       <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:20, flexWrap:"wrap", gap:10 }}>
         <h1 style={{ fontFamily:"'Bricolage Grotesque'", fontSize:22, fontWeight:800 }}>◎ Clients</h1>
         <button className="btn btn-primary" onClick={() => setShowAdd(true)}>➕ Nouveau Client</button>
@@ -2915,10 +3006,20 @@ function MarketingPage({ data, setData, showToast, kpiGoals, updateGoal }) {
                     const today = new Date();
                     const isToday = day===today.getDate() && month.m===today.getMonth()+1 && month.y===today.getFullYear();
                     return (
-                      <div key={day} style={{ minHeight:72, padding:"5px 4px 3px", borderRadius:8, background: isToday?"rgba(26,86,255,0.1)":posts.length?"rgba(26,86,255,0.03)":"transparent", border:`1px solid ${isToday?"rgba(26,86,255,0.35)":posts.length?"rgba(26,86,255,0.1)":"rgba(26,86,255,0.04)"}` }}>
+                      <div key={day} style={{ minHeight:72, padding:"5px 4px 3px", borderRadius:8, background: isToday?"rgba(26,86,255,0.1)":posts.length?"rgba(26,86,255,0.03)":"transparent", border:`1px solid ${isToday?"rgba(26,86,255,0.35)":posts.length?"rgba(26,86,255,0.1)":"rgba(26,86,255,0.04)"}`, cursor:"pointer", transition:"all 0.18s" }}
+                        onClick={() => {
+                          const dateStr = `${month.y}-${String(month.m).padStart(2,"0")}-${String(day).padStart(2,"0")}T10:00`;
+                          setComposer(c => ({...c, scheduled_date: dateStr}));
+                          setTab("content");
+                          showToast(`📅 Post programmé pour le ${day}/${month.m}/${month.y} — complétez le contenu`, "info");
+                        }}
+                        onMouseEnter={e => { if(!isToday) e.currentTarget.style.background = "rgba(26,86,255,0.06)"; e.currentTarget.style.borderColor = "rgba(26,86,255,0.25)"; }}
+                        onMouseLeave={e => { if(!isToday) e.currentTarget.style.background = posts.length?"rgba(26,86,255,0.03)":"transparent"; e.currentTarget.style.borderColor = isToday?"rgba(26,86,255,0.35)":posts.length?"rgba(26,86,255,0.1)":"rgba(26,86,255,0.04)"; }}
+                      >
                         <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:3 }}>
                           <span style={{ fontSize:12, fontWeight:isToday?800:400, color:isToday?"#1A56FF":posts.length?"#EEF2FF":"#7B91C4" }}>{day}</span>
                           {posts.some(p=>p.status==="ai_proposed") && <span style={{ fontSize:9, animation:"pulse 2s infinite" }}>✨</span>}
+                          {!posts.length && <span style={{ fontSize:9, color:"#3A4E7A", opacity:0.5 }}>+</span>}
                         </div>
                         <div style={{ display:"flex", flexDirection:"column", gap:2 }}>
                           {posts.slice(0,3).map((p,i) => <PostChip key={p.id||i} post={p} />)}
@@ -3535,7 +3636,8 @@ function AccountingPage({ data, setData, showToast, kpiGoals, updateGoal }) {
         <MiniKpiCard icon="🧾" label="Nb Dépenses" value={data.expenses.length} color="#7B91C4" />
         <MiniKpiCard icon="✅" label="Approuvées" value={data.expenses.filter(e=>e.status==="approved").length} color="#16C55E" />
       </div>
-      <HelpText icon="🧾">La comptabilité c'est le suivi de tout l'argent qui entre et sort de votre business. Le «journal» note chaque mouvement. Les «revenus» c'est l'argent gagné, les «dépenses» c'est l'argent dépensé, et le «profit net» c'est ce qui vous reste à la fin.</HelpText>
+      <HelpText icon="🧾">La comptabilité c'est le suivi de tout l'argent qui entre et sort de votre business. Le «journal de caisse» note chaque mouvement d'argent, entrée (💵) ou sortie (📉). Les «revenus» c'est l'argent gagné par vos ventes. Les «dépenses» c'est l'argent dépensé (loyer, transport, salaires...). Le «profit net» c'est ce qui vous reste : Revenus - Dépenses = Profit. Une bonne marge nette est au-dessus de 20%.</HelpText>
+      <HelpText icon="💡">Conseils importants: 1) Notez TOUTES vos dépenses, même les petites — elles s'accumulent vite! 2) Séparez l'argent du business et l'argent personnel. 3) Gardez toujours un fonds de roulement pour les urgences. 4) Exportez vos rapports en PDF chaque mois pour vos archives.</HelpText>
       <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:20 }}>
         <h1 style={{ fontFamily:"'Bricolage Grotesque'", fontSize:22, fontWeight:800 }}>⊛ Comptabilité</h1>
         <div style={{ display:"flex", gap:10 }}>
@@ -5176,6 +5278,24 @@ export default function BizPlatform() {
 
   useEffect(() => { const t = setInterval(() => setTime(new Date()), 1000); return () => clearInterval(t); }, []);
 
+  // Auto-fetch exchange rate
+  useEffect(() => {
+    const fetchRate = async () => {
+      try {
+        const { data: rateData, error } = await supabase.functions.invoke("get-exchange-rate");
+        if (!error && rateData?.success && rateData.rate) {
+          setExchangeRate(rateData.rate);
+          console.log(`Exchange rate updated: 1 USD = ${rateData.rate} CDF (${rateData.source})`);
+        }
+      } catch (e) {
+        console.log("Exchange rate fetch failed, using default:", e);
+      }
+    };
+    fetchRate();
+    const interval = setInterval(fetchRate, 3600000); // refresh every hour
+    return () => clearInterval(interval);
+  }, []);
+
   // Global keyboard shortcuts
   useEffect(() => {
     const handler = (e) => {
@@ -5205,7 +5325,7 @@ export default function BizPlatform() {
   `;
 
   const pages = {
-    home:       <HomePage       data={data} setData={setData} showToast={showToast} dark={dark} kpiGoals={kpiGoals} updateGoal={updateGoal} />,
+    home:       <HomePage       data={data} setData={setData} showToast={showToast} dark={dark} kpiGoals={kpiGoals} updateGoal={updateGoal} setActivePage={setActivePage} />,
     sales:      <SalesPage      data={data} setData={setData} showToast={showToast} kpiGoals={kpiGoals} updateGoal={updateGoal} exchangeRate={exchangeRate} />,
     products:   <ProductsPage   data={data} setData={setData} showToast={showToast} />,
     clients:    <ClientsPage    data={data} setData={setData} showToast={showToast} kpiGoals={kpiGoals} updateGoal={updateGoal} />,
