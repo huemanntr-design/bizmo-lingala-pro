@@ -1460,22 +1460,49 @@ function HomePage({ data, setData, showToast, dark, kpiGoals, updateGoal }) {
         </div>
       </div>
 
-      {/* Product Performance Mini Bars */}
+      {/* Product Performance Graph */}
       <div className="card card-pad" style={{ marginBottom:16 }}>
-        <div className="sec-title" style={{ marginBottom:14 }}>📦 Performance par Produit</div>
-        <div style={{ display:"flex", alignItems:"flex-end", gap:8, height:100 }}>
-          {data.products.map(p => {
-            const rev = data.sales.filter(s=>s.product_name===p.name).reduce((a,s)=>a+s.total_amount,0);
-            const maxRev = Math.max(...data.products.map(pr => data.sales.filter(s=>s.product_name===pr.name).reduce((a,s)=>a+s.total_amount,0)), 1);
-            return (
-              <div key={p.id} style={{ flex:1, display:"flex", flexDirection:"column", alignItems:"center", gap:4 }}>
-                <div style={{ fontSize:10, fontWeight:700, color:"#1A56FF" }}>{fmt(rev)}</div>
-                <div style={{ width:"100%", height:`${Math.max((rev/maxRev)*100,6)}%`, borderRadius:"6px 6px 0 0", background:"linear-gradient(180deg,#1A56FF,#0D3DCC)", transition:"height 0.5s" }} />
-                <div style={{ fontSize:9, color:"#7B91C4", textAlign:"center", maxWidth:60, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{p.emoji} {p.name.split(" ")[0]}</div>
-              </div>
-            );
-          })}
+        <div className="sec-head">
+          <div className="sec-title">📦 Performance par Produit</div>
+          <span style={{ fontSize:11, color:"#7B91C4" }}>Revenus & Marges</span>
         </div>
+        {(() => {
+          const prodData = data.products.map(p => {
+            const rev = data.sales.filter(s=>s.product_name===p.name).reduce((a,s)=>a+s.total_amount,0);
+            const profit = data.sales.filter(s=>s.product_name===p.name).reduce((a,s)=>a+s.profit,0);
+            const sold = data.sales.filter(s=>s.product_name===p.name).reduce((a,s)=>a+s.quantity,0);
+            const margin = p.unit_price > 0 ? ((p.unit_price-p.cogs)/p.unit_price*100) : 0;
+            return { ...p, rev, profit, sold, margin };
+          }).sort((a,b) => b.rev - a.rev);
+          const maxRev = Math.max(...prodData.map(p => p.rev), 1);
+          const gradients = ["linear-gradient(90deg,#3B82F6,#60A5FA)","linear-gradient(90deg,#10B981,#34D399)","linear-gradient(90deg,#F59E0B,#FBBF24)","linear-gradient(90deg,#F43F5E,#FB7185)","linear-gradient(90deg,#8B5CF6,#A78BFA)","linear-gradient(90deg,#06B6D4,#22D3EE)"];
+          return (
+            <div>
+              {prodData.map((p,i) => (
+                <div key={p.id} style={{ display:"flex", alignItems:"center", gap:12, marginBottom:12, padding:"8px 0", borderBottom: i < prodData.length - 1 ? "1px solid rgba(26,86,255,0.06)" : "none" }}>
+                  <span style={{ fontSize:24, width:32, textAlign:"center" }}>{p.emoji}</span>
+                  <div style={{ flex:1, minWidth:0 }}>
+                    <div style={{ display:"flex", justifyContent:"space-between", marginBottom:4 }}>
+                      <span style={{ fontSize:13, fontWeight:700, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{p.name}</span>
+                      <span style={{ fontSize:13, fontWeight:800, color:"#3B82F6", flexShrink:0, marginLeft:8 }}>{fmt(p.rev)}</span>
+                    </div>
+                    <div style={{ display:"flex", alignItems:"center", gap:8 }}>
+                      <div style={{ flex:1, height:10, background:"rgba(26,86,255,0.06)", borderRadius:5, overflow:"hidden" }}>
+                        <div style={{ width:`${(p.rev/maxRev)*100}%`, height:"100%", background:gradients[i%gradients.length], borderRadius:5, transition:"width 0.8s ease", boxShadow:"0 0 8px rgba(59,130,246,0.2)" }} />
+                      </div>
+                      <span style={{ fontSize:10, color:"#16C55E", fontWeight:700, flexShrink:0 }}>{p.margin.toFixed(0)}%</span>
+                    </div>
+                    <div style={{ display:"flex", gap:12, marginTop:4, fontSize:10, color:"#7B91C4" }}>
+                      <span>{p.sold}u vendues</span>
+                      <span>Profit: <strong style={{ color:"#16C55E" }}>{fmt(p.profit)}</strong></span>
+                      <span>Stock: <strong style={{ color: p.stock_quantity <= p.low_stock_alert ? "#D42B3A" : "#7B91C4" }}>{p.stock_quantity}u</strong></span>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          );
+        })()}
       </div>
 
       {/* Transactions */}
