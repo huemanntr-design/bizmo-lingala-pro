@@ -170,26 +170,26 @@ export const generatePDF = async (elementId, filename) => {
 
 const buildStyles = (dark) => {
   const t = dark ? {
-    bg:       "#070B1A",
-    bg2:      "#0A0F22",
-    bg3:      "#0E1330",
-    surface:  "rgba(15,22,50,0.65)",
-    surface2: "rgba(20,30,65,0.55)",
-    border:   "rgba(100,140,255,0.08)",
-    border2:  "rgba(100,140,255,0.14)",
-    text:     "#E8EDFF",
-    text2:    "#7B91C4",
-    text3:    "#3A4E7A",
-    glass:    "rgba(15,22,55,0.45)",
-    glass2:   "rgba(20,30,70,0.35)",
-    glass3:   "rgba(60,100,255,0.08)",
-    inputBg:  "rgba(10,16,40,0.7)",
-    modalBg:  "rgba(10,14,32,0.92)",
-    shadow:   "0 8px 32px rgba(0,0,0,0.45), 0 0 0 1px rgba(100,140,255,0.06)",
-    shadowNeo: "12px 12px 24px rgba(0,0,0,0.5), -6px -6px 16px rgba(40,60,120,0.08)",
-    shadowInset: "inset 2px 2px 6px rgba(0,0,0,0.3), inset -2px -2px 6px rgba(40,70,140,0.06)",
-    glow:     "0 0 40px rgba(26,86,255,0.15), 0 0 80px rgba(26,86,255,0.05)",
-    scrollBg: "rgba(26,86,255,0.2)",
+    bg:       "#060A18",
+    bg2:      "#0B1028",
+    bg3:      "#101838",
+    surface:  "rgba(30,50,100,0.45)",
+    surface2: "rgba(35,55,110,0.40)",
+    border:   "rgba(120,165,255,0.12)",
+    border2:  "rgba(120,165,255,0.18)",
+    text:     "#EAF0FF",
+    text2:    "#8DA4D4",
+    text3:    "#4A6499",
+    glass:    "rgba(25,40,85,0.50)",
+    glass2:   "rgba(30,48,95,0.40)",
+    glass3:   "rgba(70,120,255,0.10)",
+    inputBg:  "rgba(18,28,60,0.75)",
+    modalBg:  "rgba(12,18,40,0.94)",
+    shadow:   "0 8px 32px rgba(0,0,0,0.5), 0 0 0 1px rgba(120,165,255,0.08)",
+    shadowNeo: "10px 10px 24px rgba(0,0,0,0.45), -5px -5px 16px rgba(50,80,150,0.06)",
+    shadowInset: "inset 2px 2px 6px rgba(0,0,0,0.25), inset -2px -2px 6px rgba(50,80,160,0.05)",
+    glow:     "0 0 40px rgba(50,110,255,0.18), 0 0 80px rgba(50,110,255,0.06)",
+    scrollBg: "rgba(50,110,255,0.25)",
   } : {
     bg:       "#EFF2FA",
     bg2:      "rgba(255,255,255,0.7)",
@@ -397,10 +397,10 @@ const buildStyles = (dark) => {
 
   /* ── CARDS — GLASSMORPHIC LIGHTER BLUE ── */
   .card {
-    background: ${dark ? "rgba(20,30,70,0.45)" : "rgba(220,230,255,0.55)"};
-    backdrop-filter: blur(20px) saturate(1.3);
-    -webkit-backdrop-filter: blur(20px) saturate(1.3);
-    border: 1px solid ${dark ? "rgba(100,160,255,0.15)" : "rgba(100,140,255,0.18)"};
+    background: ${dark ? "rgba(30,48,100,0.38)" : "rgba(220,230,255,0.55)"};
+    backdrop-filter: blur(20px) saturate(1.4);
+    -webkit-backdrop-filter: blur(20px) saturate(1.4);
+    border: 1px solid ${dark ? "rgba(120,170,255,0.18)" : "rgba(100,140,255,0.18)"};
     border-radius: 18px;
     transition: transform 0.3s cubic-bezier(.4,0,.2,1), box-shadow 0.3s ease, border-color 0.3s ease;
     box-shadow: ${t.shadowNeo};
@@ -410,7 +410,7 @@ const buildStyles = (dark) => {
   }
   .card::before {
     content: ''; position: absolute; top: 0; left: 0; right: 0; height: 1px;
-    background: linear-gradient(90deg, transparent, rgba(140,180,255,${dark?0.12:0.45}), transparent);
+    background: linear-gradient(90deg, transparent, rgba(140,180,255,${dark?0.22:0.45}), transparent);
     pointer-events: none;
   }
   .card-hover:hover {
@@ -429,10 +429,10 @@ const buildStyles = (dark) => {
 
   /* ── KPI CARDS — NEOMORPHIC GLASS ── */
   .kpi {
-    background: ${dark ? "rgba(20,30,70,0.45)" : "rgba(220,230,255,0.55)"};
-    backdrop-filter: blur(20px) saturate(1.3);
-    -webkit-backdrop-filter: blur(20px) saturate(1.3);
-    border: 1px solid ${dark ? "rgba(100,160,255,0.15)" : "rgba(100,140,255,0.18)"};
+    background: ${dark ? "rgba(30,48,100,0.38)" : "rgba(220,230,255,0.55)"};
+    backdrop-filter: blur(20px) saturate(1.4);
+    -webkit-backdrop-filter: blur(20px) saturate(1.4);
+    border: 1px solid ${dark ? "rgba(120,170,255,0.18)" : "rgba(100,140,255,0.18)"};
     border-radius: 18px; padding: 22px; position: relative; overflow: hidden;
     transition: transform 0.3s cubic-bezier(.4,0,.2,1), box-shadow 0.3s ease;
     min-width: 210px; flex-shrink: 0;
@@ -441,12 +441,12 @@ const buildStyles = (dark) => {
   }
   .kpi::before {
     content: ''; position: absolute; top: 0; left: 0; right: 0; height: 1px;
-    background: linear-gradient(90deg, transparent, rgba(140,180,255,${dark?0.12:0.45}), transparent);
+    background: linear-gradient(90deg, transparent, rgba(140,180,255,${dark?0.22:0.45}), transparent);
     pointer-events: none;
   }
-  .kpi:hover { transform: translateY(-6px); box-shadow: ${t.shadow}, 0 0 40px rgba(26,86,255,0.12); border-color: rgba(26,86,255,0.3); }
-  .kpi-glow { position: absolute; top: -30px; right: -30px; width: 120px; height: 120px; border-radius: 50%; filter: blur(40px); opacity: 0.2; transition: opacity 0.3s; }
-  .kpi:hover .kpi-glow { opacity: 0.35; }
+  .kpi:hover { transform: translateY(-6px); box-shadow: ${t.shadow}, 0 0 40px rgba(50,110,255,0.15); border-color: rgba(80,140,255,0.35); }
+  .kpi-glow { position: absolute; top: -30px; right: -30px; width: 120px; height: 120px; border-radius: 50%; filter: blur(40px); opacity: 0.25; transition: opacity 0.3s; }
+  .kpi:hover .kpi-glow { opacity: 0.4; }
   .kpi-icon {
     width: 44px; height: 44px; border-radius: 12px;
     display: flex; align-items: center; justify-content: center; font-size: 19px; margin-bottom: 14px;
@@ -480,21 +480,21 @@ const buildStyles = (dark) => {
 
   /* ── HERO BANNER — GLASS MORPHISM ── */
   .hero-banner {
-    background: ${dark ? "rgba(15,22,55,0.55)" : "rgba(255,255,255,0.5)"};
-    backdrop-filter: blur(24px) saturate(1.4);
-    -webkit-backdrop-filter: blur(24px) saturate(1.4);
-    border: 1px solid ${dark ? "rgba(100,140,255,0.12)" : "rgba(100,140,255,0.15)"};
+    background: ${dark ? "rgba(25,40,90,0.42)" : "rgba(255,255,255,0.5)"};
+    backdrop-filter: blur(24px) saturate(1.5);
+    -webkit-backdrop-filter: blur(24px) saturate(1.5);
+    border: 1px solid ${dark ? "rgba(120,170,255,0.16)" : "rgba(100,140,255,0.15)"};
     border-radius: 22px; padding: 28px 32px; position: relative; overflow: hidden;
     margin-bottom: 18px;
     box-shadow: ${t.shadowNeo};
   }
   .hero-banner::before {
     content: ''; position: absolute; top: -50%; right: -15%; width: 300px; height: 300px;
-    border-radius: 50%; background: rgba(26,86,255,0.06); filter: blur(80px); pointer-events: none;
+    border-radius: 50%; background: rgba(50,100,255,0.08); filter: blur(80px); pointer-events: none;
   }
   .hero-banner::after {
     content: ''; position: absolute; top: 0; left: 0; right: 0; height: 1px;
-    background: linear-gradient(90deg, transparent, rgba(255,255,255,${dark?0.06:0.4}), transparent);
+    background: linear-gradient(90deg, transparent, rgba(160,200,255,${dark?0.12:0.4}), transparent);
     pointer-events: none;
   }
   .hero-banner-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.5px; color: ${t.text2}; margin-bottom: 8px; }
@@ -516,17 +516,17 @@ const buildStyles = (dark) => {
   .mini-kpi-grid { display: flex; gap: 14px; margin-bottom: 22px; flex-wrap: wrap; }
   .mini-kpi {
     flex: 1; min-width: 145px;
-    background: ${t.surface};
-    backdrop-filter: blur(16px) saturate(1.2);
-    -webkit-backdrop-filter: blur(16px) saturate(1.2);
-    border: 1px solid ${t.border};
+    background: ${dark ? "rgba(28,44,95,0.40)" : t.surface};
+    backdrop-filter: blur(16px) saturate(1.3);
+    -webkit-backdrop-filter: blur(16px) saturate(1.3);
+    border: 1px solid ${dark ? "rgba(120,165,255,0.14)" : t.border};
     border-radius: 16px; padding: 18px; text-align: center; position: relative; overflow: hidden;
     transition: transform 0.25s cubic-bezier(.4,0,.2,1), box-shadow 0.25s;
     box-shadow: ${t.shadowNeo};
   }
   .mini-kpi::before {
     content: ''; position: absolute; top: 0; left: 0; right: 0; height: 1px;
-    background: linear-gradient(90deg, transparent, rgba(255,255,255,${dark?0.04:0.3}), transparent);
+    background: linear-gradient(90deg, transparent, rgba(140,180,255,${dark?0.15:0.3}), transparent);
     pointer-events: none;
   }
   .mini-kpi:hover { transform: translateY(-3px); box-shadow: ${t.shadow}; }
@@ -537,23 +537,23 @@ const buildStyles = (dark) => {
 
   /* ── INSIGHT CARD ── */
   .insight-card {
-    background: ${t.glass};
+    background: ${dark ? "rgba(28,44,90,0.35)" : t.glass};
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
-    border: 1px solid ${t.border}; border-radius: 14px; padding: 14px 16px;
+    border: 1px solid ${dark ? "rgba(120,165,255,0.12)" : t.border}; border-radius: 14px; padding: 14px 16px;
     display: flex; align-items: flex-start; gap: 12px; margin-bottom: 8px;
     transition: all 0.22s;
   }
-  .insight-card:hover { background: ${t.glass3}; transform: translateX(4px); }
+  .insight-card:hover { background: ${dark ? "rgba(40,60,120,0.35)" : t.glass3}; transform: translateX(4px); }
   .insight-icon { width: 38px; height: 38px; border-radius: 11px; display: flex; align-items: center; justify-content: center; font-size: 16px; flex-shrink: 0; box-shadow: ${t.shadowInset}; }
 
   /* ── TABS — GLASS PILL ── */
   .tabs {
     display: flex; gap: 3px;
-    background: ${t.glass};
+    background: ${dark ? "rgba(20,32,75,0.40)" : t.glass};
     backdrop-filter: blur(16px);
     -webkit-backdrop-filter: blur(16px);
-    border: 1px solid ${t.border};
+    border: 1px solid ${dark ? "rgba(120,165,255,0.12)" : t.border};
     border-radius: 14px; padding: 5px; overflow-x: auto; flex-shrink: 0;
     box-shadow: ${t.shadowInset};
   }
@@ -564,11 +564,11 @@ const buildStyles = (dark) => {
     transition: all 0.22s cubic-bezier(.4,0,.2,1);
   }
   .tab.active {
-    background: linear-gradient(135deg, #1A56FF, #2B6BFF);
+    background: linear-gradient(135deg, #1A56FF, #3B7BFF);
     color: white;
-    box-shadow: 0 4px 16px rgba(26,86,255,0.3), inset 0 1px 0 rgba(255,255,255,0.15);
+    box-shadow: 0 4px 16px rgba(26,86,255,0.35), inset 0 1px 0 rgba(255,255,255,0.15);
   }
-  .tab:hover:not(.active) { color: ${t.text}; background: ${t.glass3}; }
+  .tab:hover:not(.active) { color: ${t.text}; background: ${dark ? "rgba(50,80,160,0.20)" : t.glass3}; }
 
   /* ── TAG / BADGE ── */
   .tag {
@@ -686,9 +686,9 @@ const buildStyles = (dark) => {
   .page-bg::before {
     content: ''; position: absolute; inset: 0; pointer-events: none; z-index: 0;
     background:
-      radial-gradient(ellipse 70% 50% at 10% 40%, rgba(26,86,255,0.04) 0%, transparent 55%),
-      radial-gradient(ellipse 50% 40% at 90% 20%, rgba(245,197,24,0.03) 0%, transparent 50%),
-      radial-gradient(ellipse 60% 50% at 50% 90%, rgba(212,43,58,0.03) 0%, transparent 50%);
+      radial-gradient(ellipse 70% 50% at 10% 40%, rgba(30,80,255,${dark?0.06:0.04}) 0%, transparent 55%),
+      radial-gradient(ellipse 50% 40% at 90% 20%, rgba(245,197,24,${dark?0.04:0.03}) 0%, transparent 50%),
+      radial-gradient(ellipse 60% 50% at 50% 90%, rgba(212,43,58,${dark?0.04:0.03}) 0%, transparent 50%);
   }
   .page-content { position: relative; z-index: 1; }
 
