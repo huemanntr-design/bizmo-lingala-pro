@@ -480,21 +480,21 @@ const buildStyles = (dark) => {
 
   /* ── HERO BANNER — GLASS MORPHISM ── */
   .hero-banner {
-    background: ${dark ? "rgba(15,22,55,0.55)" : "rgba(255,255,255,0.5)"};
-    backdrop-filter: blur(24px) saturate(1.4);
-    -webkit-backdrop-filter: blur(24px) saturate(1.4);
-    border: 1px solid ${dark ? "rgba(100,140,255,0.12)" : "rgba(100,140,255,0.15)"};
+    background: ${dark ? "rgba(25,40,90,0.42)" : "rgba(255,255,255,0.5)"};
+    backdrop-filter: blur(24px) saturate(1.5);
+    -webkit-backdrop-filter: blur(24px) saturate(1.5);
+    border: 1px solid ${dark ? "rgba(120,170,255,0.16)" : "rgba(100,140,255,0.15)"};
     border-radius: 22px; padding: 28px 32px; position: relative; overflow: hidden;
     margin-bottom: 18px;
     box-shadow: ${t.shadowNeo};
   }
   .hero-banner::before {
     content: ''; position: absolute; top: -50%; right: -15%; width: 300px; height: 300px;
-    border-radius: 50%; background: rgba(26,86,255,0.06); filter: blur(80px); pointer-events: none;
+    border-radius: 50%; background: rgba(50,100,255,0.08); filter: blur(80px); pointer-events: none;
   }
   .hero-banner::after {
     content: ''; position: absolute; top: 0; left: 0; right: 0; height: 1px;
-    background: linear-gradient(90deg, transparent, rgba(255,255,255,${dark?0.06:0.4}), transparent);
+    background: linear-gradient(90deg, transparent, rgba(160,200,255,${dark?0.12:0.4}), transparent);
     pointer-events: none;
   }
   .hero-banner-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.5px; color: ${t.text2}; margin-bottom: 8px; }
