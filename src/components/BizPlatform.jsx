@@ -2044,8 +2044,10 @@ function SalesPage({ data, setData, showToast, kpiGoals, updateGoal, exchangeRat
               {/* Footer */}
               <div style={{ borderTop:"2px dashed #ccc", margin:"14px 0 8px" }} />
               <div style={{ textAlign:"center", fontSize:10, color:"#999" }}>
-                <div>Merci pour votre achat! 🙏</div>
-                <div style={{ marginTop:2 }}>Powered by BizPlatform DRC</div>
+                <div style={{ fontWeight:700, marginBottom:4 }}>Merci de votre fidélité! 🙏🇨🇩</div>
+                <div>Conservez ce reçu comme preuve d'achat</div>
+                <div style={{ marginTop:4, fontStyle:"italic" }}>BizPlatform DRC — Votre partenaire business</div>
+                <div style={{ marginTop:2, fontSize:9 }}>{receipt.phone} · Kinshasa, RDC</div>
               </div>
             </div>
             {/* Actions */}
