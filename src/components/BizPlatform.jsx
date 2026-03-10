@@ -686,9 +686,9 @@ const buildStyles = (dark) => {
   .page-bg::before {
     content: ''; position: absolute; inset: 0; pointer-events: none; z-index: 0;
     background:
-      radial-gradient(ellipse 70% 50% at 10% 40%, rgba(26,86,255,0.04) 0%, transparent 55%),
-      radial-gradient(ellipse 50% 40% at 90% 20%, rgba(245,197,24,0.03) 0%, transparent 50%),
-      radial-gradient(ellipse 60% 50% at 50% 90%, rgba(212,43,58,0.03) 0%, transparent 50%);
+      radial-gradient(ellipse 70% 50% at 10% 40%, rgba(30,80,255,${dark?0.06:0.04}) 0%, transparent 55%),
+      radial-gradient(ellipse 50% 40% at 90% 20%, rgba(245,197,24,${dark?0.04:0.03}) 0%, transparent 50%),
+      radial-gradient(ellipse 60% 50% at 50% 90%, rgba(212,43,58,${dark?0.04:0.03}) 0%, transparent 50%);
   }
   .page-content { position: relative; z-index: 1; }
 
