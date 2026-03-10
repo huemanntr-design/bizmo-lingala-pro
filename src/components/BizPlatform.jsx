@@ -550,10 +550,10 @@ const buildStyles = (dark) => {
   /* ── TABS — GLASS PILL ── */
   .tabs {
     display: flex; gap: 3px;
-    background: ${t.glass};
+    background: ${dark ? "rgba(20,32,75,0.40)" : t.glass};
     backdrop-filter: blur(16px);
     -webkit-backdrop-filter: blur(16px);
-    border: 1px solid ${t.border};
+    border: 1px solid ${dark ? "rgba(120,165,255,0.12)" : t.border};
     border-radius: 14px; padding: 5px; overflow-x: auto; flex-shrink: 0;
     box-shadow: ${t.shadowInset};
   }
@@ -564,11 +564,11 @@ const buildStyles = (dark) => {
     transition: all 0.22s cubic-bezier(.4,0,.2,1);
   }
   .tab.active {
-    background: linear-gradient(135deg, #1A56FF, #2B6BFF);
+    background: linear-gradient(135deg, #1A56FF, #3B7BFF);
     color: white;
-    box-shadow: 0 4px 16px rgba(26,86,255,0.3), inset 0 1px 0 rgba(255,255,255,0.15);
+    box-shadow: 0 4px 16px rgba(26,86,255,0.35), inset 0 1px 0 rgba(255,255,255,0.15);
   }
-  .tab:hover:not(.active) { color: ${t.text}; background: ${t.glass3}; }
+  .tab:hover:not(.active) { color: ${t.text}; background: ${dark ? "rgba(50,80,160,0.20)" : t.glass3}; }
 
   /* ── TAG / BADGE ── */
   .tag {
