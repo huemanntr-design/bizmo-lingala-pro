@@ -395,27 +395,34 @@ const buildStyles = (dark) => {
   input::placeholder { color: ${t.text3}; }
   select option { background: ${dark ? "#0A0F22" : "#fff"}; color: ${t.text}; }
 
-  /* ── CARDS — GLASSMORPHIC ── */
+  /* ── CARDS — GLASSMORPHIC LIGHTER BLUE ── */
   .card {
-    background: ${t.surface};
+    background: ${dark ? "rgba(20,30,70,0.45)" : "rgba(220,230,255,0.55)"};
     backdrop-filter: blur(20px) saturate(1.3);
     -webkit-backdrop-filter: blur(20px) saturate(1.3);
-    border: 1px solid ${t.border};
+    border: 1px solid ${dark ? "rgba(100,160,255,0.15)" : "rgba(100,140,255,0.18)"};
     border-radius: 18px;
-    transition: transform 0.25s cubic-bezier(.4,0,.2,1), box-shadow 0.25s ease;
+    transition: transform 0.3s cubic-bezier(.4,0,.2,1), box-shadow 0.3s ease, border-color 0.3s ease;
     box-shadow: ${t.shadowNeo};
     position: relative;
     overflow: hidden;
+    cursor: default;
   }
   .card::before {
     content: ''; position: absolute; top: 0; left: 0; right: 0; height: 1px;
-    background: linear-gradient(90deg, transparent, rgba(255,255,255,${dark?0.06:0.4}), transparent);
+    background: linear-gradient(90deg, transparent, rgba(140,180,255,${dark?0.12:0.45}), transparent);
     pointer-events: none;
   }
   .card-hover:hover {
-    transform: translateY(-4px) scale(1.005);
-    box-shadow: ${t.shadow}, 0 0 40px rgba(26,86,255,0.06);
-    border-color: rgba(26,86,255,0.2);
+    transform: translateY(-6px) scale(1.008);
+    box-shadow: ${t.shadow}, 0 0 50px rgba(26,86,255,0.1);
+    border-color: rgba(26,86,255,0.3);
+  }
+  .card-clickable { cursor: pointer; }
+  .card-clickable:hover {
+    transform: translateY(-6px) scale(1.008);
+    box-shadow: ${t.shadow}, 0 0 50px rgba(26,86,255,0.1);
+    border-color: rgba(26,86,255,0.3);
   }
   .card-pad { padding: 22px; }
   .card-pad-sm { padding: 16px; }
