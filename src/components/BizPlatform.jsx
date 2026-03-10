@@ -516,17 +516,17 @@ const buildStyles = (dark) => {
   .mini-kpi-grid { display: flex; gap: 14px; margin-bottom: 22px; flex-wrap: wrap; }
   .mini-kpi {
     flex: 1; min-width: 145px;
-    background: ${t.surface};
-    backdrop-filter: blur(16px) saturate(1.2);
-    -webkit-backdrop-filter: blur(16px) saturate(1.2);
-    border: 1px solid ${t.border};
+    background: ${dark ? "rgba(28,44,95,0.40)" : t.surface};
+    backdrop-filter: blur(16px) saturate(1.3);
+    -webkit-backdrop-filter: blur(16px) saturate(1.3);
+    border: 1px solid ${dark ? "rgba(120,165,255,0.14)" : t.border};
     border-radius: 16px; padding: 18px; text-align: center; position: relative; overflow: hidden;
     transition: transform 0.25s cubic-bezier(.4,0,.2,1), box-shadow 0.25s;
     box-shadow: ${t.shadowNeo};
   }
   .mini-kpi::before {
     content: ''; position: absolute; top: 0; left: 0; right: 0; height: 1px;
-    background: linear-gradient(90deg, transparent, rgba(255,255,255,${dark?0.04:0.3}), transparent);
+    background: linear-gradient(90deg, transparent, rgba(140,180,255,${dark?0.15:0.3}), transparent);
     pointer-events: none;
   }
   .mini-kpi:hover { transform: translateY(-3px); box-shadow: ${t.shadow}; }
