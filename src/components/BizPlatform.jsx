@@ -397,10 +397,10 @@ const buildStyles = (dark) => {
 
   /* ── CARDS — GLASSMORPHIC LIGHTER BLUE ── */
   .card {
-    background: ${dark ? "rgba(20,30,70,0.45)" : "rgba(220,230,255,0.55)"};
-    backdrop-filter: blur(20px) saturate(1.3);
-    -webkit-backdrop-filter: blur(20px) saturate(1.3);
-    border: 1px solid ${dark ? "rgba(100,160,255,0.15)" : "rgba(100,140,255,0.18)"};
+    background: ${dark ? "rgba(30,48,100,0.38)" : "rgba(220,230,255,0.55)"};
+    backdrop-filter: blur(20px) saturate(1.4);
+    -webkit-backdrop-filter: blur(20px) saturate(1.4);
+    border: 1px solid ${dark ? "rgba(120,170,255,0.18)" : "rgba(100,140,255,0.18)"};
     border-radius: 18px;
     transition: transform 0.3s cubic-bezier(.4,0,.2,1), box-shadow 0.3s ease, border-color 0.3s ease;
     box-shadow: ${t.shadowNeo};
@@ -410,7 +410,7 @@ const buildStyles = (dark) => {
   }
   .card::before {
     content: ''; position: absolute; top: 0; left: 0; right: 0; height: 1px;
-    background: linear-gradient(90deg, transparent, rgba(140,180,255,${dark?0.12:0.45}), transparent);
+    background: linear-gradient(90deg, transparent, rgba(140,180,255,${dark?0.22:0.45}), transparent);
     pointer-events: none;
   }
   .card-hover:hover {
