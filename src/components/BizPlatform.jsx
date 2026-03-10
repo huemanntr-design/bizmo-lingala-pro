@@ -537,14 +537,14 @@ const buildStyles = (dark) => {
 
   /* ── INSIGHT CARD ── */
   .insight-card {
-    background: ${t.glass};
+    background: ${dark ? "rgba(28,44,90,0.35)" : t.glass};
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
-    border: 1px solid ${t.border}; border-radius: 14px; padding: 14px 16px;
+    border: 1px solid ${dark ? "rgba(120,165,255,0.12)" : t.border}; border-radius: 14px; padding: 14px 16px;
     display: flex; align-items: flex-start; gap: 12px; margin-bottom: 8px;
     transition: all 0.22s;
   }
-  .insight-card:hover { background: ${t.glass3}; transform: translateX(4px); }
+  .insight-card:hover { background: ${dark ? "rgba(40,60,120,0.35)" : t.glass3}; transform: translateX(4px); }
   .insight-icon { width: 38px; height: 38px; border-radius: 11px; display: flex; align-items: center; justify-content: center; font-size: 16px; flex-shrink: 0; box-shadow: ${t.shadowInset}; }
 
   /* ── TABS — GLASS PILL ── */
