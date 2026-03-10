@@ -3596,7 +3596,8 @@ function AccountingPage({ data, setData, showToast, kpiGoals, updateGoal }) {
         <MiniKpiCard icon="🧾" label="Nb Dépenses" value={data.expenses.length} color="#7B91C4" />
         <MiniKpiCard icon="✅" label="Approuvées" value={data.expenses.filter(e=>e.status==="approved").length} color="#16C55E" />
       </div>
-      <HelpText icon="🧾">La comptabilité c'est le suivi de tout l'argent qui entre et sort de votre business. Le «journal» note chaque mouvement. Les «revenus» c'est l'argent gagné, les «dépenses» c'est l'argent dépensé, et le «profit net» c'est ce qui vous reste à la fin.</HelpText>
+      <HelpText icon="🧾">La comptabilité c'est le suivi de tout l'argent qui entre et sort de votre business. Le «journal de caisse» note chaque mouvement d'argent, entrée (💵) ou sortie (📉). Les «revenus» c'est l'argent gagné par vos ventes. Les «dépenses» c'est l'argent dépensé (loyer, transport, salaires...). Le «profit net» c'est ce qui vous reste : Revenus - Dépenses = Profit. Une bonne marge nette est au-dessus de 20%.</HelpText>
+      <HelpText icon="💡">Conseils importants: 1) Notez TOUTES vos dépenses, même les petites — elles s'accumulent vite! 2) Séparez l'argent du business et l'argent personnel. 3) Gardez toujours un fonds de roulement pour les urgences. 4) Exportez vos rapports en PDF chaque mois pour vos archives.</HelpText>
       <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:20 }}>
         <h1 style={{ fontFamily:"'Bricolage Grotesque'", fontSize:22, fontWeight:800 }}>⊛ Comptabilité</h1>
         <div style={{ display:"flex", gap:10 }}>
