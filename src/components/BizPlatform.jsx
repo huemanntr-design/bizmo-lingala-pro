@@ -2593,8 +2593,75 @@ function MarketingPage({ data, setData, showToast, kpiGoals, updateGoal }) {
   const [hovPost, setHovPost] = useState(null);
   const [weekOff, setWeekOff] = useState(0);
   const [composer, setComposer] = useState({ title:"", content:"", platform:"instagram", scheduled_date:"" });
-  const [editPost, setEditPost] = useState(null); // { ...post, isAI:bool }
+  const [editPost, setEditPost] = useState(null);
   const tooltipRef = useRef(null);
+
+  // ── META CONNECTION STATE ──
+  const [metaConnections, setMetaConnections] = useState({
+    instagram: { connected: false, loading: false },
+    facebook: { connected: false, loading: false },
+    whatsapp: { connected: false, loading: false },
+  });
+  const [metaSubTab, setMetaSubTab] = useState("overview");
+  const [metaDemo, setMetaDemo] = useState(null);
+
+  const MOCK_META_DATA = {
+    instagram: {
+      profile: { username: "@mukendi_enterprises", followers: 2847, following: 312, posts: 89, bio: "🏢 Mukendi Enterprises · Kinshasa\n📦 Distribution alimentaire & hygiène\n📲 Commandes WhatsApp", profilePic: "🏢", verified: false },
+      insights: { reach: 12450, impressions: 34200, engagement_rate: 4.7, website_clicks: 186, profile_visits: 423, accounts_reached: 8930 },
+      recentPosts: [
+        { id: 1, type: "image", caption: "🌊 Eau Minérale fraîche disponible!", likes: 127, comments: 23, shares: 8, saves: 45, reach: 2340, date: "2025-03-08" },
+        { id: 2, type: "carousel", caption: "🍚 Nouveau stock de Riz premium!", likes: 89, comments: 15, shares: 12, saves: 31, reach: 1890, date: "2025-03-06" },
+        { id: 3, type: "reel", caption: "📦 Livraison rapide à Kinshasa!", likes: 312, comments: 67, shares: 45, saves: 98, reach: 5670, date: "2025-03-04" },
+        { id: 4, type: "image", caption: "🧼 Savon Monganga – qualité garantie", likes: 76, comments: 11, shares: 5, saves: 22, reach: 1450, date: "2025-03-02" },
+        { id: 5, type: "reel", caption: "🎉 Promo weekend -20% sur tout!", likes: 245, comments: 52, shares: 34, saves: 87, reach: 4230, date: "2025-02-28" },
+      ],
+      audience: { cities: [["Kinshasa",68],["Lubumbashi",12],["Mbuji-Mayi",7],["Kisangani",5],["Autres",8]], ageGender: [["18-24",18],["25-34",42],["35-44",28],["45-54",9],["55+",3]], topHours: [9,12,13,18,19,20] },
+      stories: { posted: 34, avgViews: 890, avgReplies: 12, completionRate: 78 }
+    },
+    facebook: {
+      profile: { name: "Mukendi Enterprises", likes: 4521, followers: 4890, category: "Commerce de détail", rating: 4.6, reviews: 67, coverEmoji: "🏪" },
+      insights: { reach: 18700, impressions: 42300, engagement: 2890, page_views: 1230, actions_on_page: 345, post_engagement_rate: 3.8 },
+      recentPosts: [
+        { id: 1, type: "photo", message: "Nos produits de qualité vous attendent!", reactions: { like: 89, love: 23, wow: 5 }, comments: 34, shares: 12, reach: 3400, date: "2025-03-07" },
+        { id: 2, type: "link", message: "Commander sur WhatsApp maintenant!", reactions: { like: 56, love: 12, wow: 2 }, comments: 18, shares: 23, reach: 2890, date: "2025-03-05" },
+        { id: 3, type: "video", message: "Visite de notre entrepôt!", reactions: { like: 145, love: 45, wow: 12 }, comments: 56, shares: 34, reach: 6700, date: "2025-03-03" },
+      ],
+      audience: { cities: [["Kinshasa",72],["Lubumbashi",10],["Goma",6],["Matadi",5],["Autres",7]], ageGender: [["18-24",15],["25-34",38],["35-44",30],["45-54",12],["55+",5]] }
+    },
+    whatsapp: {
+      profile: { name: "Mukendi Enterprises", phone: "+243812000001", status: "Verified Business", category: "Retail", description: "Distribution alimentaire & hygiène à Kinshasa", businessHours: "Lun-Sam 7h-19h" },
+      insights: { messages_sent: 1245, messages_delivered: 1198, messages_read: 987, response_rate: 94, avg_response_time: "12 min", conversations: 342 },
+      templates: [
+        { name: "order_confirmation", status: "approved", sent: 234, delivered: 228, read: 189, category: "UTILITY" },
+        { name: "promotion_weekly", status: "approved", sent: 890, delivered: 865, read: 612, category: "MARKETING" },
+        { name: "delivery_update", status: "approved", sent: 121, delivered: 119, read: 98, category: "UTILITY" },
+      ],
+      topConversations: [
+        { name: "Marie Kabila", messages: 45, lastMessage: "Merci pour la livraison!", date: "2025-03-09" },
+        { name: "Restaurant Bonne Table", messages: 89, lastMessage: "Commande 50 sacs de riz SVP", date: "2025-03-09" },
+        { name: "Hôtel Memling", messages: 67, lastMessage: "Facture reçue, paiement en cours", date: "2025-03-08" },
+      ]
+    }
+  };
+
+  const connectMeta = (platform) => {
+    setMetaConnections(c => ({ ...c, [platform]: { ...c[platform], loading: true } }));
+    setTimeout(() => {
+      setMetaConnections(c => ({ ...c, [platform]: { connected: true, loading: false } }));
+      if (!metaDemo) setMetaDemo(MOCK_META_DATA);
+      showToast(`✅ ${platform === "instagram" ? "Instagram" : platform === "facebook" ? "Facebook" : "WhatsApp Business"} connecté!`, "success");
+    }, 2000);
+  };
+
+  const disconnectMeta = (platform) => {
+    setMetaConnections(c => ({ ...c, [platform]: { connected: false, loading: false } }));
+    const anyConnected = Object.entries(metaConnections).some(([k, v]) => k !== platform && v.connected);
+    if (!anyConnected) setMetaDemo(null);
+    showToast(`${platform} déconnecté`, "info");
+  };
+
+  const connectedCount = Object.values(metaConnections).filter(c => c.connected).length;
 
   const PLATFORMS = [
     { id:"instagram",icon:"📸",name:"Instagram",color:"#E1306C" },
