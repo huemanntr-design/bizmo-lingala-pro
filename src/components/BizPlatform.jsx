@@ -1241,17 +1241,34 @@ function Toast({ message, type, onClose }) {
 
 const RevenueChart = ({ data: chartData, dark }) => {
   const max = Math.max(...chartData.map(d => d.amount));
+  const avg = chartData.reduce((s,d) => s + d.amount, 0) / chartData.length;
+  const barColors = [
+    "linear-gradient(180deg, #3B82F6, #1D4ED8)",
+    "linear-gradient(180deg, #60A5FA, #2563EB)",
+    "linear-gradient(180deg, #38BDF8, #0284C7)",
+    "linear-gradient(180deg, #34D399, #059669)",
+    "linear-gradient(180deg, #FBBF24, #D97706)",
+    "linear-gradient(180deg, #F97316, #EA580C)",
+    "linear-gradient(180deg, #F43F5E, #BE123C)",
+  ];
   return (
-    <div style={{ display: "flex", alignItems: "flex-end", gap: 6, height: 120, paddingTop: 10 }}>
+    <div style={{ display: "flex", alignItems: "flex-end", gap: 8, height: 140, paddingTop: 10, position: "relative" }}>
+      {/* Average line */}
+      <div style={{ position: "absolute", left: 0, right: 0, bottom: `${(avg / max) * 100 * 1.3 + 20}px`, borderTop: "1.5px dashed rgba(26,86,255,0.3)", zIndex: 1 }}>
+        <span style={{ position: "absolute", right: 0, top: -14, fontSize: 9, color: "#7B91C4", background: dark ? "#0E1330" : "#EFF2FA", padding: "1px 4px", borderRadius: 3 }}>moy</span>
+      </div>
       {chartData.map((d, i) => {
-        const h = Math.max((d.amount / max) * 100, 6);
+        const h = Math.max((d.amount / max) * 100, 8);
+        const isMax = d.amount === max;
         return (
-          <div key={i} style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: 4 }}>
-            <div style={{ fontSize: 10, fontWeight: 700, color: "#1A56FF", opacity: 0.8 }}>${(d.amount/1000).toFixed(1)}k</div>
-            <div style={{ width: "100%", height: `${h}%`, borderRadius: "6px 6px 0 0", background: i === chartData.length - 1 ? "linear-gradient(180deg,#D42B3A,#A01A27)" : "linear-gradient(180deg,#1A56FF,#0D3DCC)", animation: "barGrow 0.5s ease forwards", animationDelay: `${i * 60}ms`, cursor: "pointer", transition: "opacity 0.18s" }}
+          <div key={i} style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: 4, position: "relative", zIndex: 2 }}>
+            <div style={{ fontSize: 10, fontWeight: 800, color: isMax ? "#F59E0B" : "#60A5FA", opacity: 0.9 }}>${(d.amount/1000).toFixed(1)}k</div>
+            <div style={{ width: "100%", height: `${h}%`, borderRadius: "8px 8px 2px 2px", background: barColors[i % barColors.length], animation: "barGrow 0.6s ease forwards", animationDelay: `${i * 80}ms`, cursor: "pointer", transition: "all 0.25s", boxShadow: isMax ? "0 0 20px rgba(245,158,11,0.4)" : "0 4px 12px rgba(26,86,255,0.15)", border: isMax ? "1px solid rgba(245,158,11,0.5)" : "none" }}
               title={`${d.day}: $${d.amount}`}
+              onMouseEnter={e => e.currentTarget.style.transform = "scaleY(1.06)"}
+              onMouseLeave={e => e.currentTarget.style.transform = "scaleY(1)"}
             />
-            <div style={{ fontSize: 10, color: "#7B91C4", fontWeight: 500 }}>{d.day}</div>
+            <div style={{ fontSize: 11, color: isMax ? "#F59E0B" : "#7B91C4", fontWeight: isMax ? 800 : 600 }}>{d.day}</div>
           </div>
         );
       })}
