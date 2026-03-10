@@ -2976,10 +2976,20 @@ function MarketingPage({ data, setData, showToast, kpiGoals, updateGoal }) {
                     const today = new Date();
                     const isToday = day===today.getDate() && month.m===today.getMonth()+1 && month.y===today.getFullYear();
                     return (
-                      <div key={day} style={{ minHeight:72, padding:"5px 4px 3px", borderRadius:8, background: isToday?"rgba(26,86,255,0.1)":posts.length?"rgba(26,86,255,0.03)":"transparent", border:`1px solid ${isToday?"rgba(26,86,255,0.35)":posts.length?"rgba(26,86,255,0.1)":"rgba(26,86,255,0.04)"}` }}>
+                      <div key={day} style={{ minHeight:72, padding:"5px 4px 3px", borderRadius:8, background: isToday?"rgba(26,86,255,0.1)":posts.length?"rgba(26,86,255,0.03)":"transparent", border:`1px solid ${isToday?"rgba(26,86,255,0.35)":posts.length?"rgba(26,86,255,0.1)":"rgba(26,86,255,0.04)"}`, cursor:"pointer", transition:"all 0.18s" }}
+                        onClick={() => {
+                          const dateStr = `${month.y}-${String(month.m).padStart(2,"0")}-${String(day).padStart(2,"0")}T10:00`;
+                          setComposer(c => ({...c, scheduled_date: dateStr}));
+                          setTab("content");
+                          showToast(`📅 Post programmé pour le ${day}/${month.m}/${month.y} — complétez le contenu`, "info");
+                        }}
+                        onMouseEnter={e => { if(!isToday) e.currentTarget.style.background = "rgba(26,86,255,0.06)"; e.currentTarget.style.borderColor = "rgba(26,86,255,0.25)"; }}
+                        onMouseLeave={e => { if(!isToday) e.currentTarget.style.background = posts.length?"rgba(26,86,255,0.03)":"transparent"; e.currentTarget.style.borderColor = isToday?"rgba(26,86,255,0.35)":posts.length?"rgba(26,86,255,0.1)":"rgba(26,86,255,0.04)"; }}
+                      >
                         <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:3 }}>
                           <span style={{ fontSize:12, fontWeight:isToday?800:400, color:isToday?"#1A56FF":posts.length?"#EEF2FF":"#7B91C4" }}>{day}</span>
                           {posts.some(p=>p.status==="ai_proposed") && <span style={{ fontSize:9, animation:"pulse 2s infinite" }}>✨</span>}
+                          {!posts.length && <span style={{ fontSize:9, color:"#3A4E7A", opacity:0.5 }}>+</span>}
                         </div>
                         <div style={{ display:"flex", flexDirection:"column", gap:2 }}>
                           {posts.slice(0,3).map((p,i) => <PostChip key={p.id||i} post={p} />)}
