@@ -2805,7 +2805,7 @@ function MarketingPage({ data, setData, showToast, kpiGoals, updateGoal }) {
         <button className="btn btn-primary" onClick={() => showToast("Analytics...", "info")}>📊 Analytics</button>
       </div>
       <div className="tabs" style={{ marginBottom:20 }}>
-        {[["content","🤖 AI Content"],["calendar","📅 Calendrier & Timeline"],["posts","📱 Posts"],["campaigns","🚀 Campagnes"]].map(([k,l]) => (
+        {[["content","🤖 AI Content"],["calendar","📅 Calendrier & Timeline"],["posts","📱 Posts"],["campaigns","🚀 Campagnes"],["meta","📊 Meta Analytics"]].map(([k,l]) => (
           <div key={k} className={`tab ${tab===k?"active":""}`} onClick={() => setTab(k)}>{l}</div>
         ))}
       </div>
