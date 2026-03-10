@@ -429,10 +429,10 @@ const buildStyles = (dark) => {
 
   /* ── KPI CARDS — NEOMORPHIC GLASS ── */
   .kpi {
-    background: ${dark ? "rgba(20,30,70,0.45)" : "rgba(220,230,255,0.55)"};
-    backdrop-filter: blur(20px) saturate(1.3);
-    -webkit-backdrop-filter: blur(20px) saturate(1.3);
-    border: 1px solid ${dark ? "rgba(100,160,255,0.15)" : "rgba(100,140,255,0.18)"};
+    background: ${dark ? "rgba(30,48,100,0.38)" : "rgba(220,230,255,0.55)"};
+    backdrop-filter: blur(20px) saturate(1.4);
+    -webkit-backdrop-filter: blur(20px) saturate(1.4);
+    border: 1px solid ${dark ? "rgba(120,170,255,0.18)" : "rgba(100,140,255,0.18)"};
     border-radius: 18px; padding: 22px; position: relative; overflow: hidden;
     transition: transform 0.3s cubic-bezier(.4,0,.2,1), box-shadow 0.3s ease;
     min-width: 210px; flex-shrink: 0;
@@ -441,12 +441,12 @@ const buildStyles = (dark) => {
   }
   .kpi::before {
     content: ''; position: absolute; top: 0; left: 0; right: 0; height: 1px;
-    background: linear-gradient(90deg, transparent, rgba(140,180,255,${dark?0.12:0.45}), transparent);
+    background: linear-gradient(90deg, transparent, rgba(140,180,255,${dark?0.22:0.45}), transparent);
     pointer-events: none;
   }
-  .kpi:hover { transform: translateY(-6px); box-shadow: ${t.shadow}, 0 0 40px rgba(26,86,255,0.12); border-color: rgba(26,86,255,0.3); }
-  .kpi-glow { position: absolute; top: -30px; right: -30px; width: 120px; height: 120px; border-radius: 50%; filter: blur(40px); opacity: 0.2; transition: opacity 0.3s; }
-  .kpi:hover .kpi-glow { opacity: 0.35; }
+  .kpi:hover { transform: translateY(-6px); box-shadow: ${t.shadow}, 0 0 40px rgba(50,110,255,0.15); border-color: rgba(80,140,255,0.35); }
+  .kpi-glow { position: absolute; top: -30px; right: -30px; width: 120px; height: 120px; border-radius: 50%; filter: blur(40px); opacity: 0.25; transition: opacity 0.3s; }
+  .kpi:hover .kpi-glow { opacity: 0.4; }
   .kpi-icon {
     width: 44px; height: 44px; border-radius: 12px;
     display: flex; align-items: center; justify-content: center; font-size: 19px; margin-bottom: 14px;
