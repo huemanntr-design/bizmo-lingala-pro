@@ -15,7 +15,59 @@ const sendWhatsApp = async (to, message) => {
 };
 
 // ─── FONTS & DATA ──────────────────────────────────────────────────────────────
-const FONT_URL = "https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,300;12..96,400;12..96,500;12..96,600;12..96,700;12..96,800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&display=swap";
+const FONT_URL = "https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,300;12..96,400;12..96,500;12..96,600;12..96,700;12..96,800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=Space+Grotesk:wght@400;500;600;700&display=swap";
+
+// ─── SVG LOGO COMPONENT ─────────────────────────────────────────────────────
+function BizmoLogo({ size = 40, className = "" }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg" className={className}>
+      <defs>
+        <linearGradient id="logo-bg" x1="0" y1="0" x2="120" y2="120" gradientUnits="userSpaceOnUse">
+          <stop offset="0%" stopColor="#0052E0"/>
+          <stop offset="50%" stopColor="#1A6BFF"/>
+          <stop offset="100%" stopColor="#4B8BFF"/>
+        </linearGradient>
+        <linearGradient id="logo-accent" x1="30" y1="30" x2="90" y2="90" gradientUnits="userSpaceOnUse">
+          <stop offset="0%" stopColor="#F5C518"/>
+          <stop offset="100%" stopColor="#FFD84D"/>
+        </linearGradient>
+        <filter id="logo-glow">
+          <feGaussianBlur stdDeviation="2" result="blur"/>
+          <feComposite in="SourceGraphic" in2="blur" operator="over"/>
+        </filter>
+      </defs>
+      {/* Background shape */}
+      <rect x="4" y="4" width="112" height="112" rx="28" fill="url(#logo-bg)" />
+      <rect x="4" y="4" width="112" height="112" rx="28" fill="url(#logo-bg)" opacity="0.8" />
+      {/* Red DRC stripe */}
+      <rect x="4" y="50" width="112" height="20" fill="#CE1126" opacity="0.85" />
+      {/* Briefcase icon */}
+      <g filter="url(#logo-glow)">
+        <rect x="32" y="38" width="56" height="44" rx="8" fill="white" opacity="0.95"/>
+        <rect x="46" y="28" width="28" height="14" rx="5" fill="none" stroke="white" strokeWidth="3.5" opacity="0.9"/>
+        <rect x="36" y="56" width="48" height="3" rx="1.5" fill="url(#logo-accent)"/>
+        <circle cx="60" cy="57" r="5" fill="url(#logo-accent)" stroke="white" strokeWidth="1.5"/>
+      </g>
+      {/* Star accent */}
+      <circle cx="96" cy="24" r="6" fill="#F5C518" opacity="0.9"/>
+    </svg>
+  );
+}
+
+// ─── DRC COLOR PALETTE ───────────────────────────────────────────────────────
+const DRC = {
+  blue:    "#0052E0",    // Primary — DRC flag blue
+  blueL:   "#1A6BFF",    // Blue lighter
+  blueLL:  "#4B8BFF",    // Blue lightest
+  red:     "#CE1126",    // DRC flag red
+  redL:    "#E8384F",    // Red lighter
+  yellow:  "#F5C518",    // DRC flag yellow
+  yellowL: "#FFD84D",    // Yellow lighter
+  green:   "#16A34A",    // Success green
+  greenL:  "#22C55E",    // Green lighter
+  white:   "#FFFFFF",
+  offWhite:"#F0F4FF",
+};
 
 const initialData = {
   user: { name: "Jean-Baptiste Mukendi", company: "Mukendi Enterprises", avatar: "JM", role: "Directeur Général", phone: "+243812000001" },
