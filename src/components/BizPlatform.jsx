@@ -432,11 +432,11 @@ const buildStyles = (dark) => {
   }
   .btn-primary:hover { box-shadow: 0 6px 28px rgba(0,82,224,0.5), inset 0 1px 0 rgba(255,255,255,0.2); transform: translateY(-2px); }
   .btn-red {
-    background: linear-gradient(135deg, #D42B3A, #E8384F);
+    background: linear-gradient(135deg, ${DRC.red}, ${DRC.redL});
     color: white;
-    box-shadow: 0 4px 16px rgba(212,43,58,0.3), inset 0 1px 0 rgba(255,255,255,0.12);
+    box-shadow: 0 4px 16px rgba(206,17,38,0.3), inset 0 1px 0 rgba(255,255,255,0.12);
   }
-  .btn-red:hover { box-shadow: 0 6px 24px rgba(212,43,58,0.45); transform: translateY(-2px); }
+  .btn-red:hover { box-shadow: 0 6px 24px rgba(206,17,38,0.45); transform: translateY(-2px); }
   .btn-yellow {
     background: linear-gradient(135deg, #F5C518, #FFD84D);
     color: #1a0e00;
