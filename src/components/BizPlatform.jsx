@@ -621,7 +621,7 @@ const buildStyles = (dark) => {
   }
   .mini-kpi:hover { transform: translateY(-3px); box-shadow: ${t.shadow}; }
   .mini-kpi-icon { font-size: 24px; margin-bottom: 8px; }
-  .mini-kpi-val { font-family: 'Bricolage Grotesque', sans-serif; font-size: 22px; font-weight: 700; line-height: 1; }
+  .mini-kpi-val { font-family: 'Space Grotesk', 'Bricolage Grotesque', sans-serif; font-size: 22px; font-weight: 700; line-height: 1; font-variant-numeric: tabular-nums; }
   .mini-kpi-label { font-size: 10px; color: ${t.text2}; margin-top: 5px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
   .mini-kpi-trend { font-size: 10px; margin-top: 7px; font-weight: 700; }
 
