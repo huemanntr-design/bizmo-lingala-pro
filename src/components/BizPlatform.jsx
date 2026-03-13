@@ -588,7 +588,7 @@ const buildStyles = (dark) => {
     pointer-events: none;
   }
   .hero-banner-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.5px; color: ${t.text2}; margin-bottom: 8px; }
-  .hero-banner-value { font-family: 'Bricolage Grotesque', sans-serif; font-size: 44px; font-weight: 800; letter-spacing: -1.5px; line-height: 1; color: ${t.text}; }
+  .hero-banner-value { font-family: 'Space Grotesk', 'Bricolage Grotesque', sans-serif; font-size: 44px; font-weight: 800; letter-spacing: -1.5px; line-height: 1; color: ${t.text}; font-variant-numeric: tabular-nums; }
   .hero-banner-sub { font-size: 13px; color: ${t.text2}; margin-top: 8px; }
   .hero-progress {
     height: 10px;
