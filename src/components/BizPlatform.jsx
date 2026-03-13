@@ -273,6 +273,44 @@ const buildStyles = (dark) => {
     overflow-x: hidden; line-height: 1.5; font-size: 14px;
     transition: background 0.4s ease, color 0.4s ease;
   }
+
+  /* ── TYPOGRAPHIC SCALE (5 levels) ── */
+  .t-display  { font-family: 'Bricolage Grotesque', sans-serif; font-size: 44px; font-weight: 800; letter-spacing: -1.5px; line-height: 1; }
+  .t-h1       { font-family: 'Bricolage Grotesque', sans-serif; font-size: 28px; font-weight: 800; letter-spacing: -0.5px; line-height: 1.15; }
+  .t-h2       { font-family: 'Bricolage Grotesque', sans-serif; font-size: 20px; font-weight: 700; letter-spacing: -0.3px; line-height: 1.25; }
+  .t-h3       { font-family: 'DM Sans', sans-serif; font-size: 16px; font-weight: 700; letter-spacing: -0.1px; line-height: 1.35; }
+  .t-body     { font-family: 'DM Sans', sans-serif; font-size: 14px; font-weight: 400; line-height: 1.55; }
+  .t-caption  { font-family: 'DM Sans', sans-serif; font-size: 12px; font-weight: 500; line-height: 1.4; }
+  .t-money    { font-family: 'Space Grotesk', 'Bricolage Grotesque', sans-serif; font-variant-numeric: tabular-nums; letter-spacing: -0.5px; }
+
+  /* ── WCAG AA CONTRAST FIXES ── */
+  .text-primary-accessible { color: ${dark ? "#93B4FF" : "#0043B8"}; }
+  .text-secondary-accessible { color: ${dark ? "#B0C4E8" : "#374A6D"}; }
+  .text-muted-accessible { color: ${dark ? "#8DA4D4" : "#4A5D80"}; }
+
+  /* ── MICRO-ANIMATIONS ── */
+  @keyframes progressPulse {
+    0% { box-shadow: 0 0 4px rgba(26,86,255,0.2); }
+    50% { box-shadow: 0 0 16px rgba(26,86,255,0.45); }
+    100% { box-shadow: 0 0 4px rgba(26,86,255,0.2); }
+  }
+  @keyframes progressGrow {
+    from { width: 0; }
+  }
+  @keyframes countUp {
+    from { opacity: 0; transform: translateY(6px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes stateChange {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+    100% { transform: scale(1); }
+  }
+  .anim-progress-fill {
+    animation: progressGrow 1.2s cubic-bezier(.4,0,.2,1) forwards, progressPulse 2.5s ease-in-out 1.2s infinite;
+  }
+  .anim-count { animation: countUp 0.5s ease-out forwards; }
+  .anim-state { animation: stateChange 0.35s ease; }
   ::-webkit-scrollbar { width: 5px; height: 5px; }
   ::-webkit-scrollbar-track { background: transparent; }
   ::-webkit-scrollbar-thumb { background: ${t.scrollBg}; border-radius: 4px; }
