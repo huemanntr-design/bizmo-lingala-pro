@@ -383,14 +383,14 @@ const buildStyles = (dark) => {
   .nav-item:hover { background: ${t.glass3}; color: ${t.text}; }
   .nav-item:hover .nav-icon { transform: scale(1.15); }
   .nav-item.active {
-    background: rgba(26,86,255,0.1);
-    color: #1A56FF;
-    box-shadow: inset 0 0 20px rgba(26,86,255,0.06), 0 0 12px rgba(26,86,255,0.06);
+    background: rgba(0,82,224,0.1);
+    color: ${DRC.blue};
+    box-shadow: inset 0 0 20px rgba(0,82,224,0.06), 0 0 12px rgba(0,82,224,0.06);
   }
   .nav-item.active::before {
     content: ''; position: absolute; left: 0; top: 8px; bottom: 8px;
-    width: 3px; border-radius: 0 3px 3px 0; background: #1A56FF;
-    box-shadow: 0 0 10px rgba(26,86,255,0.5);
+    width: 3px; border-radius: 0 3px 3px 0; background: ${DRC.blue};
+    box-shadow: 0 0 10px rgba(0,82,224,0.5);
   }
   .nav-item.wa-active {
     background: rgba(37,211,102,0.08);
