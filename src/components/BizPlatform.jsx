@@ -438,7 +438,7 @@ const buildStyles = (dark) => {
   }
   .btn-red:hover { box-shadow: 0 6px 24px rgba(206,17,38,0.45); transform: translateY(-2px); }
   .btn-yellow {
-    background: linear-gradient(135deg, #F5C518, #FFD84D);
+    background: linear-gradient(135deg, ${DRC.yellow}, ${DRC.yellowL});
     color: #1a0e00;
     box-shadow: 0 4px 16px rgba(245,197,24,0.3), inset 0 1px 0 rgba(255,255,255,0.2);
   }
