@@ -426,11 +426,11 @@ const buildStyles = (dark) => {
   .btn:hover::before { opacity: 1; }
   .btn:active { transform: scale(0.96); }
   .btn-primary {
-    background: linear-gradient(135deg, #1A56FF 0%, #2B6BFF 100%);
+    background: linear-gradient(135deg, ${DRC.blue} 0%, ${DRC.blueL} 100%);
     color: white;
-    box-shadow: 0 4px 16px rgba(26,86,255,0.35), inset 0 1px 0 rgba(255,255,255,0.15);
+    box-shadow: 0 4px 16px rgba(0,82,224,0.35), inset 0 1px 0 rgba(255,255,255,0.15);
   }
-  .btn-primary:hover { box-shadow: 0 6px 28px rgba(26,86,255,0.5), inset 0 1px 0 rgba(255,255,255,0.2); transform: translateY(-2px); }
+  .btn-primary:hover { box-shadow: 0 6px 28px rgba(0,82,224,0.5), inset 0 1px 0 rgba(255,255,255,0.2); transform: translateY(-2px); }
   .btn-red {
     background: linear-gradient(135deg, #D42B3A, #E8384F);
     color: white;
