@@ -597,9 +597,19 @@ const buildStyles = (dark) => {
     box-shadow: ${t.shadowInset};
   }
   .hero-progress-fill {
-    height: 100%; border-radius: 5px; transition: width 1s cubic-bezier(.4,0,.2,1);
-    background: linear-gradient(90deg, #1A56FF, #4B8BFF);
+    height: 100%; border-radius: 5px;
+    background: linear-gradient(90deg, ${DRC.blue}, ${DRC.blueLL});
     box-shadow: 0 0 16px rgba(26,86,255,0.4);
+    animation: progressGrow 1.4s cubic-bezier(.4,0,.2,1) forwards, progressPulse 3s ease-in-out 1.4s infinite;
+    position: relative;
+  }
+  .hero-progress-fill::after {
+    content: '';
+    position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+    background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.3) 50%, transparent 100%);
+    background-size: 200% 100%;
+    animation: shimmer 2.5s ease-in-out infinite 1.5s;
+    border-radius: 5px;
   }
 
   /* ── MINI KPI GRID ── */
