@@ -542,7 +542,7 @@ const buildStyles = (dark) => {
     display: flex; align-items: center; justify-content: center; font-size: 19px; margin-bottom: 14px;
     box-shadow: ${t.shadowInset};
   }
-  .kpi-val { font-family: 'Bricolage Grotesque', sans-serif; font-size: 28px; font-weight: 700; line-height: 1; letter-spacing: -0.5px; }
+  .kpi-val { font-family: 'Space Grotesk', 'Bricolage Grotesque', sans-serif; font-size: 28px; font-weight: 700; line-height: 1; letter-spacing: -0.5px; font-variant-numeric: tabular-nums; }
   .kpi-label { font-size: 12px; color: ${t.text2}; margin-top: 5px; font-weight: 500; }
   .kpi-trend { font-size: 11px; margin-top: 10px; display: flex; align-items: center; gap: 4px; font-weight: 600; }
 
