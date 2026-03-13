@@ -664,9 +664,9 @@ const buildStyles = (dark) => {
     transition: all 0.22s cubic-bezier(.4,0,.2,1);
   }
   .tab.active {
-    background: linear-gradient(135deg, #1A56FF, #3B7BFF);
+    background: linear-gradient(135deg, ${DRC.blue}, ${DRC.blueL});
     color: white;
-    box-shadow: 0 4px 16px rgba(26,86,255,0.35), inset 0 1px 0 rgba(255,255,255,0.15);
+    box-shadow: 0 4px 16px rgba(0,82,224,0.35), inset 0 1px 0 rgba(255,255,255,0.15);
   }
   .tab:hover:not(.active) { color: ${t.text}; background: ${dark ? "rgba(50,80,160,0.20)" : t.glass3}; }
 
