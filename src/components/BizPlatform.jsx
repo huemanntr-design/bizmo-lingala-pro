@@ -101,9 +101,9 @@ const initialData = {
   expenses: [
     { id: 1, description: "Loyer bureau Gombe",    amount: 500,  category: "Immobilier",   expense_date: "2025-02-01", status: "approved" },
     { id: 2, description: "Transport marchandises",amount: 85,   category: "Transport",    expense_date: "2025-02-15", status: "approved" },
-    { id: 3, description: "Salaires employés",     amount: 1200, category: "RH",           expense_date: "2025-02-28", status: "pending"  },
+    { id: 3, description: "Salaires employés",     amount: 450,  category: "RH",           expense_date: "2025-02-28", status: "pending"  },
     { id: 4, description: "Internet & Téléphone",  amount: 45,   category: "Communication",expense_date: "2025-02-10", status: "approved" },
-    { id: 5, description: "Électricité",            amount: 120,  category: "Utilités",     expense_date: "2025-02-05", status: "approved" },
+    { id: 5, description: "Électricité",            amount: 65,   category: "Utilités",     expense_date: "2025-02-05", status: "approved" },
   ],
   staff: [
     { id: 1, full_name: "Alphonse Ngoy",  role: "Caissier",          commission_rate: 2,   permissions: { sales: true,  inventory: false, accounting: false, clients: true  } },
