@@ -5464,7 +5464,7 @@ export default function BizPlatform() {
         {/* ─ SIDEBAR ─ */}
         <div className={`sidebar ${sidebarExp ? "expanded" : ""}`}>
           <div className="logo-wrap" onClick={() => setSidebarExp(e => !e)}>
-            <div className="logo-mark"><img src={logoDrc} alt="BizPlatform DRC" /></div>
+            <div className="logo-mark"><BizmoLogo size={40} /></div>
             {sidebarExp && <div><div className="logo-text">BizPlatform</div><div className="logo-sub">DRC Enterprise Suite</div></div>}
           </div>
 
