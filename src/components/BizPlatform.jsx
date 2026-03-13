@@ -712,14 +712,27 @@ const buildStyles = (dark) => {
   .form-group { margin-bottom: 16px; }
   .form-label { font-size: 11px; font-weight: 700; color: ${t.text2}; margin-bottom: 7px; display: block; text-transform: uppercase; letter-spacing: 0.6px; }
 
-  /* ── PROGRESS — NEOMORPHIC ── */
+  /* ── PROGRESS — NEOMORPHIC WITH MICRO-ANIMATIONS ── */
   .progress {
     height: 7px;
     background: ${t.glass3};
     border-radius: 4px; overflow: hidden;
     box-shadow: ${t.shadowInset};
   }
-  .progress-fill { height: 100%; border-radius: 4px; transition: width 0.6s cubic-bezier(.4,0,.2,1); box-shadow: 0 0 8px rgba(26,86,255,0.2); }
+  .progress-fill {
+    height: 100%; border-radius: 4px;
+    transition: width 0.6s cubic-bezier(.4,0,.2,1);
+    box-shadow: 0 0 8px rgba(26,86,255,0.2);
+    animation: progressGrow 1s cubic-bezier(.4,0,.2,1) forwards, progressPulse 2.5s ease-in-out 1s infinite;
+    position: relative;
+  }
+  .progress-fill::after {
+    content: '';
+    position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+    background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.25) 50%, transparent 100%);
+    background-size: 200% 100%;
+    animation: shimmer 2.5s ease-in-out infinite 1.2s;
+  }
 
   /* ── TOGGLE — GLASS ── */
   .toggle { position: relative; width: 42px; height: 23px; cursor: pointer; flex-shrink: 0; }
