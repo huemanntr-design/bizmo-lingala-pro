@@ -15,7 +15,59 @@ const sendWhatsApp = async (to, message) => {
 };
 
 // ─── FONTS & DATA ──────────────────────────────────────────────────────────────
-const FONT_URL = "https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,300;12..96,400;12..96,500;12..96,600;12..96,700;12..96,800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&display=swap";
+const FONT_URL = "https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,300;12..96,400;12..96,500;12..96,600;12..96,700;12..96,800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=Space+Grotesk:wght@400;500;600;700&display=swap";
+
+// ─── SVG LOGO COMPONENT ─────────────────────────────────────────────────────
+function BizmoLogo({ size = 40, className = "" }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg" className={className}>
+      <defs>
+        <linearGradient id="logo-bg" x1="0" y1="0" x2="120" y2="120" gradientUnits="userSpaceOnUse">
+          <stop offset="0%" stopColor="#0052E0"/>
+          <stop offset="50%" stopColor="#1A6BFF"/>
+          <stop offset="100%" stopColor="#4B8BFF"/>
+        </linearGradient>
+        <linearGradient id="logo-accent" x1="30" y1="30" x2="90" y2="90" gradientUnits="userSpaceOnUse">
+          <stop offset="0%" stopColor="#F5C518"/>
+          <stop offset="100%" stopColor="#FFD84D"/>
+        </linearGradient>
+        <filter id="logo-glow">
+          <feGaussianBlur stdDeviation="2" result="blur"/>
+          <feComposite in="SourceGraphic" in2="blur" operator="over"/>
+        </filter>
+      </defs>
+      {/* Background shape */}
+      <rect x="4" y="4" width="112" height="112" rx="28" fill="url(#logo-bg)" />
+      <rect x="4" y="4" width="112" height="112" rx="28" fill="url(#logo-bg)" opacity="0.8" />
+      {/* Red DRC stripe */}
+      <rect x="4" y="50" width="112" height="20" fill="#CE1126" opacity="0.85" />
+      {/* Briefcase icon */}
+      <g filter="url(#logo-glow)">
+        <rect x="32" y="38" width="56" height="44" rx="8" fill="white" opacity="0.95"/>
+        <rect x="46" y="28" width="28" height="14" rx="5" fill="none" stroke="white" strokeWidth="3.5" opacity="0.9"/>
+        <rect x="36" y="56" width="48" height="3" rx="1.5" fill="url(#logo-accent)"/>
+        <circle cx="60" cy="57" r="5" fill="url(#logo-accent)" stroke="white" strokeWidth="1.5"/>
+      </g>
+      {/* Star accent */}
+      <circle cx="96" cy="24" r="6" fill="#F5C518" opacity="0.9"/>
+    </svg>
+  );
+}
+
+// ─── DRC COLOR PALETTE ───────────────────────────────────────────────────────
+const DRC = {
+  blue:    "#0052E0",    // Primary — DRC flag blue
+  blueL:   "#1A6BFF",    // Blue lighter
+  blueLL:  "#4B8BFF",    // Blue lightest
+  red:     "#CE1126",    // DRC flag red
+  redL:    "#E8384F",    // Red lighter
+  yellow:  "#F5C518",    // DRC flag yellow
+  yellowL: "#FFD84D",    // Yellow lighter
+  green:   "#16A34A",    // Success green
+  greenL:  "#22C55E",    // Green lighter
+  white:   "#FFFFFF",
+  offWhite:"#F0F4FF",
+};
 
 const initialData = {
   user: { name: "Jean-Baptiste Mukendi", company: "Mukendi Enterprises", avatar: "JM", role: "Directeur Général", phone: "+243812000001" },
@@ -49,9 +101,9 @@ const initialData = {
   expenses: [
     { id: 1, description: "Loyer bureau Gombe",    amount: 500,  category: "Immobilier",   expense_date: "2025-02-01", status: "approved" },
     { id: 2, description: "Transport marchandises",amount: 85,   category: "Transport",    expense_date: "2025-02-15", status: "approved" },
-    { id: 3, description: "Salaires employés",     amount: 1200, category: "RH",           expense_date: "2025-02-28", status: "pending"  },
+    { id: 3, description: "Salaires employés",     amount: 450,  category: "RH",           expense_date: "2025-02-28", status: "pending"  },
     { id: 4, description: "Internet & Téléphone",  amount: 45,   category: "Communication",expense_date: "2025-02-10", status: "approved" },
-    { id: 5, description: "Électricité",            amount: 120,  category: "Utilités",     expense_date: "2025-02-05", status: "approved" },
+    { id: 5, description: "Électricité",            amount: 65,   category: "Utilités",     expense_date: "2025-02-05", status: "approved" },
   ],
   staff: [
     { id: 1, full_name: "Alphonse Ngoy",  role: "Caissier",          commission_rate: 2,   permissions: { sales: true,  inventory: false, accounting: false, clients: true  } },
@@ -178,7 +230,7 @@ const buildStyles = (dark) => {
     border:   "rgba(120,165,255,0.12)",
     border2:  "rgba(120,165,255,0.18)",
     text:     "#EAF0FF",
-    text2:    "#8DA4D4",
+    text2:    "#94ADDB",
     text3:    "#4A6499",
     glass:    "rgba(25,40,85,0.50)",
     glass2:   "rgba(30,48,95,0.40)",
@@ -199,7 +251,7 @@ const buildStyles = (dark) => {
     border:   "rgba(100,140,255,0.1)",
     border2:  "rgba(100,140,255,0.16)",
     text:     "#0A0F1E",
-    text2:    "#3A4E7A",
+    text2:    "#374A6D",
     text3:    "#8A9DC0",
     glass:    "rgba(255,255,255,0.65)",
     glass2:   "rgba(255,255,255,0.75)",
@@ -221,6 +273,44 @@ const buildStyles = (dark) => {
     overflow-x: hidden; line-height: 1.5; font-size: 14px;
     transition: background 0.4s ease, color 0.4s ease;
   }
+
+  /* ── TYPOGRAPHIC SCALE (5 levels) ── */
+  .t-display  { font-family: 'Bricolage Grotesque', sans-serif; font-size: 44px; font-weight: 800; letter-spacing: -1.5px; line-height: 1; }
+  .t-h1       { font-family: 'Bricolage Grotesque', sans-serif; font-size: 28px; font-weight: 800; letter-spacing: -0.5px; line-height: 1.15; }
+  .t-h2       { font-family: 'Bricolage Grotesque', sans-serif; font-size: 20px; font-weight: 700; letter-spacing: -0.3px; line-height: 1.25; }
+  .t-h3       { font-family: 'DM Sans', sans-serif; font-size: 16px; font-weight: 700; letter-spacing: -0.1px; line-height: 1.35; }
+  .t-body     { font-family: 'DM Sans', sans-serif; font-size: 14px; font-weight: 400; line-height: 1.55; }
+  .t-caption  { font-family: 'DM Sans', sans-serif; font-size: 12px; font-weight: 500; line-height: 1.4; }
+  .t-money    { font-family: 'Space Grotesk', 'Bricolage Grotesque', sans-serif; font-variant-numeric: tabular-nums; letter-spacing: -0.5px; }
+
+  /* ── WCAG AA CONTRAST FIXES ── */
+  .text-primary-accessible { color: ${dark ? "#93B4FF" : "#0043B8"}; }
+  .text-secondary-accessible { color: ${dark ? "#B0C4E8" : "#374A6D"}; }
+  .text-muted-accessible { color: ${dark ? "#8DA4D4" : "#4A5D80"}; }
+
+  /* ── MICRO-ANIMATIONS ── */
+  @keyframes progressPulse {
+    0% { box-shadow: 0 0 4px rgba(26,86,255,0.2); }
+    50% { box-shadow: 0 0 16px rgba(26,86,255,0.45); }
+    100% { box-shadow: 0 0 4px rgba(26,86,255,0.2); }
+  }
+  @keyframes progressGrow {
+    from { width: 0; }
+  }
+  @keyframes countUp {
+    from { opacity: 0; transform: translateY(6px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes stateChange {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+    100% { transform: scale(1); }
+  }
+  .anim-progress-fill {
+    animation: progressGrow 1.2s cubic-bezier(.4,0,.2,1) forwards, progressPulse 2.5s ease-in-out 1.2s infinite;
+  }
+  .anim-count { animation: countUp 0.5s ease-out forwards; }
+  .anim-state { animation: stateChange 0.35s ease; }
   ::-webkit-scrollbar { width: 5px; height: 5px; }
   ::-webkit-scrollbar-track { background: transparent; }
   ::-webkit-scrollbar-thumb { background: ${t.scrollBg}; border-radius: 4px; }
@@ -293,14 +383,14 @@ const buildStyles = (dark) => {
   .nav-item:hover { background: ${t.glass3}; color: ${t.text}; }
   .nav-item:hover .nav-icon { transform: scale(1.15); }
   .nav-item.active {
-    background: rgba(26,86,255,0.1);
-    color: #1A56FF;
-    box-shadow: inset 0 0 20px rgba(26,86,255,0.06), 0 0 12px rgba(26,86,255,0.06);
+    background: rgba(0,82,224,0.1);
+    color: ${DRC.blue};
+    box-shadow: inset 0 0 20px rgba(0,82,224,0.06), 0 0 12px rgba(0,82,224,0.06);
   }
   .nav-item.active::before {
     content: ''; position: absolute; left: 0; top: 8px; bottom: 8px;
-    width: 3px; border-radius: 0 3px 3px 0; background: #1A56FF;
-    box-shadow: 0 0 10px rgba(26,86,255,0.5);
+    width: 3px; border-radius: 0 3px 3px 0; background: ${DRC.blue};
+    box-shadow: 0 0 10px rgba(0,82,224,0.5);
   }
   .nav-item.wa-active {
     background: rgba(37,211,102,0.08);
@@ -336,19 +426,19 @@ const buildStyles = (dark) => {
   .btn:hover::before { opacity: 1; }
   .btn:active { transform: scale(0.96); }
   .btn-primary {
-    background: linear-gradient(135deg, #1A56FF 0%, #2B6BFF 100%);
+    background: linear-gradient(135deg, ${DRC.blue} 0%, ${DRC.blueL} 100%);
     color: white;
-    box-shadow: 0 4px 16px rgba(26,86,255,0.35), inset 0 1px 0 rgba(255,255,255,0.15);
+    box-shadow: 0 4px 16px rgba(0,82,224,0.35), inset 0 1px 0 rgba(255,255,255,0.15);
   }
-  .btn-primary:hover { box-shadow: 0 6px 28px rgba(26,86,255,0.5), inset 0 1px 0 rgba(255,255,255,0.2); transform: translateY(-2px); }
+  .btn-primary:hover { box-shadow: 0 6px 28px rgba(0,82,224,0.5), inset 0 1px 0 rgba(255,255,255,0.2); transform: translateY(-2px); }
   .btn-red {
-    background: linear-gradient(135deg, #D42B3A, #E8384F);
+    background: linear-gradient(135deg, ${DRC.red}, ${DRC.redL});
     color: white;
-    box-shadow: 0 4px 16px rgba(212,43,58,0.3), inset 0 1px 0 rgba(255,255,255,0.12);
+    box-shadow: 0 4px 16px rgba(206,17,38,0.3), inset 0 1px 0 rgba(255,255,255,0.12);
   }
-  .btn-red:hover { box-shadow: 0 6px 24px rgba(212,43,58,0.45); transform: translateY(-2px); }
+  .btn-red:hover { box-shadow: 0 6px 24px rgba(206,17,38,0.45); transform: translateY(-2px); }
   .btn-yellow {
-    background: linear-gradient(135deg, #F5C518, #FFD84D);
+    background: linear-gradient(135deg, ${DRC.yellow}, ${DRC.yellowL});
     color: #1a0e00;
     box-shadow: 0 4px 16px rgba(245,197,24,0.3), inset 0 1px 0 rgba(255,255,255,0.2);
   }
@@ -452,7 +542,7 @@ const buildStyles = (dark) => {
     display: flex; align-items: center; justify-content: center; font-size: 19px; margin-bottom: 14px;
     box-shadow: ${t.shadowInset};
   }
-  .kpi-val { font-family: 'Bricolage Grotesque', sans-serif; font-size: 28px; font-weight: 700; line-height: 1; letter-spacing: -0.5px; }
+  .kpi-val { font-family: 'Space Grotesk', 'Bricolage Grotesque', sans-serif; font-size: 28px; font-weight: 700; line-height: 1; letter-spacing: -0.5px; font-variant-numeric: tabular-nums; }
   .kpi-label { font-size: 12px; color: ${t.text2}; margin-top: 5px; font-weight: 500; }
   .kpi-trend { font-size: 11px; margin-top: 10px; display: flex; align-items: center; gap: 4px; font-weight: 600; }
 
@@ -498,7 +588,7 @@ const buildStyles = (dark) => {
     pointer-events: none;
   }
   .hero-banner-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.5px; color: ${t.text2}; margin-bottom: 8px; }
-  .hero-banner-value { font-family: 'Bricolage Grotesque', sans-serif; font-size: 44px; font-weight: 800; letter-spacing: -1.5px; line-height: 1; color: ${t.text}; }
+  .hero-banner-value { font-family: 'Space Grotesk', 'Bricolage Grotesque', sans-serif; font-size: 44px; font-weight: 800; letter-spacing: -1.5px; line-height: 1; color: ${t.text}; font-variant-numeric: tabular-nums; }
   .hero-banner-sub { font-size: 13px; color: ${t.text2}; margin-top: 8px; }
   .hero-progress {
     height: 10px;
@@ -507,9 +597,19 @@ const buildStyles = (dark) => {
     box-shadow: ${t.shadowInset};
   }
   .hero-progress-fill {
-    height: 100%; border-radius: 5px; transition: width 1s cubic-bezier(.4,0,.2,1);
-    background: linear-gradient(90deg, #1A56FF, #4B8BFF);
+    height: 100%; border-radius: 5px;
+    background: linear-gradient(90deg, ${DRC.blue}, ${DRC.blueLL});
     box-shadow: 0 0 16px rgba(26,86,255,0.4);
+    animation: progressGrow 1.4s cubic-bezier(.4,0,.2,1) forwards, progressPulse 3s ease-in-out 1.4s infinite;
+    position: relative;
+  }
+  .hero-progress-fill::after {
+    content: '';
+    position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+    background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.3) 50%, transparent 100%);
+    background-size: 200% 100%;
+    animation: shimmer 2.5s ease-in-out infinite 1.5s;
+    border-radius: 5px;
   }
 
   /* ── MINI KPI GRID ── */
@@ -531,7 +631,7 @@ const buildStyles = (dark) => {
   }
   .mini-kpi:hover { transform: translateY(-3px); box-shadow: ${t.shadow}; }
   .mini-kpi-icon { font-size: 24px; margin-bottom: 8px; }
-  .mini-kpi-val { font-family: 'Bricolage Grotesque', sans-serif; font-size: 22px; font-weight: 700; line-height: 1; }
+  .mini-kpi-val { font-family: 'Space Grotesk', 'Bricolage Grotesque', sans-serif; font-size: 22px; font-weight: 700; line-height: 1; font-variant-numeric: tabular-nums; }
   .mini-kpi-label { font-size: 10px; color: ${t.text2}; margin-top: 5px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
   .mini-kpi-trend { font-size: 10px; margin-top: 7px; font-weight: 700; }
 
@@ -564,9 +664,9 @@ const buildStyles = (dark) => {
     transition: all 0.22s cubic-bezier(.4,0,.2,1);
   }
   .tab.active {
-    background: linear-gradient(135deg, #1A56FF, #3B7BFF);
+    background: linear-gradient(135deg, ${DRC.blue}, ${DRC.blueL});
     color: white;
-    box-shadow: 0 4px 16px rgba(26,86,255,0.35), inset 0 1px 0 rgba(255,255,255,0.15);
+    box-shadow: 0 4px 16px rgba(0,82,224,0.35), inset 0 1px 0 rgba(255,255,255,0.15);
   }
   .tab:hover:not(.active) { color: ${t.text}; background: ${dark ? "rgba(50,80,160,0.20)" : t.glass3}; }
 
@@ -622,14 +722,27 @@ const buildStyles = (dark) => {
   .form-group { margin-bottom: 16px; }
   .form-label { font-size: 11px; font-weight: 700; color: ${t.text2}; margin-bottom: 7px; display: block; text-transform: uppercase; letter-spacing: 0.6px; }
 
-  /* ── PROGRESS — NEOMORPHIC ── */
+  /* ── PROGRESS — NEOMORPHIC WITH MICRO-ANIMATIONS ── */
   .progress {
     height: 7px;
     background: ${t.glass3};
     border-radius: 4px; overflow: hidden;
     box-shadow: ${t.shadowInset};
   }
-  .progress-fill { height: 100%; border-radius: 4px; transition: width 0.6s cubic-bezier(.4,0,.2,1); box-shadow: 0 0 8px rgba(26,86,255,0.2); }
+  .progress-fill {
+    height: 100%; border-radius: 4px;
+    transition: width 0.6s cubic-bezier(.4,0,.2,1);
+    box-shadow: 0 0 8px rgba(26,86,255,0.2);
+    animation: progressGrow 1s cubic-bezier(.4,0,.2,1) forwards, progressPulse 2.5s ease-in-out 1s infinite;
+    position: relative;
+  }
+  .progress-fill::after {
+    content: '';
+    position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+    background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.25) 50%, transparent 100%);
+    background-size: 200% 100%;
+    animation: shimmer 2.5s ease-in-out infinite 1.2s;
+  }
 
   /* ── TOGGLE — GLASS ── */
   .toggle { position: relative; width: 42px; height: 23px; cursor: pointer; flex-shrink: 0; }
@@ -5361,7 +5474,7 @@ export default function BizPlatform() {
         {/* ─ SIDEBAR ─ */}
         <div className={`sidebar ${sidebarExp ? "expanded" : ""}`}>
           <div className="logo-wrap" onClick={() => setSidebarExp(e => !e)}>
-            <div className="logo-mark"><img src={logoDrc} alt="BizPlatform DRC" /></div>
+            <div className="logo-mark"><BizmoLogo size={40} /></div>
             {sidebarExp && <div><div className="logo-text">BizPlatform</div><div className="logo-sub">DRC Enterprise Suite</div></div>}
           </div>
 
