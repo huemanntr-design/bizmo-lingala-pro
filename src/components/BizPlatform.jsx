@@ -5603,15 +5603,55 @@ export default function BizPlatform() {
           </div>
         </div>
 
-        {/* ─ MOBILE NAV ─ */}
+        {/* ─ MOBILE NAV (5 items + More) ─ */}
         <nav className="mobile-nav">
-          {NAV.map(n => (
+          {NAV.slice(0, 4).map(n => (
             <div key={n.id} className={`mn-item ${activePage===n.id?"active":""}`} onClick={() => setActivePage(n.id)}>
               <span>{n.icon}</span>
-              <span className="mn-label">{n.short}</span>
+              <span className="mn-label" style={{ fontSize:11 }}>{n.short}</span>
             </div>
           ))}
+          <div className={`mn-item ${NAV.slice(4).some(n=>n.id===activePage)?"active":""}`} onClick={() => setShowMoreNav(true)}>
+            <span>•••</span>
+            <span className="mn-label" style={{ fontSize:11 }}>Plus</span>
+          </div>
         </nav>
+
+        {/* ─ MOBILE MORE BOTTOM SHEET ─ */}
+        {showMoreNav && (
+          <div style={{ position:"fixed", inset:0, zIndex:300, background:"rgba(0,0,0,0.5)", backdropFilter:"blur(4px)" }}
+            onClick={e => e.target === e.currentTarget && setShowMoreNav(false)}>
+            <div style={{
+              position:"absolute", bottom:0, left:0, right:0,
+              background: dark ? "#0B1028" : "#F0F4FF",
+              borderTop: `1px solid ${dark?"rgba(120,165,255,0.15)":"rgba(100,140,255,0.15)"}`,
+              borderRadius:"18px 18px 0 0",
+              padding:"12px 16px max(16px, env(safe-area-inset-bottom))",
+              animation:"slideUp 0.3s ease forwards",
+              boxShadow:"0 -8px 40px rgba(0,0,0,0.25)"
+            }}>
+              {/* Handle bar */}
+              <div style={{ width:40, height:4, borderRadius:2, background: dark?"rgba(120,165,255,0.2)":"rgba(100,140,255,0.2)", margin:"0 auto 14px" }} />
+              <div style={{ fontSize:12, fontWeight:700, color:"#7B91C4", marginBottom:10, textTransform:"uppercase", letterSpacing:0.6, paddingLeft:4 }}>Autres pages</div>
+              <div style={{ display:"grid", gridTemplateColumns:"repeat(3, 1fr)", gap:8 }}>
+                {NAV.slice(4).map(n => (
+                  <div key={n.id}
+                    onClick={() => { setActivePage(n.id); setShowMoreNav(false); }}
+                    style={{
+                      display:"flex", flexDirection:"column", alignItems:"center", gap:6,
+                      padding:"14px 8px", borderRadius:14, cursor:"pointer",
+                      background: activePage===n.id ? "rgba(26,86,255,0.12)" : dark?"rgba(25,40,80,0.4)":"rgba(220,230,255,0.5)",
+                      border: `1px solid ${activePage===n.id ? "rgba(26,86,255,0.3)" : dark?"rgba(120,165,255,0.1)":"rgba(100,140,255,0.1)"}`,
+                      transition:"all 0.2s"
+                    }}>
+                    <span style={{ fontSize:22 }}>{n.icon}</span>
+                    <span style={{ fontSize:12, fontWeight:600, color: activePage===n.id ? "#1A56FF" : dark?"#94ADDB":"#374A6D" }}>{n.label}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* ── GLOBAL SEARCH MODAL ── */}
