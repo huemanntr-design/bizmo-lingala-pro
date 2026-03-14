@@ -1084,7 +1084,7 @@ const SparkLine = ({ data, width = 100, height = 32, color = "#1A56FF", fill = t
   const range = max - min || 1;
   const points = data.map((v, i) => `${(i / (data.length - 1)) * width},${height - ((v - min) / range) * (height - 4) - 2}`).join(" ");
   return (
-    <svg width={width} height={height} style={{ display:"block" }}>
+    <svg width={width} height={height} style={{ display:"block" }} role="img" aria-label="Graphique sparkline">
       {fill && <polygon points={`0,${height} ${points} ${width},${height}`} fill={`${color}15`} />}
       <polyline points={points} fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
