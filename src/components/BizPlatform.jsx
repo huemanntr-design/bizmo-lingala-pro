@@ -1805,8 +1805,21 @@ function SalesPage({ data, setData, showToast, kpiGoals, updateGoal, exchangeRat
       const newSale = { id: Date.now() + item.id, product_name: item.name, client_name: selectedClient || "Client comptoir", quantity: item.qty, unit_price: item.unit_price, total_amount: item.unit_price * item.qty, profit: (item.unit_price - item.cogs) * item.qty, payment_method: payMethod, sale_date: new Date().toISOString().split("T")[0], exchange_rate: exchangeRate, total_cdf: Math.round(item.unit_price * item.qty * exchangeRate) };
       setData(d => ({ ...d, sales: [newSale, ...d.sales], products: d.products.map(p => p.id === item.id ? { ...p, stock_quantity: p.stock_quantity - item.qty } : p) }));
     });
-    setReceipt(receiptData);
-    showToast(`✅ Vente enregistrée — ${fmt(cartTotal)}`, "success"); clearCart(); setShowInvoice(false);
+    // 1. Show checkmark animation on button
+    setSaleSuccess(true);
+    setTimeout(() => setSaleSuccess(false), 600);
+    // 2. Fade out cart
+    setCartFading(true);
+    setTimeout(() => {
+      setCartFading(false);
+      clearCart();
+    }, 400);
+    // 3. Auto-show receipt after 800ms slide-up
+    setTimeout(() => {
+      setReceipt(receiptData);
+    }, 800);
+    showToast(`✅ Vente enregistrée — ${fmt(cartTotal)}`, "success");
+    setShowInvoice(false);
   };
 
   return (
