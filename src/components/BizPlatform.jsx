@@ -252,7 +252,7 @@ const buildStyles = (dark) => {
     border:   "rgba(100,140,255,0.1)",
     border2:  "rgba(100,140,255,0.16)",
     text:     "#0A0F1E",
-    text2:    "#374A6D",
+    text2:    "#4A5D80",
     text3:    "#8A9DC0",
     glass:    "rgba(255,255,255,0.65)",
     glass2:   "rgba(255,255,255,0.75)",
