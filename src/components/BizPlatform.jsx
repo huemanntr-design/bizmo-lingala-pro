@@ -1415,6 +1415,7 @@ function HomePage({ data, setData, showToast, dark, kpiGoals, updateGoal, setAct
   const [showWAModal, setShowWAModal] = useState(false);
   const [expandedCard, setExpandedCard] = useState(null);
   const [dateFilter, setDateFilter] = useState("all");
+  const [showFullAnalysis, setShowFullAnalysis] = useState(false);
   const totalRevenue  = data.sales.reduce((s, x) => s + x.total_amount, 0);
   const totalExpenses = data.expenses.filter(e => e.status === "approved").reduce((s, x) => s + x.amount, 0);
   const totalProfit   = data.sales.reduce((s, x) => s + x.profit, 0);
