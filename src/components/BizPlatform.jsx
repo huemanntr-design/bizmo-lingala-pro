@@ -1485,81 +1485,104 @@ function HomePage({ data, setData, showToast, dark, kpiGoals, updateGoal, setAct
         <HelpIcon text="Ceci est votre tableau de bord — un résumé de tout ce qui se passe dans votre business. Utilisez les filtres de date pour voir vos performances." />
       </div>
 
-      {/* ── VISUAL ANALYTICS ROW ── */}
-      <div className="g3" style={{ marginBottom:16 }}>
-        {/* Profit Breakdown Donut */}
-        <div className="card card-pad">
-          <div className="sec-title" style={{ marginBottom:8 }}>💰 Répartition Profit</div>
-          <div style={{ fontSize:10, color:"#7B91C4", marginBottom:8 }}>Comment votre argent se divise : ce que vous gardez (profit), ce que vous dépensez, et le coût des marchandises</div>
-          <div style={{ display:"flex", alignItems:"center", gap:16 }}>
-            <DonutChart
-              segments={[
-                { value: totalRevenue > 0 ? (totalProfit/totalRevenue)*100 : 0, color:"#16C55E" },
-                { value: totalRevenue > 0 ? (totalExpenses/totalRevenue)*100 : 0, color:"#D42B3A" },
-                { value: totalRevenue > 0 ? Math.max(100 - (totalProfit/totalRevenue)*100 - (totalExpenses/totalRevenue)*100, 0) : 0, color:"#1A56FF" },
-              ]}
-              size={100}
-              strokeWidth={14}
-              centerValue={totalRevenue > 0 ? ((totalProfit/totalRevenue)*100).toFixed(0)+"%" : "0%"}
-              centerLabel="marge"
-            />
-            <div style={{ flex:1 }}>
-              {[["Profit",fmt(totalProfit),"#16C55E"],["Dépenses",fmt(totalExpenses),"#D42B3A"],["COGS",fmt(totalRevenue-totalProfit-totalExpenses > 0 ? totalRevenue-totalProfit-totalExpenses : 0),"#1A56FF"]].map(([l,v,c]) => (
-                <div key={l} style={{ display:"flex", alignItems:"center", gap:8, padding:"4px 0" }}>
-                  <div style={{ width:8, height:8, borderRadius:2, background:c }} />
-                  <span style={{ fontSize:11, color:"#7B91C4", flex:1 }}>{l}</span>
-                  <span style={{ fontSize:12, fontWeight:700, color:c }}>{v}</span>
+      {/* ── "Show full analysis" toggle ── */}
+      {!showFullAnalysis && (
+        <div style={{ textAlign:"center", margin:"10px 0 18px" }}>
+          <button className="btn btn-ghost" onClick={() => setShowFullAnalysis(true)}
+            style={{ fontSize:13, padding:"10px 24px", borderRadius:14, fontWeight:700, letterSpacing:0.2 }}>
+            📊 Voir l'analyse complète ↓
+          </button>
+        </div>
+      )}
+
+      {showFullAnalysis && (
+        <>
+        <div style={{ textAlign:"right", marginBottom:6 }}>
+          <button className="btn btn-ghost" onClick={() => setShowFullAnalysis(false)} style={{ fontSize:11, padding:"5px 12px" }}>▲ Masquer l'analyse</button>
+        </div>
+        {/* ── VISUAL ANALYTICS ROW ── */}
+        <div className="g3" style={{ marginBottom:16 }}>
+          {/* Profit Breakdown Donut */}
+          <div className="card card-pad">
+            <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:8 }}>
+              <div className="sec-title">💰 Répartition Profit</div>
+              <HelpIcon text="Comment votre argent se divise : ce que vous gardez (profit), ce que vous dépensez, et le coût des marchandises" />
+            </div>
+            <div style={{ display:"flex", alignItems:"center", gap:16 }}>
+              <DonutChart
+                segments={[
+                  { value: totalRevenue > 0 ? (totalProfit/totalRevenue)*100 : 0, color:"#16C55E" },
+                  { value: totalRevenue > 0 ? (totalExpenses/totalRevenue)*100 : 0, color:"#D42B3A" },
+                  { value: totalRevenue > 0 ? Math.max(100 - (totalProfit/totalRevenue)*100 - (totalExpenses/totalRevenue)*100, 0) : 0, color:"#1A56FF" },
+                ]}
+                size={100}
+                strokeWidth={14}
+                centerValue={totalRevenue > 0 ? ((totalProfit/totalRevenue)*100).toFixed(0)+"%" : "0%"}
+                centerLabel="marge"
+              />
+              <div style={{ flex:1 }}>
+                {[["Profit",fmt(totalProfit),"#16C55E"],["Dépenses",fmt(totalExpenses),"#D42B3A"],["COGS",fmt(totalRevenue-totalProfit-totalExpenses > 0 ? totalRevenue-totalProfit-totalExpenses : 0),"#1A56FF"]].map(([l,v,c]) => (
+                  <div key={l} style={{ display:"flex", alignItems:"center", gap:8, padding:"4px 0" }}>
+                    <div style={{ width:8, height:8, borderRadius:2, background:c }} />
+                    <span style={{ fontSize:11, color:"#7B91C4", flex:1 }}>{l}</span>
+                    <span style={{ fontSize:12, fontWeight:700, color:c }}>{v}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {/* Payment Methods Donut */}
+          <div className="card card-pad">
+            <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:8 }}>
+              <div className="sec-title">💳 Modes de Paiement</div>
+              <HelpIcon text="Comment vos clients vous paient : cash, M-Pesa/Airtel (mobile), crédit, ou banque" />
+            </div>
+            {(() => {
+              const methods = ["cash","mobile_money","credit","bank"];
+              const colors = ["#16C55E","#25D366","#D42B3A","#1A56FF"];
+              const labels = ["Cash","Mobile","Crédit","Banque"];
+              const totals = methods.map(m => data.sales.filter(s=>s.payment_method===m).reduce((a,s)=>a+s.total_amount,0));
+              const sum = totals.reduce((a,b)=>a+b,0) || 1;
+              return (
+                <div style={{ display:"flex", alignItems:"center", gap:16 }}>
+                  <DonutChart
+                    segments={totals.map((t,i) => ({ value:(t/sum)*100, color:colors[i] }))}
+                    size={100}
+                    strokeWidth={14}
+                    centerValue={data.sales.length+""}
+                    centerLabel="ventes"
+                  />
+                  <div style={{ flex:1 }}>
+                    {labels.map((l,i) => (
+                      <div key={l} style={{ display:"flex", alignItems:"center", gap:8, padding:"4px 0" }}>
+                        <div style={{ width:8, height:8, borderRadius:2, background:colors[i] }} />
+                        <span style={{ fontSize:11, color:"#7B91C4", flex:1 }}>{l}</span>
+                        <span style={{ fontSize:12, fontWeight:700, color:colors[i] }}>{fmt(totals[i])}</span>
+                      </div>
+                    ))}
+                  </div>
                 </div>
+              );
+            })()}
+          </div>
+
+          {/* Daily Revenue Sparkline card */}
+          <div className="card card-pad">
+            <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:8 }}>
+              <div className="sec-title">📈 Tendance Quotidienne</div>
+              <HelpIcon text="Cette courbe montre si vos revenus montent ↗ ou descendent ↘ chaque jour" />
+            </div>
+            <SparkLine data={data.revenueChart.map(d=>d.amount)} width={200} height={60} color="#1A56FF" />
+            <div style={{ display:"flex", gap:14, marginTop:12 }}>
+              {[["Moy",fmt(data.revenueChart.reduce((s,d)=>s+d.amount,0)/7),"#1A56FF"],["Max",fmt(Math.max(...data.revenueChart.map(d=>d.amount))),"#16C55E"],["Min",fmt(Math.min(...data.revenueChart.map(d=>d.amount))),"#D42B3A"]].map(([l,v,c]) => (
+                <div key={l}><div style={{ fontSize:10, color:"#7B91C4" }}>{l}</div><div style={{ fontSize:13, fontWeight:700, color:c }}>{v}</div></div>
               ))}
             </div>
           </div>
         </div>
-
-        {/* Payment Methods Donut */}
-        <div className="card card-pad">
-          <div className="sec-title" style={{ marginBottom:8 }}>💳 Modes de Paiement</div>
-          <div style={{ fontSize:10, color:"#7B91C4", marginBottom:8 }}>Comment vos clients vous paient : cash, M-Pesa/Airtel (mobile), crédit (à rembourser plus tard), ou banque</div>
-          {(() => {
-            const methods = ["cash","mobile_money","credit","bank"];
-            const colors = ["#16C55E","#25D366","#D42B3A","#1A56FF"];
-            const labels = ["Cash","Mobile","Crédit","Banque"];
-            const totals = methods.map(m => data.sales.filter(s=>s.payment_method===m).reduce((a,s)=>a+s.total_amount,0));
-            const sum = totals.reduce((a,b)=>a+b,0) || 1;
-            return (
-              <div style={{ display:"flex", alignItems:"center", gap:16 }}>
-                <DonutChart
-                  segments={totals.map((t,i) => ({ value:(t/sum)*100, color:colors[i] }))}
-                  size={100}
-                  strokeWidth={14}
-                  centerValue={data.sales.length+""}
-                  centerLabel="ventes"
-                />
-                <div style={{ flex:1 }}>
-                  {labels.map((l,i) => (
-                    <div key={l} style={{ display:"flex", alignItems:"center", gap:8, padding:"4px 0" }}>
-                      <div style={{ width:8, height:8, borderRadius:2, background:colors[i] }} />
-                      <span style={{ fontSize:11, color:"#7B91C4", flex:1 }}>{l}</span>
-                      <span style={{ fontSize:12, fontWeight:700, color:colors[i] }}>{fmt(totals[i])}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            );
-          })()}
-        </div>
-
-        {/* Daily Revenue Sparkline card */}
-        <div className="card card-pad">
-          <div className="sec-title" style={{ marginBottom:8 }}>📈 Tendance Quotidienne</div>
-          <div style={{ fontSize:10, color:"#7B91C4", marginBottom:8 }}>Cette courbe montre si vos revenus montent ↗ ou descendent ↘ chaque jour de la semaine</div>
-          <SparkLine data={data.revenueChart.map(d=>d.amount)} width={200} height={60} color="#1A56FF" />
-          <div style={{ display:"flex", gap:14, marginTop:12 }}>
-            {[["Moy",fmt(data.revenueChart.reduce((s,d)=>s+d.amount,0)/7),"#1A56FF"],["Max",fmt(Math.max(...data.revenueChart.map(d=>d.amount))),"#16C55E"],["Min",fmt(Math.min(...data.revenueChart.map(d=>d.amount))),"#D42B3A"]].map(([l,v,c]) => (
-              <div key={l}><div style={{ fontSize:10, color:"#7B91C4" }}>{l}</div><div style={{ fontSize:13, fontWeight:700, color:c }}>{v}</div></div>
-            ))}
-          </div>
-        </div>
-      </div>
+        </>
+      )}
 
       <div style={{ display: "grid", gridTemplateColumns: "1fr 360px", gap: 16, marginBottom: 16 }}>
         {/* Chart */}
