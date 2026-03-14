@@ -1125,6 +1125,26 @@ function HelpText({ children, icon = "💡" }) {
   );
 }
 
+function HelpIcon({ text }) {
+  const [show, setShow] = useState(false);
+  return (
+    <span style={{ position:"relative", display:"inline-flex" }}>
+      <span
+        onClick={() => setShow(s => !s)}
+        onMouseEnter={() => setShow(true)}
+        onMouseLeave={() => setShow(false)}
+        style={{ width:22, height:22, borderRadius:"50%", background:"rgba(26,86,255,0.1)", border:"1px solid rgba(26,86,255,0.2)", display:"inline-flex", alignItems:"center", justifyContent:"center", fontSize:11, fontWeight:800, color:"#1A56FF", cursor:"pointer", flexShrink:0 }}>
+        ?
+      </span>
+      {show && (
+        <div style={{ position:"absolute", bottom:"calc(100% + 6px)", right:0, width:260, padding:"10px 14px", background:"rgba(10,15,30,0.95)", backdropFilter:"blur(12px)", border:"1px solid rgba(120,165,255,0.2)", borderRadius:10, fontSize:11, color:"#B0C4E8", lineHeight:1.6, zIndex:50, boxShadow:"0 8px 24px rgba(0,0,0,0.4)", animation:"fadeIn 0.2s ease" }}>
+          💡 {text}
+        </div>
+      )}
+    </span>
+  );
+}
+
 function Modal({ title, onClose, children, maxWidth = 560 }) {
   return (
     <div className="modal-overlay" onClick={e => e.target === e.currentTarget && onClose()}>
