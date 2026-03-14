@@ -5565,13 +5565,16 @@ export default function BizPlatform() {
 
   const styles = buildStyles(dark);
 
+  const labelColor = dark ? "#8FA3CC" : "#4A5D80";
+
   const cssVarOverride = `
     :root {
       --border: ${dark ? "rgba(100,140,255,0.08)" : "rgba(100,140,255,0.1)"};
       --border2:${dark ? "rgba(100,140,255,0.14)" : "rgba(100,140,255,0.16)"};
       --text:   ${dark ? "#E8EDFF" : "#0A0F1E"};
-      --text2:  ${dark ? "#7B91C4" : "#3A4E7A"};
+      --text2:  ${dark ? "#8FA3CC" : "#4A5D80"};
       --text3:  ${dark ? "#3A4E7A" : "#8A9DC0"};
+      --label:  ${labelColor};
       --glass3: ${dark ? "rgba(60,100,255,0.08)" : "rgba(26,86,255,0.05)"};
       --glass2: ${dark ? "rgba(20,30,70,0.35)" : "rgba(255,255,255,0.75)"};
     }
