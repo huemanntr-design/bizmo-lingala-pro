@@ -151,16 +151,16 @@ const statusMeta = {
 
 // ─── NAV ───────────────────────────────────────────────────────────────────────
 const NAV = [
-  { id: "home",       icon: "🏠",  label: "Tableau de Bord", short: "Accueil"  },
-  { id: "sales",      icon: "🛍️",  label: "Ventes & POS",    short: "Ventes"   },
-  { id: "products",   icon: "📦",  label: "Produits",         short: "Stock",   badge: "2" },
-  { id: "clients",    icon: "👥",  label: "Clients",          short: "Clients"  },
-  { id: "marketing",  icon: "📣",  label: "Marketing",        short: "Marketing"},
-  { id: "accounting", icon: "💰",  label: "Comptabilité",     short: "Compta"   },
-  { id: "personal",   icon: "🏦",  label: "Finance Perso",    short: "Finances" },
-  { id: "bizplan",    icon: "📋",  label: "Business Plan",     short: "Plan"     },
-  { id: "tutorials",  icon: "🎓",  label: "Tutoriels",        short: "Tutos"    },
-  { id: "settings",   icon: "⚙️",  label: "Paramètres",       short: "Config"   },
+  { id: "home",       icon: Home,           label: "Tableau de Bord", short: "Accueil"  },
+  { id: "sales",      icon: ShoppingBag,    label: "Ventes & POS",    short: "Ventes"   },
+  { id: "products",   icon: Package,        label: "Produits",         short: "Stock",   badge: "2" },
+  { id: "clients",    icon: Users,          label: "Clients",          short: "Clients"  },
+  { id: "marketing",  icon: Megaphone,      label: "Marketing",        short: "Marketing"},
+  { id: "accounting", icon: DollarSign,     label: "Comptabilité",     short: "Compta"   },
+  { id: "personal",   icon: Landmark,       label: "Finance Perso",    short: "Finances" },
+  { id: "bizplan",    icon: ClipboardList,  label: "Business Plan",     short: "Plan"     },
+  { id: "tutorials",  icon: GraduationCap,  label: "Tutoriels",        short: "Tutos"    },
+  { id: "settings",   icon: Settings,       label: "Paramètres",       short: "Config"   },
 ];
 
 const DEFAULT_KPI_GOALS = {
