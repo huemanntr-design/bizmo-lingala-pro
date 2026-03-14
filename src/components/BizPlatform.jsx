@@ -1459,7 +1459,7 @@ function HomePage({ data, setData, showToast, dark, kpiGoals, updateGoal, setAct
           ))}
         </div>
       </div>
-      <HelpText icon="👋">Ceci est votre tableau de bord — c'est un résumé de tout ce qui se passe dans votre business. Utilisez les filtres de date pour voir vos performances sur différentes périodes. Cliquez sur les cartes pour voir plus de détails.</HelpText>
+      {/* HelpText replaced by HelpIcon in section headers */}
 
       {/* Hero KPI */}
       <HeroBanner
