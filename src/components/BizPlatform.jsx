@@ -2,6 +2,7 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import logoDrc from "@/assets/logo-drc.png";
 import { supabase } from "@/integrations/supabase/client";
 import { jsPDF } from "jspdf";
+import { Home, ShoppingBag, Package, Users, Megaphone, DollarSign, Landmark, ClipboardList, GraduationCap, Settings, MoreHorizontal } from "lucide-react";
 import html2canvas from "html2canvas";
 
 // ─── TWILIO WHATSAPP HELPER ────────────────────────────────────────────────────
