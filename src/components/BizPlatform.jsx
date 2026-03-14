@@ -2296,11 +2296,19 @@ function ProductsPage({ data, setData, showToast }) {
 
   const filtered = data.products.filter(p => p.name.toLowerCase().includes(search.toLowerCase()) || p.type.toLowerCase().includes(search.toLowerCase()));
 
+  const [prodTouched, setProdTouched] = useState({});
+  const prodErrors = {
+    name: prodTouched.name && !newProd.name ? "Le nom est requis" : "",
+    unit_price: prodTouched.unit_price && !newProd.unit_price ? "Le prix est requis" : "",
+  };
+  const prodValid = !!newProd.name && !!newProd.unit_price;
+
   const addProduct = () => {
-    if (!newProd.name || !newProd.unit_price) return showToast("Remplissez nom et prix", "error");
+    if (!prodValid) return;
     setData(d => ({ ...d, products: [...d.products, { ...newProd, id: Date.now(), currency:"USD", unit_price: Number(newProd.unit_price), cogs: Number(newProd.cogs), stock_quantity: Number(newProd.stock_quantity), track_batches:false }] }));
     showToast("Produit ajouté!", "success"); setShowAdd(false);
     setNewProd({ name:"", type:"Alimentaire", unit_price:"", cogs:"", stock_quantity:"", low_stock_alert:10, has_expiry:false, emoji:"📦" });
+    setProdTouched({});
   };
 
   return (
