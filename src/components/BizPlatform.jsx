@@ -1057,8 +1057,8 @@ function DonutChart({ segments, size = 120, strokeWidth = 14, centerLabel, cente
   const circumference = 2 * Math.PI * r;
   let offset = 0;
   return (
-    <div style={{ position:"relative", width:size, height:size }}>
-      <svg width={size} height={size} style={{ transform:"rotate(-90deg)" }}>
+    <div style={{ position:"relative", width:size, height:size }} role="img" aria-label={centerLabel ? `${centerLabel}: ${centerValue}` : "Graphique donut"}>
+      <svg width={size} height={size} style={{ transform:"rotate(-90deg)" }} aria-hidden="true">
         <circle cx={size/2} cy={size/2} r={r} fill="none" stroke="rgba(26,86,255,0.08)" strokeWidth={strokeWidth} />
         {segments.map((seg, i) => {
           const dash = (seg.value / 100) * circumference;
