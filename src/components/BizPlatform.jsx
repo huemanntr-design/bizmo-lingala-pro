@@ -2,6 +2,7 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import logoDrc from "@/assets/logo-drc.png";
 import { supabase } from "@/integrations/supabase/client";
 import { jsPDF } from "jspdf";
+import { Home, ShoppingBag, Package, Users, Megaphone, DollarSign, Landmark, ClipboardList, GraduationCap, Settings, MoreHorizontal } from "lucide-react";
 import html2canvas from "html2canvas";
 
 // ─── TWILIO WHATSAPP HELPER ────────────────────────────────────────────────────
@@ -150,16 +151,16 @@ const statusMeta = {
 
 // ─── NAV ───────────────────────────────────────────────────────────────────────
 const NAV = [
-  { id: "home",       icon: "🏠",  label: "Tableau de Bord", short: "Accueil"  },
-  { id: "sales",      icon: "🛍️",  label: "Ventes & POS",    short: "Ventes"   },
-  { id: "products",   icon: "📦",  label: "Produits",         short: "Stock",   badge: "2" },
-  { id: "clients",    icon: "👥",  label: "Clients",          short: "Clients"  },
-  { id: "marketing",  icon: "📣",  label: "Marketing",        short: "Marketing"},
-  { id: "accounting", icon: "💰",  label: "Comptabilité",     short: "Compta"   },
-  { id: "personal",   icon: "🏦",  label: "Finance Perso",    short: "Finances" },
-  { id: "bizplan",    icon: "📋",  label: "Business Plan",     short: "Plan"     },
-  { id: "tutorials",  icon: "🎓",  label: "Tutoriels",        short: "Tutos"    },
-  { id: "settings",   icon: "⚙️",  label: "Paramètres",       short: "Config"   },
+  { id: "home",       icon: Home,           label: "Tableau de Bord", short: "Accueil"  },
+  { id: "sales",      icon: ShoppingBag,    label: "Ventes & POS",    short: "Ventes"   },
+  { id: "products",   icon: Package,        label: "Produits",         short: "Stock",   badge: "2" },
+  { id: "clients",    icon: Users,          label: "Clients",          short: "Clients"  },
+  { id: "marketing",  icon: Megaphone,      label: "Marketing",        short: "Marketing"},
+  { id: "accounting", icon: DollarSign,     label: "Comptabilité",     short: "Compta"   },
+  { id: "personal",   icon: Landmark,       label: "Finance Perso",    short: "Finances" },
+  { id: "bizplan",    icon: ClipboardList,  label: "Business Plan",     short: "Plan"     },
+  { id: "tutorials",  icon: GraduationCap,  label: "Tutoriels",        short: "Tutos"    },
+  { id: "settings",   icon: Settings,       label: "Paramètres",       short: "Config"   },
 ];
 
 const DEFAULT_KPI_GOALS = {
@@ -230,7 +231,7 @@ const buildStyles = (dark) => {
     border:   "rgba(120,165,255,0.12)",
     border2:  "rgba(120,165,255,0.18)",
     text:     "#EAF0FF",
-    text2:    "#94ADDB",
+    text2:    "#8FA3CC",
     text3:    "#4A6499",
     glass:    "rgba(25,40,85,0.50)",
     glass2:   "rgba(30,48,95,0.40)",
@@ -251,7 +252,7 @@ const buildStyles = (dark) => {
     border:   "rgba(100,140,255,0.1)",
     border2:  "rgba(100,140,255,0.16)",
     text:     "#0A0F1E",
-    text2:    "#374A6D",
+    text2:    "#4A5D80",
     text3:    "#8A9DC0",
     glass:    "rgba(255,255,255,0.65)",
     glass2:   "rgba(255,255,255,0.75)",
@@ -1056,8 +1057,8 @@ function DonutChart({ segments, size = 120, strokeWidth = 14, centerLabel, cente
   const circumference = 2 * Math.PI * r;
   let offset = 0;
   return (
-    <div style={{ position:"relative", width:size, height:size }}>
-      <svg width={size} height={size} style={{ transform:"rotate(-90deg)" }}>
+    <div style={{ position:"relative", width:size, height:size }} role="img" aria-label={centerLabel ? `${centerLabel}: ${centerValue}` : "Graphique donut"}>
+      <svg width={size} height={size} style={{ transform:"rotate(-90deg)" }} aria-hidden="true">
         <circle cx={size/2} cy={size/2} r={r} fill="none" stroke="rgba(26,86,255,0.08)" strokeWidth={strokeWidth} />
         {segments.map((seg, i) => {
           const dash = (seg.value / 100) * circumference;
@@ -1083,7 +1084,7 @@ const SparkLine = ({ data, width = 100, height = 32, color = "#1A56FF", fill = t
   const range = max - min || 1;
   const points = data.map((v, i) => `${(i / (data.length - 1)) * width},${height - ((v - min) / range) * (height - 4) - 2}`).join(" ");
   return (
-    <svg width={width} height={height} style={{ display:"block" }}>
+    <svg width={width} height={height} style={{ display:"block" }} role="img" aria-label="Graphique sparkline">
       {fill && <polygon points={`0,${height} ${points} ${width},${height}`} fill={`${color}15`} />}
       <polyline points={points} fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
@@ -1387,7 +1388,7 @@ const RevenueChart = ({ data: chartData, dark }) => {
     "linear-gradient(180deg, #F43F5E, #BE123C)",
   ];
   return (
-    <div style={{ display: "flex", alignItems: "flex-end", gap: 8, height: 140, paddingTop: 10, position: "relative" }}>
+    <div style={{ display: "flex", alignItems: "flex-end", gap: 8, height: 140, paddingTop: 10, position: "relative" }} role="img" aria-label="Graphique des revenus hebdomadaires">
       {/* Average line */}
       <div style={{ position: "absolute", left: 0, right: 0, bottom: `${(avg / max) * 100 * 1.3 + 20}px`, borderTop: "1.5px dashed rgba(26,86,255,0.3)", zIndex: 1 }}>
         <span style={{ position: "absolute", right: 0, top: -14, fontSize: 9, color: "#7B91C4", background: dark ? "#0E1330" : "#EFF2FA", padding: "1px 4px", borderRadius: 3 }}>moy</span>
@@ -2295,11 +2296,19 @@ function ProductsPage({ data, setData, showToast }) {
 
   const filtered = data.products.filter(p => p.name.toLowerCase().includes(search.toLowerCase()) || p.type.toLowerCase().includes(search.toLowerCase()));
 
+  const [prodTouched, setProdTouched] = useState({});
+  const prodErrors = {
+    name: prodTouched.name && !newProd.name ? "Le nom est requis" : "",
+    unit_price: prodTouched.unit_price && !newProd.unit_price ? "Le prix est requis" : "",
+  };
+  const prodValid = !!newProd.name && !!newProd.unit_price;
+
   const addProduct = () => {
-    if (!newProd.name || !newProd.unit_price) return showToast("Remplissez nom et prix", "error");
+    if (!prodValid) return;
     setData(d => ({ ...d, products: [...d.products, { ...newProd, id: Date.now(), currency:"USD", unit_price: Number(newProd.unit_price), cogs: Number(newProd.cogs), stock_quantity: Number(newProd.stock_quantity), track_batches:false }] }));
     showToast("Produit ajouté!", "success"); setShowAdd(false);
     setNewProd({ name:"", type:"Alimentaire", unit_price:"", cogs:"", stock_quantity:"", low_stock_alert:10, has_expiry:false, emoji:"📦" });
+    setProdTouched({});
   };
 
   return (
@@ -2558,16 +2567,25 @@ function ProductsPage({ data, setData, showToast }) {
       )}
 
       {showAdd && (
-        <Modal title="➕ Nouveau Produit" onClose={() => setShowAdd(false)}>
+        <Modal title="➕ Nouveau Produit" onClose={() => { setShowAdd(false); setProdTouched({}); }}>
           {[["Nom","name","text"],["Prix de vente","unit_price","number"],["Coût d'achat","cogs","number"],["Stock initial","stock_quantity","number"],["Alerte stock bas","low_stock_alert","number"],["Emoji","emoji","text"]].map(([l,k,t]) => (
-            <div className="form-group" key={k}><label className="form-label">{l}</label><input type={t} value={newProd[k]} onChange={e => setNewProd(p => ({...p,[k]:e.target.value}))} placeholder={l} /></div>
+            <div className="form-group" key={k}>
+              <label className="form-label">{l}{(k==="name"||k==="unit_price") && " *"}</label>
+              <input type={t} value={newProd[k]}
+                onChange={e => setNewProd(p => ({...p,[k]:e.target.value}))}
+                onBlur={() => setProdTouched(p => ({...p,[k]:true}))}
+                placeholder={l}
+                style={prodErrors[k] ? { borderColor:"#D42B3A", boxShadow:"0 0 0 2px rgba(212,43,58,0.15)" } : {}}
+              />
+              {prodErrors[k] && <div style={{ color:"#D42B3A", fontSize:11, marginTop:4, fontWeight:600 }}>{prodErrors[k]}</div>}
+            </div>
           ))}
           <div className="form-group"><label className="form-label">Catégorie</label>
             <select value={newProd.type} onChange={e => setNewProd(p => ({...p,type:e.target.value}))}>
               {["Alimentaire","Boisson","Hygiène","Électronique","Textile","Autre"].map(t => <option key={t}>{t}</option>)}
             </select>
           </div>
-          <button className="btn btn-primary" style={{ width:"100%", justifyContent:"center" }} onClick={addProduct}>➕ Ajouter Produit</button>
+          <button className="btn btn-primary" style={{ width:"100%", justifyContent:"center", opacity: prodValid?1:0.5, pointerEvents: prodValid?"auto":"none" }} onClick={addProduct} disabled={!prodValid}>➕ Ajouter Produit</button>
         </Modal>
       )}
     </div>
@@ -2582,6 +2600,12 @@ function ClientsPage({ data, setData, showToast, kpiGoals, updateGoal }) {
   const [showAdd, setShowAdd] = useState(false);
   const [editingClient, setEditingClient] = useState(null);
   const [newClient, setNewClient] = useState({ name:"", email:"", phone:"", address:"", status:"active", credit_limit:200, credit_balance:0, total_revenue:0 });
+  const [clientTouched, setClientTouched] = useState({});
+  const clientErrors = {
+    name: clientTouched.name && !newClient.name ? "Le nom est requis" : "",
+    phone: clientTouched.phone && !newClient.phone ? "Le téléphone est requis" : "",
+  };
+  const clientValid = !!newClient.name && !!newClient.phone;
 
   const filtered = data.clients.filter(c => c.name.toLowerCase().includes(search.toLowerCase()) || c.phone.includes(search));
   const statusColors = { vip:"#F5C518", active:"#16C55E", lead:"#1A56FF", inactive:"#7B91C4" };
@@ -2839,9 +2863,18 @@ function ClientsPage({ data, setData, showToast, kpiGoals, updateGoal }) {
       )}
 
       {showAdd && (
-        <Modal title="➕ Nouveau Client" onClose={() => setShowAdd(false)}>
+        <Modal title="➕ Nouveau Client" onClose={() => { setShowAdd(false); setClientTouched({}); }}>
           {[["Nom complet","name"],["Email","email"],["Téléphone","phone"],["Adresse","address"]].map(([l,k]) => (
-            <div className="form-group" key={k}><label className="form-label">{l}</label><input value={newClient[k]} onChange={e => setNewClient(p => ({...p,[k]:e.target.value}))} placeholder={l} /></div>
+            <div className="form-group" key={k}>
+              <label className="form-label">{l}{(k==="name"||k==="phone") && " *"}</label>
+              <input value={newClient[k]}
+                onChange={e => setNewClient(p => ({...p,[k]:e.target.value}))}
+                onBlur={() => setClientTouched(p => ({...p,[k]:true}))}
+                placeholder={l}
+                style={clientErrors[k] ? { borderColor:"#D42B3A", boxShadow:"0 0 0 2px rgba(212,43,58,0.15)" } : {}}
+              />
+              {clientErrors[k] && <div style={{ color:"#D42B3A", fontSize:11, marginTop:4, fontWeight:600 }}>{clientErrors[k]}</div>}
+            </div>
           ))}
           <div className="form-group"><label className="form-label">Statut</label>
             <select value={newClient.status} onChange={e => setNewClient(p => ({...p,status:e.target.value}))}>
@@ -2851,7 +2884,7 @@ function ClientsPage({ data, setData, showToast, kpiGoals, updateGoal }) {
           <div className="g2">
             <div className="form-group"><label className="form-label">Limite Crédit ($)</label><input type="number" value={newClient.credit_limit} onChange={e => setNewClient(p => ({...p,credit_limit:Number(e.target.value)}))} /></div>
           </div>
-          <button className="btn btn-primary" style={{ width:"100%", justifyContent:"center" }} onClick={() => { setData(d => ({ ...d, clients: [...d.clients, { ...newClient, id:Date.now() }] })); showToast("Client ajouté!", "success"); setShowAdd(false); }}>➕ Ajouter Client</button>
+          <button className="btn btn-primary" style={{ width:"100%", justifyContent:"center", opacity: clientValid?1:0.5, pointerEvents: clientValid?"auto":"none" }} disabled={!clientValid} onClick={() => { setData(d => ({ ...d, clients: [...d.clients, { ...newClient, id:Date.now() }] })); showToast("Client ajouté!", "success"); setShowAdd(false); setClientTouched({}); }}>➕ Ajouter Client</button>
         </Modal>
       )}
     </div>
@@ -3788,6 +3821,12 @@ function AccountingPage({ data, setData, showToast, kpiGoals, updateGoal }) {
   const [tab, setTab] = useState("cashbook");
   const [showAdd, setShowAdd] = useState(false);
   const [newExp, setNewExp] = useState({ description:"", amount:"", category:"Transport", expense_date:new Date().toISOString().split("T")[0], status:"pending" });
+  const [expTouched, setExpTouched] = useState({});
+  const expErrors = {
+    description: expTouched.description && !newExp.description ? "La description est requise" : "",
+    amount: expTouched.amount && !newExp.amount ? "Le montant est requis" : "",
+  };
+  const expValid = !!newExp.description && !!newExp.amount;
   const [selectedTx, setSelectedTx] = useState(null);
 
   const totalRev  = data.sales.reduce((s,x) => s+x.total_amount, 0);
@@ -4124,18 +4163,27 @@ function AccountingPage({ data, setData, showToast, kpiGoals, updateGoal }) {
       )}
 
       {showAdd && (
-        <Modal title="➕ Nouvelle Dépense" onClose={() => setShowAdd(false)}>
+        <Modal title="➕ Nouvelle Dépense" onClose={() => { setShowAdd(false); setExpTouched({}); }}>
           {[["Description","description","text"],["Montant ($)","amount","number"],["Date","expense_date","date"]].map(([l,k,t]) => (
-            <div className="form-group" key={k}><label className="form-label">{l}</label><input type={t} value={newExp[k]} onChange={e => setNewExp(p => ({...p,[k]:e.target.value}))} placeholder={l} /></div>
+            <div className="form-group" key={k}>
+              <label className="form-label">{l}{(k==="description"||k==="amount") && " *"}</label>
+              <input type={t} value={newExp[k]}
+                onChange={e => setNewExp(p => ({...p,[k]:e.target.value}))}
+                onBlur={() => setExpTouched(p => ({...p,[k]:true}))}
+                placeholder={l}
+                style={expErrors[k] ? { borderColor:"#D42B3A", boxShadow:"0 0 0 2px rgba(212,43,58,0.15)" } : {}}
+              />
+              {expErrors[k] && <div style={{ color:"#D42B3A", fontSize:11, marginTop:4, fontWeight:600 }}>{expErrors[k]}</div>}
+            </div>
           ))}
           <div className="form-group"><label className="form-label">Catégorie</label>
             <select value={newExp.category} onChange={e => setNewExp(p => ({...p,category:e.target.value}))}>
               {["Transport","RH","Immobilier","Communication","Utilités","Marketing","Autre"].map(c => <option key={c}>{c}</option>)}
             </select>
           </div>
-          <button className="btn btn-primary" style={{ width:"100%", justifyContent:"center" }} onClick={() => {
+          <button className="btn btn-primary" style={{ width:"100%", justifyContent:"center", opacity: expValid?1:0.5, pointerEvents: expValid?"auto":"none" }} disabled={!expValid} onClick={() => {
             setData(d => ({ ...d, expenses: [...d.expenses, { ...newExp, id:Date.now(), amount:Number(newExp.amount) }] }));
-            showToast("Dépense ajoutée!", "success"); setShowAdd(false);
+            showToast("Dépense ajoutée!", "success"); setShowAdd(false); setExpTouched({});
           }}>➕ Ajouter Dépense</button>
         </Modal>
       )}
@@ -5517,13 +5565,16 @@ export default function BizPlatform() {
 
   const styles = buildStyles(dark);
 
+  const labelColor = dark ? "#8FA3CC" : "#4A5D80";
+
   const cssVarOverride = `
     :root {
       --border: ${dark ? "rgba(100,140,255,0.08)" : "rgba(100,140,255,0.1)"};
       --border2:${dark ? "rgba(100,140,255,0.14)" : "rgba(100,140,255,0.16)"};
       --text:   ${dark ? "#E8EDFF" : "#0A0F1E"};
-      --text2:  ${dark ? "#7B91C4" : "#3A4E7A"};
+      --text2:  ${dark ? "#8FA3CC" : "#4A5D80"};
       --text3:  ${dark ? "#3A4E7A" : "#8A9DC0"};
+      --label:  ${labelColor};
       --glass3: ${dark ? "rgba(60,100,255,0.08)" : "rgba(26,86,255,0.05)"};
       --glass2: ${dark ? "rgba(20,30,70,0.35)" : "rgba(255,255,255,0.75)"};
     }
@@ -5565,19 +5616,23 @@ export default function BizPlatform() {
 
         {/* ─ SIDEBAR ─ */}
         <div className={`sidebar ${sidebarExp ? "expanded" : ""}`}>
-          <div className="logo-wrap" onClick={() => setSidebarExp(e => !e)}>
+          <div className="logo-wrap" onClick={() => setSidebarExp(e => !e)} tabIndex={0} role="button" aria-label={sidebarExp ? "Réduire le menu" : "Agrandir le menu"} onKeyDown={e => e.key === "Enter" && setSidebarExp(x => !x)}>
             <div className="logo-mark"><BizmoLogo size={40} /></div>
             {sidebarExp && <div><div className="logo-text">BizPlatform</div><div className="logo-sub">DRC Enterprise Suite</div></div>}
           </div>
 
           <div className="nav-list">
-            {NAV.slice(0,-1).map(n => (
-              <div key={n.id} className={`nav-item ${activePage===n.id?"active":""}`} onClick={() => setActivePage(n.id)} title={n.label}>
-                <span className="nav-icon">{n.icon}</span>
-                {sidebarExp && <span className="nav-label">{n.label}</span>}
-                {n.badge && <span className="nav-badge">{n.badge}</span>}
-              </div>
-            ))}
+            {NAV.slice(0,-1).map(n => {
+              const NavIcon = n.icon;
+              return (
+                <div key={n.id} className={`nav-item ${activePage===n.id?"active":""}`} onClick={() => setActivePage(n.id)} title={n.label}
+                  tabIndex={0} role="button" aria-label={n.label} onKeyDown={e => e.key === "Enter" && setActivePage(n.id)}>
+                  <span className="nav-icon"><NavIcon size={18} /></span>
+                  {sidebarExp && <span className="nav-label">{n.label}</span>}
+                  {n.badge && <span className="nav-badge">{n.badge}</span>}
+                </div>
+              );
+            })}
           </div>
 
           <div className="nav-bottom">
@@ -5608,17 +5663,19 @@ export default function BizPlatform() {
 
             {/* Global Search Trigger */}
             <div onClick={() => setShowGlobalSearch(true)}
+              tabIndex={0} role="button" aria-label="Recherche globale"
+              onKeyDown={e => e.key === "Enter" && setShowGlobalSearch(true)}
               style={{ display:"flex", alignItems:"center", gap:8, padding:"7px 14px", borderRadius:12, cursor:"pointer",
                 background: dark ? "rgba(15,22,55,0.5)" : "rgba(240,244,255,0.7)",
                 backdropFilter:"blur(12px)", border:`1px solid ${dark?"rgba(100,140,255,0.1)":"rgba(100,140,255,0.12)"}`,
                 transition:"all 0.2s", minWidth:160 }}>
-              <span style={{ fontSize:13, color:"#7B91C4" }}>🔍</span>
-              <span style={{ fontSize:12, color:"#7B91C4", flex:1 }}>Rechercher...</span>
+              <span style={{ fontSize:13, color:"#8FA3CC" }}>🔍</span>
+              <span style={{ fontSize:12, color:"#8FA3CC", flex:1 }}>Rechercher...</span>
               <span style={{ fontSize:9, padding:"2px 6px", borderRadius:5, background: dark?"rgba(100,140,255,0.1)":"rgba(26,86,255,0.08)", color:"#7B91C4", fontWeight:700, fontFamily:"monospace" }}>⌘K</span>
             </div>
 
             {/* Quick Add */}
-            <button className="theme-btn" onClick={() => setShowQuickAdd(true)} title="Action rapide" style={{ background:"linear-gradient(135deg, #1A56FF, #2B6BFF)", color:"white", border:"none", boxShadow:"0 4px 16px rgba(26,86,255,0.3)" }}>
+            <button className="theme-btn" onClick={() => setShowQuickAdd(true)} aria-label="Action rapide" title="Action rapide" style={{ background:"linear-gradient(135deg, #1A56FF, #2B6BFF)", color:"white", border:"none", boxShadow:"0 4px 16px rgba(26,86,255,0.3)" }}>
               ＋
             </button>
 
@@ -5648,12 +5705,12 @@ export default function BizPlatform() {
             </div>
 
             {/* Theme toggle */}
-            <button className="theme-btn" onClick={() => setDark(d => !d)} title={dark?"Mode Clair":"Mode Sombre"}>
+            <button className="theme-btn" onClick={() => setDark(d => !d)} aria-label={dark?"Passer en mode clair":"Passer en mode sombre"} title={dark?"Mode Clair":"Mode Sombre"}>
               {dark ? "☀️" : "🌙"}
             </button>
 
             {/* Notifications */}
-            <button className="theme-btn" onClick={() => showToast("🔔 Aucune nouvelle alerte", "info")} title="Notifications" style={{ position:"relative" }}>
+            <button className="theme-btn" onClick={() => showToast("🔔 Aucune nouvelle alerte", "info")} aria-label="Notifications" title="Notifications" style={{ position:"relative" }}>
               🔔
               <div style={{ position:"absolute", top:6, right:6, width:6, height:6, borderRadius:"50%", background:"#D42B3A", boxShadow:"0 0 6px rgba(212,43,58,0.5)" }} />
             </button>
@@ -5661,6 +5718,8 @@ export default function BizPlatform() {
             {/* Avatar */}
             <div style={{ cursor:"pointer", transition:"transform 0.2s" }}
               onClick={() => setActivePage("settings")}
+              tabIndex={0} role="button" aria-label="Paramètres du profil"
+              onKeyDown={e => e.key === "Enter" && setActivePage("settings")}
               onMouseEnter={e => e.currentTarget.style.transform="scale(1.1)"}
               onMouseLeave={e => e.currentTarget.style.transform="scale(1)"}>
               <Avatar name={data.user.name} size={36} />
@@ -5675,14 +5734,19 @@ export default function BizPlatform() {
 
         {/* ─ MOBILE NAV (5 items + More) ─ */}
         <nav className="mobile-nav">
-          {NAV.slice(0, 4).map(n => (
-            <div key={n.id} className={`mn-item ${activePage===n.id?"active":""}`} onClick={() => setActivePage(n.id)}>
-              <span>{n.icon}</span>
-              <span className="mn-label" style={{ fontSize:11 }}>{n.short}</span>
-            </div>
-          ))}
-          <div className={`mn-item ${NAV.slice(4).some(n=>n.id===activePage)?"active":""}`} onClick={() => setShowMoreNav(true)}>
-            <span>•••</span>
+          {NAV.slice(0, 4).map(n => {
+            const NavIcon = n.icon;
+            return (
+              <div key={n.id} className={`mn-item ${activePage===n.id?"active":""}`} onClick={() => setActivePage(n.id)}
+                tabIndex={0} role="button" aria-label={n.short} onKeyDown={e => e.key === "Enter" && setActivePage(n.id)}>
+                <NavIcon size={18} />
+                <span className="mn-label" style={{ fontSize:11 }}>{n.short}</span>
+              </div>
+            );
+          })}
+          <div className={`mn-item ${NAV.slice(4).some(n=>n.id===activePage)?"active":""}`} onClick={() => setShowMoreNav(true)}
+            tabIndex={0} role="button" aria-label="Plus de pages" onKeyDown={e => e.key === "Enter" && setShowMoreNav(true)}>
+            <MoreHorizontal size={18} />
             <span className="mn-label" style={{ fontSize:11 }}>Plus</span>
           </div>
         </nav>
@@ -5704,20 +5768,25 @@ export default function BizPlatform() {
               <div style={{ width:40, height:4, borderRadius:2, background: dark?"rgba(120,165,255,0.2)":"rgba(100,140,255,0.2)", margin:"0 auto 14px" }} />
               <div style={{ fontSize:12, fontWeight:700, color:"#7B91C4", marginBottom:10, textTransform:"uppercase", letterSpacing:0.6, paddingLeft:4 }}>Autres pages</div>
               <div style={{ display:"grid", gridTemplateColumns:"repeat(3, 1fr)", gap:8 }}>
-                {NAV.slice(4).map(n => (
-                  <div key={n.id}
-                    onClick={() => { setActivePage(n.id); setShowMoreNav(false); }}
-                    style={{
-                      display:"flex", flexDirection:"column", alignItems:"center", gap:6,
-                      padding:"14px 8px", borderRadius:14, cursor:"pointer",
-                      background: activePage===n.id ? "rgba(26,86,255,0.12)" : dark?"rgba(25,40,80,0.4)":"rgba(220,230,255,0.5)",
-                      border: `1px solid ${activePage===n.id ? "rgba(26,86,255,0.3)" : dark?"rgba(120,165,255,0.1)":"rgba(100,140,255,0.1)"}`,
-                      transition:"all 0.2s"
-                    }}>
-                    <span style={{ fontSize:22 }}>{n.icon}</span>
-                    <span style={{ fontSize:12, fontWeight:600, color: activePage===n.id ? "#1A56FF" : dark?"#94ADDB":"#374A6D" }}>{n.label}</span>
-                  </div>
-                ))}
+                {NAV.slice(4).map(n => {
+                  const NavIcon = n.icon;
+                  return (
+                    <div key={n.id}
+                      onClick={() => { setActivePage(n.id); setShowMoreNav(false); }}
+                      tabIndex={0} role="button" aria-label={n.label}
+                      onKeyDown={e => e.key === "Enter" && (setActivePage(n.id), setShowMoreNav(false))}
+                      style={{
+                        display:"flex", flexDirection:"column", alignItems:"center", gap:6,
+                        padding:"14px 8px", borderRadius:14, cursor:"pointer",
+                        background: activePage===n.id ? "rgba(26,86,255,0.12)" : dark?"rgba(25,40,80,0.4)":"rgba(220,230,255,0.5)",
+                        border: `1px solid ${activePage===n.id ? "rgba(26,86,255,0.3)" : dark?"rgba(120,165,255,0.1)":"rgba(100,140,255,0.1)"}`,
+                        transition:"all 0.2s"
+                      }}>
+                      <NavIcon size={22} />
+                      <span style={{ fontSize:12, fontWeight:600, color: activePage===n.id ? "#1A56FF" : dark?"#94ADDB":"#374A6D" }}>{n.label}</span>
+                    </div>
+                  );
+                })}
               </div>
             </div>
           </div>
