@@ -5727,14 +5727,19 @@ export default function BizPlatform() {
 
         {/* ─ MOBILE NAV (5 items + More) ─ */}
         <nav className="mobile-nav">
-          {NAV.slice(0, 4).map(n => (
-            <div key={n.id} className={`mn-item ${activePage===n.id?"active":""}`} onClick={() => setActivePage(n.id)}>
-              <span>{n.icon}</span>
-              <span className="mn-label" style={{ fontSize:11 }}>{n.short}</span>
-            </div>
-          ))}
-          <div className={`mn-item ${NAV.slice(4).some(n=>n.id===activePage)?"active":""}`} onClick={() => setShowMoreNav(true)}>
-            <span>•••</span>
+          {NAV.slice(0, 4).map(n => {
+            const NavIcon = n.icon;
+            return (
+              <div key={n.id} className={`mn-item ${activePage===n.id?"active":""}`} onClick={() => setActivePage(n.id)}
+                tabIndex={0} role="button" aria-label={n.short} onKeyDown={e => e.key === "Enter" && setActivePage(n.id)}>
+                <NavIcon size={18} />
+                <span className="mn-label" style={{ fontSize:11 }}>{n.short}</span>
+              </div>
+            );
+          })}
+          <div className={`mn-item ${NAV.slice(4).some(n=>n.id===activePage)?"active":""}`} onClick={() => setShowMoreNav(true)}
+            tabIndex={0} role="button" aria-label="Plus de pages" onKeyDown={e => e.key === "Enter" && setShowMoreNav(true)}>
+            <MoreHorizontal size={18} />
             <span className="mn-label" style={{ fontSize:11 }}>Plus</span>
           </div>
         </nav>
