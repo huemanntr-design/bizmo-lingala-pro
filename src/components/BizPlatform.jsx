@@ -5616,7 +5616,7 @@ export default function BizPlatform() {
 
         {/* ─ SIDEBAR ─ */}
         <div className={`sidebar ${sidebarExp ? "expanded" : ""}`}>
-          <div className="logo-wrap" onClick={() => setSidebarExp(e => !e)}>
+          <div className="logo-wrap" onClick={() => setSidebarExp(e => !e)} tabIndex={0} role="button" aria-label={sidebarExp ? "Réduire le menu" : "Agrandir le menu"} onKeyDown={e => e.key === "Enter" && setSidebarExp(x => !x)}>
             <div className="logo-mark"><BizmoLogo size={40} /></div>
             {sidebarExp && <div><div className="logo-text">BizPlatform</div><div className="logo-sub">DRC Enterprise Suite</div></div>}
           </div>
