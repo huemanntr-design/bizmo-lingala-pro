@@ -1756,6 +1756,9 @@ function SalesPage({ data, setData, showToast, kpiGoals, updateGoal, exchangeRat
   const [receipt, setReceipt] = useState(null);
   const receiptRef = useRef(null);
 
+  const [saleSuccess, setSaleSuccess] = useState(false);
+  const [cartFading, setCartFading] = useState(false);
+
   const filtered = data.products.filter(p => p.name.toLowerCase().includes(search.toLowerCase()));
   const cartTotal = cart.reduce((s, i) => s + i.unit_price * i.qty, 0);
   const cartProfit = cart.reduce((s, i) => s + (i.unit_price - i.cogs) * i.qty, 0);
