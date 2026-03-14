@@ -4163,18 +4163,27 @@ function AccountingPage({ data, setData, showToast, kpiGoals, updateGoal }) {
       )}
 
       {showAdd && (
-        <Modal title="➕ Nouvelle Dépense" onClose={() => setShowAdd(false)}>
+        <Modal title="➕ Nouvelle Dépense" onClose={() => { setShowAdd(false); setExpTouched({}); }}>
           {[["Description","description","text"],["Montant ($)","amount","number"],["Date","expense_date","date"]].map(([l,k,t]) => (
-            <div className="form-group" key={k}><label className="form-label">{l}</label><input type={t} value={newExp[k]} onChange={e => setNewExp(p => ({...p,[k]:e.target.value}))} placeholder={l} /></div>
+            <div className="form-group" key={k}>
+              <label className="form-label">{l}{(k==="description"||k==="amount") && " *"}</label>
+              <input type={t} value={newExp[k]}
+                onChange={e => setNewExp(p => ({...p,[k]:e.target.value}))}
+                onBlur={() => setExpTouched(p => ({...p,[k]:true}))}
+                placeholder={l}
+                style={expErrors[k] ? { borderColor:"#D42B3A", boxShadow:"0 0 0 2px rgba(212,43,58,0.15)" } : {}}
+              />
+              {expErrors[k] && <div style={{ color:"#D42B3A", fontSize:11, marginTop:4, fontWeight:600 }}>{expErrors[k]}</div>}
+            </div>
           ))}
           <div className="form-group"><label className="form-label">Catégorie</label>
             <select value={newExp.category} onChange={e => setNewExp(p => ({...p,category:e.target.value}))}>
               {["Transport","RH","Immobilier","Communication","Utilités","Marketing","Autre"].map(c => <option key={c}>{c}</option>)}
             </select>
           </div>
-          <button className="btn btn-primary" style={{ width:"100%", justifyContent:"center" }} onClick={() => {
+          <button className="btn btn-primary" style={{ width:"100%", justifyContent:"center", opacity: expValid?1:0.5, pointerEvents: expValid?"auto":"none" }} disabled={!expValid} onClick={() => {
             setData(d => ({ ...d, expenses: [...d.expenses, { ...newExp, id:Date.now(), amount:Number(newExp.amount) }] }));
-            showToast("Dépense ajoutée!", "success"); setShowAdd(false);
+            showToast("Dépense ajoutée!", "success"); setShowAdd(false); setExpTouched({});
           }}>➕ Ajouter Dépense</button>
         </Modal>
       )}
