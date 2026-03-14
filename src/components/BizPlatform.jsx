@@ -2212,8 +2212,8 @@ function SalesPage({ data, setData, showToast, kpiGoals, updateGoal, exchangeRat
       )}
       {/* ─ RECEIPT MODAL ─ */}
       {receipt && (
-        <div style={{ position:"fixed", inset:0, zIndex:9999, display:"flex", alignItems:"center", justifyContent:"center", background:"rgba(0,0,0,0.7)", backdropFilter:"blur(6px)" }} onClick={() => setReceipt(null)}>
-          <div style={{ background:"#fff", color:"#111", borderRadius:16, width:"min(360px, 92vw)", maxHeight:"85vh", overflow:"auto", boxShadow:"0 20px 60px rgba(0,0,0,0.5)" }} onClick={e => e.stopPropagation()}>
+        <div style={{ position:"fixed", inset:0, zIndex:9999, display:"flex", alignItems:"flex-end", justifyContent:"center", background:"rgba(0,0,0,0.7)", backdropFilter:"blur(6px)", paddingBottom:20 }} onClick={() => setReceipt(null)}>
+          <div style={{ background:"#fff", color:"#111", borderRadius:16, width:"min(360px, 92vw)", maxHeight:"85vh", overflow:"auto", boxShadow:"0 20px 60px rgba(0,0,0,0.5)", animation:"slideUp 0.4s cubic-bezier(.4,0,.2,1)" }} onClick={e => e.stopPropagation()}>
             <div ref={receiptRef} id="receipt-content" style={{ padding:"24px 20px" }}>
               {/* Header */}
               <div style={{ textAlign:"center", marginBottom:16 }}>
@@ -2221,9 +2221,7 @@ function SalesPage({ data, setData, showToast, kpiGoals, updateGoal, exchangeRat
                 <div style={{ fontSize:11, color:"#666", marginTop:4 }}>{receipt.phone}</div>
                 <div style={{ fontSize:10, color:"#999", marginTop:2 }}>Vendeur: {receipt.seller}</div>
               </div>
-              {/* Dashed line */}
               <div style={{ borderTop:"2px dashed #ccc", margin:"12px 0" }} />
-              {/* Receipt info */}
               <div style={{ display:"flex", justifyContent:"space-between", fontSize:11, color:"#555", marginBottom:8 }}>
                 <span>N°: {receipt.id}</span>
                 <span>{receipt.date}</span>
@@ -2231,7 +2229,6 @@ function SalesPage({ data, setData, showToast, kpiGoals, updateGoal, exchangeRat
               <div style={{ fontSize:12, marginBottom:12 }}>
                 <strong>Client:</strong> {receipt.client}
               </div>
-              {/* Items */}
               <div style={{ borderTop:"1px solid #ddd", borderBottom:"1px solid #ddd", padding:"8px 0" }}>
                 <div style={{ display:"flex", justifyContent:"space-between", fontSize:10, fontWeight:700, color:"#888", marginBottom:6, textTransform:"uppercase" }}>
                   <span style={{ flex:2 }}>Article</span>
@@ -2248,7 +2245,6 @@ function SalesPage({ data, setData, showToast, kpiGoals, updateGoal, exchangeRat
                   </div>
                 ))}
               </div>
-              {/* Total */}
               <div style={{ borderTop:"2px dashed #ccc", margin:"12px 0" }} />
               <div style={{ display:"flex", justifyContent:"space-between", fontSize:18, fontWeight:900, fontFamily:"'Bricolage Grotesque'" }}>
                 <span>TOTAL</span>
@@ -2257,7 +2253,6 @@ function SalesPage({ data, setData, showToast, kpiGoals, updateGoal, exchangeRat
               <div style={{ fontSize:11, color:"#666", marginTop:4 }}>
                 Paiement: {payIcons[receipt.payment_method]} {receipt.payment_method === "cash" ? "Espèces" : receipt.payment_method === "mobile_money" ? "Mobile Money" : receipt.payment_method === "credit" ? "Crédit" : "Banque"}
               </div>
-              {/* Footer */}
               <div style={{ borderTop:"2px dashed #ccc", margin:"14px 0 8px" }} />
               <div style={{ textAlign:"center", fontSize:10, color:"#999" }}>
                 <div style={{ fontWeight:700, marginBottom:4 }}>Merci de votre fidélité! 🙏🇨🇩</div>
@@ -2266,10 +2261,11 @@ function SalesPage({ data, setData, showToast, kpiGoals, updateGoal, exchangeRat
                 <div style={{ marginTop:2, fontSize:9 }}>{receipt.phone} · Kinshasa, RDC</div>
               </div>
             </div>
-            {/* Actions */}
+            {/* Actions — "Nouvelle vente" is primary/first */}
             <div style={{ display:"flex", gap:8, padding:"0 20px 20px", flexWrap:"wrap" }}>
-              <button onClick={() => generatePDF("receipt-content", `Recu_${receipt?.id || 'bizmo'}.pdf`)} style={{ flex:1, padding:"10px", background:"#D42B3A", color:"#fff", border:"none", borderRadius:10, fontWeight:700, fontSize:13, cursor:"pointer", fontFamily:"'DM Sans'" }}>📥 PDF</button>
-              <button onClick={printReceipt} style={{ flex:1, padding:"10px", background:"#1A56FF", color:"#fff", border:"none", borderRadius:10, fontWeight:700, fontSize:13, cursor:"pointer", fontFamily:"'DM Sans'" }}>🖨️ Imprimer</button>
+              <button onClick={() => { setReceipt(null); setTab("pos"); }} style={{ flex:"0 0 100%", padding:"12px", background:"linear-gradient(135deg,#1A56FF,#2B6BFF)", color:"#fff", border:"none", borderRadius:10, fontWeight:700, fontSize:14, cursor:"pointer", fontFamily:"'DM Sans'", boxShadow:"0 4px 16px rgba(26,86,255,0.3)" }}>🛒 Nouvelle Vente</button>
+              <button onClick={() => generatePDF("receipt-content", `Recu_${receipt?.id || 'bizmo'}.pdf`)} style={{ flex:1, padding:"10px", background:"#D42B3A", color:"#fff", border:"none", borderRadius:10, fontWeight:700, fontSize:12, cursor:"pointer", fontFamily:"'DM Sans'" }}>📥 PDF</button>
+              <button onClick={printReceipt} style={{ flex:1, padding:"10px", background:"#16A34A", color:"#fff", border:"none", borderRadius:10, fontWeight:700, fontSize:12, cursor:"pointer", fontFamily:"'DM Sans'" }}>🖨️ Imprimer</button>
               <button onClick={async () => {
                 const client = data.clients.find(c => c.name === receipt.client_name);
                 if (!client?.phone) return showToast("Numéro client manquant", "error");
@@ -2277,8 +2273,8 @@ function SalesPage({ data, setData, showToast, kpiGoals, updateGoal, exchangeRat
                   await sendWhatsApp(client.phone, `🧾 *REÇU #${receipt.id}*\n━━━━━━━━━━━━━━━\n${receipt.items.map(i => `• ${i.name} x${i.qty} = ${fmt(i.total)}`).join("\n")}\n\n*TOTAL: ${fmt(receipt.total)}*\nMerci! 🙏 _${data.user.company}_ 🇨🇩`);
                   showToast("✅ Reçu envoyé par WhatsApp!", "whatsapp");
                 } catch (e) { showToast(`❌ ${e.message}`, "error"); }
-              }} style={{ flex:1, padding:"10px", background:"#25D366", color:"#fff", border:"none", borderRadius:10, fontWeight:700, fontSize:13, cursor:"pointer", fontFamily:"'DM Sans'" }}>💬 WhatsApp</button>
-              <button onClick={() => setReceipt(null)} style={{ flex:"0 0 100%", padding:"8px", background:"transparent", border:"1px solid #ddd", borderRadius:10, fontWeight:600, fontSize:12, cursor:"pointer", color:"#666", fontFamily:"'DM Sans'" }}>✕ Fermer</button>
+              }} style={{ flex:1, padding:"10px", background:"#25D366", color:"#fff", border:"none", borderRadius:10, fontWeight:700, fontSize:12, cursor:"pointer", fontFamily:"'DM Sans'" }}>💬 WhatsApp</button>
+              <button onClick={() => setReceipt(null)} style={{ flex:"0 0 100%", padding:"8px", background:"transparent", border:"1px solid #ddd", borderRadius:10, fontWeight:600, fontSize:11, cursor:"pointer", color:"#999", fontFamily:"'DM Sans'" }}>✕ Fermer</button>
             </div>
           </div>
         </div>
