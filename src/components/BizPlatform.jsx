@@ -5369,7 +5369,19 @@ function TutorialsPage({ data, showToast, setActivePage }) {
 // ─── MAIN APP ──────────────────────────────────────────────────────────────────
 export default function BizPlatform() {
   const [dark, setDark]             = useState(true);
-  const [data, setData]             = useState(initialData);
+  const [data, setData]             = useState(() => {
+    try {
+      const saved = localStorage.getItem('bizplatform_data');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        // Basic validation: must have key properties
+        if (parsed && parsed.user && parsed.products && parsed.sales) return parsed;
+      }
+    } catch (e) {
+      console.warn('localStorage data corrupted, using defaults:', e);
+    }
+    return initialData;
+  });
   const [activePage, setActivePage] = useState("home");
   const [sidebarExp, setSidebarExp] = useState(false);
   const [toast, setToast]           = useState(null);
@@ -5380,6 +5392,16 @@ export default function BizPlatform() {
   const [showQuickAdd, setShowQuickAdd] = useState(false);
   const [currency, setCurrency]     = useState("USD");
   const [exchangeRate, setExchangeRate] = useState(2800);
+  const [showMoreNav, setShowMoreNav] = useState(false);
+
+  // Persist data to localStorage on every change
+  useEffect(() => {
+    try {
+      localStorage.setItem('bizplatform_data', JSON.stringify(data));
+    } catch (e) {
+      console.warn('Failed to save to localStorage:', e);
+    }
+  }, [data]);
 
   // Keep global currency & rate in sync for fmt()
   _globalCurrency = currency;
