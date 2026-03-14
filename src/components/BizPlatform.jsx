@@ -2863,9 +2863,18 @@ function ClientsPage({ data, setData, showToast, kpiGoals, updateGoal }) {
       )}
 
       {showAdd && (
-        <Modal title="➕ Nouveau Client" onClose={() => setShowAdd(false)}>
+        <Modal title="➕ Nouveau Client" onClose={() => { setShowAdd(false); setClientTouched({}); }}>
           {[["Nom complet","name"],["Email","email"],["Téléphone","phone"],["Adresse","address"]].map(([l,k]) => (
-            <div className="form-group" key={k}><label className="form-label">{l}</label><input value={newClient[k]} onChange={e => setNewClient(p => ({...p,[k]:e.target.value}))} placeholder={l} /></div>
+            <div className="form-group" key={k}>
+              <label className="form-label">{l}{(k==="name"||k==="phone") && " *"}</label>
+              <input value={newClient[k]}
+                onChange={e => setNewClient(p => ({...p,[k]:e.target.value}))}
+                onBlur={() => setClientTouched(p => ({...p,[k]:true}))}
+                placeholder={l}
+                style={clientErrors[k] ? { borderColor:"#D42B3A", boxShadow:"0 0 0 2px rgba(212,43,58,0.15)" } : {}}
+              />
+              {clientErrors[k] && <div style={{ color:"#D42B3A", fontSize:11, marginTop:4, fontWeight:600 }}>{clientErrors[k]}</div>}
+            </div>
           ))}
           <div className="form-group"><label className="form-label">Statut</label>
             <select value={newClient.status} onChange={e => setNewClient(p => ({...p,status:e.target.value}))}>
@@ -2875,7 +2884,7 @@ function ClientsPage({ data, setData, showToast, kpiGoals, updateGoal }) {
           <div className="g2">
             <div className="form-group"><label className="form-label">Limite Crédit ($)</label><input type="number" value={newClient.credit_limit} onChange={e => setNewClient(p => ({...p,credit_limit:Number(e.target.value)}))} /></div>
           </div>
-          <button className="btn btn-primary" style={{ width:"100%", justifyContent:"center" }} onClick={() => { setData(d => ({ ...d, clients: [...d.clients, { ...newClient, id:Date.now() }] })); showToast("Client ajouté!", "success"); setShowAdd(false); }}>➕ Ajouter Client</button>
+          <button className="btn btn-primary" style={{ width:"100%", justifyContent:"center", opacity: clientValid?1:0.5, pointerEvents: clientValid?"auto":"none" }} disabled={!clientValid} onClick={() => { setData(d => ({ ...d, clients: [...d.clients, { ...newClient, id:Date.now() }] })); showToast("Client ajouté!", "success"); setShowAdd(false); setClientTouched({}); }}>➕ Ajouter Client</button>
         </Modal>
       )}
     </div>
