@@ -1924,9 +1924,16 @@ function SalesPage({ data, setData, showToast, kpiGoals, updateGoal, exchangeRat
                   <div style={{ display:"flex", justifyContent:"space-between", fontSize:12, color:"#16C55E", marginBottom:8 }}><span>Profit estimé</span><span>{fmt(cartProfit)}</span></div>
                   <div style={{ display:"flex", justifyContent:"space-between", fontFamily:"'Bricolage Grotesque'", fontSize:18, fontWeight:800, color:"#1A56FF" }}><span>Total</span><span>{fmt(cartTotal)}</span></div>
                 </div>
-                <div style={{ display:"flex", gap:8 }}>
+                <div style={{ display:"flex", gap:8, transition:"opacity 0.4s", opacity: cartFading ? 0 : 1 }}>
                   <button className="btn btn-ghost" onClick={clearCart} style={{ flex:1, justifyContent:"center" }}>🗑️ Vider</button>
-                  <button className="btn btn-primary" onClick={completeSale} style={{ flex:2, justifyContent:"center" }}>✅ Valider Vente</button>
+                  <button className={`btn ${saleSuccess ? "btn-success" : "btn-primary"}`} onClick={completeSale} style={{ flex:2, justifyContent:"center", transition:"all 0.3s" }}>
+                    {saleSuccess ? (
+                      <span style={{ display:"inline-flex", alignItems:"center", gap:6 }}>
+                        <span style={{ width:22, height:22, borderRadius:"50%", background:"#16C55E", display:"inline-flex", alignItems:"center", justifyContent:"center", animation:"scaleIn 0.3s ease" }}>✓</span>
+                        Validé!
+                      </span>
+                    ) : "✅ Valider Vente"}
+                  </button>
                 </div>
               </>
             )}
