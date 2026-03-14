@@ -904,6 +904,7 @@ const buildStyles = (dark) => {
   @keyframes barGrow   { from { transform: scaleY(0); transform-origin: bottom; } to { transform: scaleY(1); transform-origin: bottom; } }
   @keyframes float     { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-6px); } }
   @keyframes shimmer   { 0% { background-position: -200% 0; } 100% { background-position: 200% 0; } }
+  @keyframes slideUp   { from { opacity: 0; transform: translateY(100%); } to { opacity: 1; transform: translateY(0); } }
 
   .fade-in  { animation: fadeIn  0.35s ease forwards; }
   .scale-in { animation: scaleIn 0.25s ease forwards; }
@@ -1122,6 +1123,26 @@ function HelpText({ children, icon = "💡" }) {
       <span style={{ flexShrink:0, fontSize:14 }}>{icon}</span>
       <span>{children}</span>
     </div>
+  );
+}
+
+function HelpIcon({ text }) {
+  const [show, setShow] = useState(false);
+  return (
+    <span style={{ position:"relative", display:"inline-flex" }}>
+      <span
+        onClick={() => setShow(s => !s)}
+        onMouseEnter={() => setShow(true)}
+        onMouseLeave={() => setShow(false)}
+        style={{ width:22, height:22, borderRadius:"50%", background:"rgba(26,86,255,0.1)", border:"1px solid rgba(26,86,255,0.2)", display:"inline-flex", alignItems:"center", justifyContent:"center", fontSize:11, fontWeight:800, color:"#1A56FF", cursor:"pointer", flexShrink:0 }}>
+        ?
+      </span>
+      {show && (
+        <div style={{ position:"absolute", bottom:"calc(100% + 6px)", right:0, width:260, padding:"10px 14px", background:"rgba(10,15,30,0.95)", backdropFilter:"blur(12px)", border:"1px solid rgba(120,165,255,0.2)", borderRadius:10, fontSize:11, color:"#B0C4E8", lineHeight:1.6, zIndex:50, boxShadow:"0 8px 24px rgba(0,0,0,0.4)", animation:"fadeIn 0.2s ease" }}>
+          💡 {text}
+        </div>
+      )}
+    </span>
   );
 }
 
@@ -1395,6 +1416,7 @@ function HomePage({ data, setData, showToast, dark, kpiGoals, updateGoal, setAct
   const [showWAModal, setShowWAModal] = useState(false);
   const [expandedCard, setExpandedCard] = useState(null);
   const [dateFilter, setDateFilter] = useState("all");
+  const [showFullAnalysis, setShowFullAnalysis] = useState(false);
   const totalRevenue  = data.sales.reduce((s, x) => s + x.total_amount, 0);
   const totalExpenses = data.expenses.filter(e => e.status === "approved").reduce((s, x) => s + x.amount, 0);
   const totalProfit   = data.sales.reduce((s, x) => s + x.profit, 0);
@@ -1438,7 +1460,7 @@ function HomePage({ data, setData, showToast, dark, kpiGoals, updateGoal, setAct
           ))}
         </div>
       </div>
-      <HelpText icon="👋">Ceci est votre tableau de bord — c'est un résumé de tout ce qui se passe dans votre business. Utilisez les filtres de date pour voir vos performances sur différentes périodes. Cliquez sur les cartes pour voir plus de détails.</HelpText>
+      {/* HelpText replaced by HelpIcon in section headers */}
 
       {/* Hero KPI */}
       <HeroBanner
@@ -1459,82 +1481,109 @@ function HomePage({ data, setData, showToast, dark, kpiGoals, updateGoal, setAct
         <MiniKpiCard icon="🛍️" label="Nb de Ventes" value={data.sales.length} trend="+12%" trendUp={true} color="#F5C518" />
         <MiniKpiCard icon="⚠️" label="Produits en rupture" value={lowStock.length} trendUp={false} color={lowStock.length>0?"#D42B3A":"#16C55E"} />
       </div>
+      <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom:4 }}>
+        <span style={{ fontSize:12, color:"#7B91C4" }}>Résumé rapide</span>
+        <HelpIcon text="Ceci est votre tableau de bord — un résumé de tout ce qui se passe dans votre business. Utilisez les filtres de date pour voir vos performances." />
+      </div>
 
-      {/* ── VISUAL ANALYTICS ROW ── */}
-      <div className="g3" style={{ marginBottom:16 }}>
-        {/* Profit Breakdown Donut */}
-        <div className="card card-pad">
-          <div className="sec-title" style={{ marginBottom:8 }}>💰 Répartition Profit</div>
-          <div style={{ fontSize:10, color:"#7B91C4", marginBottom:8 }}>Comment votre argent se divise : ce que vous gardez (profit), ce que vous dépensez, et le coût des marchandises</div>
-          <div style={{ display:"flex", alignItems:"center", gap:16 }}>
-            <DonutChart
-              segments={[
-                { value: totalRevenue > 0 ? (totalProfit/totalRevenue)*100 : 0, color:"#16C55E" },
-                { value: totalRevenue > 0 ? (totalExpenses/totalRevenue)*100 : 0, color:"#D42B3A" },
-                { value: totalRevenue > 0 ? Math.max(100 - (totalProfit/totalRevenue)*100 - (totalExpenses/totalRevenue)*100, 0) : 0, color:"#1A56FF" },
-              ]}
-              size={100}
-              strokeWidth={14}
-              centerValue={totalRevenue > 0 ? ((totalProfit/totalRevenue)*100).toFixed(0)+"%" : "0%"}
-              centerLabel="marge"
-            />
-            <div style={{ flex:1 }}>
-              {[["Profit",fmt(totalProfit),"#16C55E"],["Dépenses",fmt(totalExpenses),"#D42B3A"],["COGS",fmt(totalRevenue-totalProfit-totalExpenses > 0 ? totalRevenue-totalProfit-totalExpenses : 0),"#1A56FF"]].map(([l,v,c]) => (
-                <div key={l} style={{ display:"flex", alignItems:"center", gap:8, padding:"4px 0" }}>
-                  <div style={{ width:8, height:8, borderRadius:2, background:c }} />
-                  <span style={{ fontSize:11, color:"#7B91C4", flex:1 }}>{l}</span>
-                  <span style={{ fontSize:12, fontWeight:700, color:c }}>{v}</span>
+      {/* ── "Show full analysis" toggle ── */}
+      {!showFullAnalysis && (
+        <div style={{ textAlign:"center", margin:"10px 0 18px" }}>
+          <button className="btn btn-ghost" onClick={() => setShowFullAnalysis(true)}
+            style={{ fontSize:13, padding:"10px 24px", borderRadius:14, fontWeight:700, letterSpacing:0.2 }}>
+            📊 Voir l'analyse complète ↓
+          </button>
+        </div>
+      )}
+
+      {showFullAnalysis && (
+        <>
+        <div style={{ textAlign:"right", marginBottom:6 }}>
+          <button className="btn btn-ghost" onClick={() => setShowFullAnalysis(false)} style={{ fontSize:11, padding:"5px 12px" }}>▲ Masquer l'analyse</button>
+        </div>
+        {/* ── VISUAL ANALYTICS ROW ── */}
+        <div className="g3" style={{ marginBottom:16 }}>
+          {/* Profit Breakdown Donut */}
+          <div className="card card-pad">
+            <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:8 }}>
+              <div className="sec-title">💰 Répartition Profit</div>
+              <HelpIcon text="Comment votre argent se divise : ce que vous gardez (profit), ce que vous dépensez, et le coût des marchandises" />
+            </div>
+            <div style={{ display:"flex", alignItems:"center", gap:16 }}>
+              <DonutChart
+                segments={[
+                  { value: totalRevenue > 0 ? (totalProfit/totalRevenue)*100 : 0, color:"#16C55E" },
+                  { value: totalRevenue > 0 ? (totalExpenses/totalRevenue)*100 : 0, color:"#D42B3A" },
+                  { value: totalRevenue > 0 ? Math.max(100 - (totalProfit/totalRevenue)*100 - (totalExpenses/totalRevenue)*100, 0) : 0, color:"#1A56FF" },
+                ]}
+                size={100}
+                strokeWidth={14}
+                centerValue={totalRevenue > 0 ? ((totalProfit/totalRevenue)*100).toFixed(0)+"%" : "0%"}
+                centerLabel="marge"
+              />
+              <div style={{ flex:1 }}>
+                {[["Profit",fmt(totalProfit),"#16C55E"],["Dépenses",fmt(totalExpenses),"#D42B3A"],["COGS",fmt(totalRevenue-totalProfit-totalExpenses > 0 ? totalRevenue-totalProfit-totalExpenses : 0),"#1A56FF"]].map(([l,v,c]) => (
+                  <div key={l} style={{ display:"flex", alignItems:"center", gap:8, padding:"4px 0" }}>
+                    <div style={{ width:8, height:8, borderRadius:2, background:c }} />
+                    <span style={{ fontSize:11, color:"#7B91C4", flex:1 }}>{l}</span>
+                    <span style={{ fontSize:12, fontWeight:700, color:c }}>{v}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {/* Payment Methods Donut */}
+          <div className="card card-pad">
+            <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:8 }}>
+              <div className="sec-title">💳 Modes de Paiement</div>
+              <HelpIcon text="Comment vos clients vous paient : cash, M-Pesa/Airtel (mobile), crédit, ou banque" />
+            </div>
+            {(() => {
+              const methods = ["cash","mobile_money","credit","bank"];
+              const colors = ["#16C55E","#25D366","#D42B3A","#1A56FF"];
+              const labels = ["Cash","Mobile","Crédit","Banque"];
+              const totals = methods.map(m => data.sales.filter(s=>s.payment_method===m).reduce((a,s)=>a+s.total_amount,0));
+              const sum = totals.reduce((a,b)=>a+b,0) || 1;
+              return (
+                <div style={{ display:"flex", alignItems:"center", gap:16 }}>
+                  <DonutChart
+                    segments={totals.map((t,i) => ({ value:(t/sum)*100, color:colors[i] }))}
+                    size={100}
+                    strokeWidth={14}
+                    centerValue={data.sales.length+""}
+                    centerLabel="ventes"
+                  />
+                  <div style={{ flex:1 }}>
+                    {labels.map((l,i) => (
+                      <div key={l} style={{ display:"flex", alignItems:"center", gap:8, padding:"4px 0" }}>
+                        <div style={{ width:8, height:8, borderRadius:2, background:colors[i] }} />
+                        <span style={{ fontSize:11, color:"#7B91C4", flex:1 }}>{l}</span>
+                        <span style={{ fontSize:12, fontWeight:700, color:colors[i] }}>{fmt(totals[i])}</span>
+                      </div>
+                    ))}
+                  </div>
                 </div>
+              );
+            })()}
+          </div>
+
+          {/* Daily Revenue Sparkline card */}
+          <div className="card card-pad">
+            <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:8 }}>
+              <div className="sec-title">📈 Tendance Quotidienne</div>
+              <HelpIcon text="Cette courbe montre si vos revenus montent ↗ ou descendent ↘ chaque jour" />
+            </div>
+            <SparkLine data={data.revenueChart.map(d=>d.amount)} width={200} height={60} color="#1A56FF" />
+            <div style={{ display:"flex", gap:14, marginTop:12 }}>
+              {[["Moy",fmt(data.revenueChart.reduce((s,d)=>s+d.amount,0)/7),"#1A56FF"],["Max",fmt(Math.max(...data.revenueChart.map(d=>d.amount))),"#16C55E"],["Min",fmt(Math.min(...data.revenueChart.map(d=>d.amount))),"#D42B3A"]].map(([l,v,c]) => (
+                <div key={l}><div style={{ fontSize:10, color:"#7B91C4" }}>{l}</div><div style={{ fontSize:13, fontWeight:700, color:c }}>{v}</div></div>
               ))}
             </div>
           </div>
         </div>
-
-        {/* Payment Methods Donut */}
-        <div className="card card-pad">
-          <div className="sec-title" style={{ marginBottom:8 }}>💳 Modes de Paiement</div>
-          <div style={{ fontSize:10, color:"#7B91C4", marginBottom:8 }}>Comment vos clients vous paient : cash, M-Pesa/Airtel (mobile), crédit (à rembourser plus tard), ou banque</div>
-          {(() => {
-            const methods = ["cash","mobile_money","credit","bank"];
-            const colors = ["#16C55E","#25D366","#D42B3A","#1A56FF"];
-            const labels = ["Cash","Mobile","Crédit","Banque"];
-            const totals = methods.map(m => data.sales.filter(s=>s.payment_method===m).reduce((a,s)=>a+s.total_amount,0));
-            const sum = totals.reduce((a,b)=>a+b,0) || 1;
-            return (
-              <div style={{ display:"flex", alignItems:"center", gap:16 }}>
-                <DonutChart
-                  segments={totals.map((t,i) => ({ value:(t/sum)*100, color:colors[i] }))}
-                  size={100}
-                  strokeWidth={14}
-                  centerValue={data.sales.length+""}
-                  centerLabel="ventes"
-                />
-                <div style={{ flex:1 }}>
-                  {labels.map((l,i) => (
-                    <div key={l} style={{ display:"flex", alignItems:"center", gap:8, padding:"4px 0" }}>
-                      <div style={{ width:8, height:8, borderRadius:2, background:colors[i] }} />
-                      <span style={{ fontSize:11, color:"#7B91C4", flex:1 }}>{l}</span>
-                      <span style={{ fontSize:12, fontWeight:700, color:colors[i] }}>{fmt(totals[i])}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            );
-          })()}
-        </div>
-
-        {/* Daily Revenue Sparkline card */}
-        <div className="card card-pad">
-          <div className="sec-title" style={{ marginBottom:8 }}>📈 Tendance Quotidienne</div>
-          <div style={{ fontSize:10, color:"#7B91C4", marginBottom:8 }}>Cette courbe montre si vos revenus montent ↗ ou descendent ↘ chaque jour de la semaine</div>
-          <SparkLine data={data.revenueChart.map(d=>d.amount)} width={200} height={60} color="#1A56FF" />
-          <div style={{ display:"flex", gap:14, marginTop:12 }}>
-            {[["Moy",fmt(data.revenueChart.reduce((s,d)=>s+d.amount,0)/7),"#1A56FF"],["Max",fmt(Math.max(...data.revenueChart.map(d=>d.amount))),"#16C55E"],["Min",fmt(Math.min(...data.revenueChart.map(d=>d.amount))),"#D42B3A"]].map(([l,v,c]) => (
-              <div key={l}><div style={{ fontSize:10, color:"#7B91C4" }}>{l}</div><div style={{ fontSize:13, fontWeight:700, color:c }}>{v}</div></div>
-            ))}
-          </div>
-        </div>
-      </div>
+        </>
+      )}
 
       <div style={{ display: "grid", gridTemplateColumns: "1fr 360px", gap: 16, marginBottom: 16 }}>
         {/* Chart */}
@@ -1603,6 +1652,7 @@ function HomePage({ data, setData, showToast, dark, kpiGoals, updateGoal, setAct
         </div>
       </div>
 
+      {showFullAnalysis && (<>
       {/* Product Performance Graph */}
       <div className="card card-pad" style={{ marginBottom:16 }}>
         <div className="sec-head">
@@ -1649,7 +1699,7 @@ function HomePage({ data, setData, showToast, dark, kpiGoals, updateGoal, setAct
       </div>
 
       {/* Transactions */}
-      <div className="card card-pad">
+      <div className="card card-pad" style={{ marginBottom:16 }}>
         <div className="sec-head">
           <div className="sec-title">🕐 Dernières Transactions</div>
           <button className="btn btn-ghost" style={{ fontSize: 12 }}>Voir tout →</button>
@@ -1673,6 +1723,7 @@ function HomePage({ data, setData, showToast, dark, kpiGoals, updateGoal, setAct
           </table>
         </div>
       </div>
+      </>)}
 
       {showWAModal && (
         <Modal title="📱 Envoyer Rapport WhatsApp" onClose={() => setShowWAModal(false)}>
@@ -1705,6 +1756,9 @@ function SalesPage({ data, setData, showToast, kpiGoals, updateGoal, exchangeRat
   const [payMethod, setPayMethod] = useState("cash");
   const [receipt, setReceipt] = useState(null);
   const receiptRef = useRef(null);
+
+  const [saleSuccess, setSaleSuccess] = useState(false);
+  const [cartFading, setCartFading] = useState(false);
 
   const filtered = data.products.filter(p => p.name.toLowerCase().includes(search.toLowerCase()));
   const cartTotal = cart.reduce((s, i) => s + i.unit_price * i.qty, 0);
@@ -1752,8 +1806,21 @@ function SalesPage({ data, setData, showToast, kpiGoals, updateGoal, exchangeRat
       const newSale = { id: Date.now() + item.id, product_name: item.name, client_name: selectedClient || "Client comptoir", quantity: item.qty, unit_price: item.unit_price, total_amount: item.unit_price * item.qty, profit: (item.unit_price - item.cogs) * item.qty, payment_method: payMethod, sale_date: new Date().toISOString().split("T")[0], exchange_rate: exchangeRate, total_cdf: Math.round(item.unit_price * item.qty * exchangeRate) };
       setData(d => ({ ...d, sales: [newSale, ...d.sales], products: d.products.map(p => p.id === item.id ? { ...p, stock_quantity: p.stock_quantity - item.qty } : p) }));
     });
-    setReceipt(receiptData);
-    showToast(`✅ Vente enregistrée — ${fmt(cartTotal)}`, "success"); clearCart(); setShowInvoice(false);
+    // 1. Show checkmark animation on button
+    setSaleSuccess(true);
+    setTimeout(() => setSaleSuccess(false), 600);
+    // 2. Fade out cart
+    setCartFading(true);
+    setTimeout(() => {
+      setCartFading(false);
+      clearCart();
+    }, 400);
+    // 3. Auto-show receipt after 800ms slide-up
+    setTimeout(() => {
+      setReceipt(receiptData);
+    }, 800);
+    showToast(`✅ Vente enregistrée — ${fmt(cartTotal)}`, "success");
+    setShowInvoice(false);
   };
 
   return (
@@ -1807,7 +1874,7 @@ function SalesPage({ data, setData, showToast, kpiGoals, updateGoal, exchangeRat
           </div>
 
           {/* Cart */}
-          <div className="card card-pad" style={{ height:"fit-content", position:"sticky", top:0 }}>
+          <div className="card card-pad" style={{ height:"fit-content", position:"sticky", top:0, transition:"opacity 0.4s ease", opacity: cartFading ? 0.3 : 1 }}>
             <div className="sec-title" style={{ marginBottom: 14 }}>🛒 Panier ({cart.length})</div>
             {!cart.length ? (
               <div style={{ textAlign:"center", padding:"24px 0", color:"#7B91C4" }}><div style={{ fontSize:32, marginBottom:8 }}>🛒</div>Aucun article</div>
@@ -1858,9 +1925,16 @@ function SalesPage({ data, setData, showToast, kpiGoals, updateGoal, exchangeRat
                   <div style={{ display:"flex", justifyContent:"space-between", fontSize:12, color:"#16C55E", marginBottom:8 }}><span>Profit estimé</span><span>{fmt(cartProfit)}</span></div>
                   <div style={{ display:"flex", justifyContent:"space-between", fontFamily:"'Bricolage Grotesque'", fontSize:18, fontWeight:800, color:"#1A56FF" }}><span>Total</span><span>{fmt(cartTotal)}</span></div>
                 </div>
-                <div style={{ display:"flex", gap:8 }}>
+                <div style={{ display:"flex", gap:8, transition:"opacity 0.4s", opacity: cartFading ? 0 : 1 }}>
                   <button className="btn btn-ghost" onClick={clearCart} style={{ flex:1, justifyContent:"center" }}>🗑️ Vider</button>
-                  <button className="btn btn-primary" onClick={completeSale} style={{ flex:2, justifyContent:"center" }}>✅ Valider Vente</button>
+                  <button className={`btn ${saleSuccess ? "btn-success" : "btn-primary"}`} onClick={completeSale} style={{ flex:2, justifyContent:"center", transition:"all 0.3s" }}>
+                    {saleSuccess ? (
+                      <span style={{ display:"inline-flex", alignItems:"center", gap:6 }}>
+                        <span style={{ width:22, height:22, borderRadius:"50%", background:"#16C55E", display:"inline-flex", alignItems:"center", justifyContent:"center", animation:"scaleIn 0.3s ease" }}>✓</span>
+                        Validé!
+                      </span>
+                    ) : "✅ Valider Vente"}
+                  </button>
                 </div>
               </>
             )}
@@ -2139,8 +2213,8 @@ function SalesPage({ data, setData, showToast, kpiGoals, updateGoal, exchangeRat
       )}
       {/* ─ RECEIPT MODAL ─ */}
       {receipt && (
-        <div style={{ position:"fixed", inset:0, zIndex:9999, display:"flex", alignItems:"center", justifyContent:"center", background:"rgba(0,0,0,0.7)", backdropFilter:"blur(6px)" }} onClick={() => setReceipt(null)}>
-          <div style={{ background:"#fff", color:"#111", borderRadius:16, width:"min(360px, 92vw)", maxHeight:"85vh", overflow:"auto", boxShadow:"0 20px 60px rgba(0,0,0,0.5)" }} onClick={e => e.stopPropagation()}>
+        <div style={{ position:"fixed", inset:0, zIndex:9999, display:"flex", alignItems:"flex-end", justifyContent:"center", background:"rgba(0,0,0,0.7)", backdropFilter:"blur(6px)", paddingBottom:20 }} onClick={() => setReceipt(null)}>
+          <div style={{ background:"#fff", color:"#111", borderRadius:16, width:"min(360px, 92vw)", maxHeight:"85vh", overflow:"auto", boxShadow:"0 20px 60px rgba(0,0,0,0.5)", animation:"slideUp 0.4s cubic-bezier(.4,0,.2,1)" }} onClick={e => e.stopPropagation()}>
             <div ref={receiptRef} id="receipt-content" style={{ padding:"24px 20px" }}>
               {/* Header */}
               <div style={{ textAlign:"center", marginBottom:16 }}>
@@ -2148,9 +2222,7 @@ function SalesPage({ data, setData, showToast, kpiGoals, updateGoal, exchangeRat
                 <div style={{ fontSize:11, color:"#666", marginTop:4 }}>{receipt.phone}</div>
                 <div style={{ fontSize:10, color:"#999", marginTop:2 }}>Vendeur: {receipt.seller}</div>
               </div>
-              {/* Dashed line */}
               <div style={{ borderTop:"2px dashed #ccc", margin:"12px 0" }} />
-              {/* Receipt info */}
               <div style={{ display:"flex", justifyContent:"space-between", fontSize:11, color:"#555", marginBottom:8 }}>
                 <span>N°: {receipt.id}</span>
                 <span>{receipt.date}</span>
@@ -2158,7 +2230,6 @@ function SalesPage({ data, setData, showToast, kpiGoals, updateGoal, exchangeRat
               <div style={{ fontSize:12, marginBottom:12 }}>
                 <strong>Client:</strong> {receipt.client}
               </div>
-              {/* Items */}
               <div style={{ borderTop:"1px solid #ddd", borderBottom:"1px solid #ddd", padding:"8px 0" }}>
                 <div style={{ display:"flex", justifyContent:"space-between", fontSize:10, fontWeight:700, color:"#888", marginBottom:6, textTransform:"uppercase" }}>
                   <span style={{ flex:2 }}>Article</span>
@@ -2175,7 +2246,6 @@ function SalesPage({ data, setData, showToast, kpiGoals, updateGoal, exchangeRat
                   </div>
                 ))}
               </div>
-              {/* Total */}
               <div style={{ borderTop:"2px dashed #ccc", margin:"12px 0" }} />
               <div style={{ display:"flex", justifyContent:"space-between", fontSize:18, fontWeight:900, fontFamily:"'Bricolage Grotesque'" }}>
                 <span>TOTAL</span>
@@ -2184,7 +2254,6 @@ function SalesPage({ data, setData, showToast, kpiGoals, updateGoal, exchangeRat
               <div style={{ fontSize:11, color:"#666", marginTop:4 }}>
                 Paiement: {payIcons[receipt.payment_method]} {receipt.payment_method === "cash" ? "Espèces" : receipt.payment_method === "mobile_money" ? "Mobile Money" : receipt.payment_method === "credit" ? "Crédit" : "Banque"}
               </div>
-              {/* Footer */}
               <div style={{ borderTop:"2px dashed #ccc", margin:"14px 0 8px" }} />
               <div style={{ textAlign:"center", fontSize:10, color:"#999" }}>
                 <div style={{ fontWeight:700, marginBottom:4 }}>Merci de votre fidélité! 🙏🇨🇩</div>
@@ -2193,10 +2262,11 @@ function SalesPage({ data, setData, showToast, kpiGoals, updateGoal, exchangeRat
                 <div style={{ marginTop:2, fontSize:9 }}>{receipt.phone} · Kinshasa, RDC</div>
               </div>
             </div>
-            {/* Actions */}
+            {/* Actions — "Nouvelle vente" is primary/first */}
             <div style={{ display:"flex", gap:8, padding:"0 20px 20px", flexWrap:"wrap" }}>
-              <button onClick={() => generatePDF("receipt-content", `Recu_${receipt?.id || 'bizmo'}.pdf`)} style={{ flex:1, padding:"10px", background:"#D42B3A", color:"#fff", border:"none", borderRadius:10, fontWeight:700, fontSize:13, cursor:"pointer", fontFamily:"'DM Sans'" }}>📥 PDF</button>
-              <button onClick={printReceipt} style={{ flex:1, padding:"10px", background:"#1A56FF", color:"#fff", border:"none", borderRadius:10, fontWeight:700, fontSize:13, cursor:"pointer", fontFamily:"'DM Sans'" }}>🖨️ Imprimer</button>
+              <button onClick={() => { setReceipt(null); setTab("pos"); }} style={{ flex:"0 0 100%", padding:"12px", background:"linear-gradient(135deg,#1A56FF,#2B6BFF)", color:"#fff", border:"none", borderRadius:10, fontWeight:700, fontSize:14, cursor:"pointer", fontFamily:"'DM Sans'", boxShadow:"0 4px 16px rgba(26,86,255,0.3)" }}>🛒 Nouvelle Vente</button>
+              <button onClick={() => generatePDF("receipt-content", `Recu_${receipt?.id || 'bizmo'}.pdf`)} style={{ flex:1, padding:"10px", background:"#D42B3A", color:"#fff", border:"none", borderRadius:10, fontWeight:700, fontSize:12, cursor:"pointer", fontFamily:"'DM Sans'" }}>📥 PDF</button>
+              <button onClick={printReceipt} style={{ flex:1, padding:"10px", background:"#16A34A", color:"#fff", border:"none", borderRadius:10, fontWeight:700, fontSize:12, cursor:"pointer", fontFamily:"'DM Sans'" }}>🖨️ Imprimer</button>
               <button onClick={async () => {
                 const client = data.clients.find(c => c.name === receipt.client_name);
                 if (!client?.phone) return showToast("Numéro client manquant", "error");
@@ -2204,8 +2274,8 @@ function SalesPage({ data, setData, showToast, kpiGoals, updateGoal, exchangeRat
                   await sendWhatsApp(client.phone, `🧾 *REÇU #${receipt.id}*\n━━━━━━━━━━━━━━━\n${receipt.items.map(i => `• ${i.name} x${i.qty} = ${fmt(i.total)}`).join("\n")}\n\n*TOTAL: ${fmt(receipt.total)}*\nMerci! 🙏 _${data.user.company}_ 🇨🇩`);
                   showToast("✅ Reçu envoyé par WhatsApp!", "whatsapp");
                 } catch (e) { showToast(`❌ ${e.message}`, "error"); }
-              }} style={{ flex:1, padding:"10px", background:"#25D366", color:"#fff", border:"none", borderRadius:10, fontWeight:700, fontSize:13, cursor:"pointer", fontFamily:"'DM Sans'" }}>💬 WhatsApp</button>
-              <button onClick={() => setReceipt(null)} style={{ flex:"0 0 100%", padding:"8px", background:"transparent", border:"1px solid #ddd", borderRadius:10, fontWeight:600, fontSize:12, cursor:"pointer", color:"#666", fontFamily:"'DM Sans'" }}>✕ Fermer</button>
+              }} style={{ flex:1, padding:"10px", background:"#25D366", color:"#fff", border:"none", borderRadius:10, fontWeight:700, fontSize:12, cursor:"pointer", fontFamily:"'DM Sans'" }}>💬 WhatsApp</button>
+              <button onClick={() => setReceipt(null)} style={{ flex:"0 0 100%", padding:"8px", background:"transparent", border:"1px solid #ddd", borderRadius:10, fontWeight:600, fontSize:11, cursor:"pointer", color:"#999", fontFamily:"'DM Sans'" }}>✕ Fermer</button>
             </div>
           </div>
         </div>
@@ -5369,7 +5439,19 @@ function TutorialsPage({ data, showToast, setActivePage }) {
 // ─── MAIN APP ──────────────────────────────────────────────────────────────────
 export default function BizPlatform() {
   const [dark, setDark]             = useState(true);
-  const [data, setData]             = useState(initialData);
+  const [data, setData]             = useState(() => {
+    try {
+      const saved = localStorage.getItem('bizplatform_data');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        // Basic validation: must have key properties
+        if (parsed && parsed.user && parsed.products && parsed.sales) return parsed;
+      }
+    } catch (e) {
+      console.warn('localStorage data corrupted, using defaults:', e);
+    }
+    return initialData;
+  });
   const [activePage, setActivePage] = useState("home");
   const [sidebarExp, setSidebarExp] = useState(false);
   const [toast, setToast]           = useState(null);
@@ -5380,6 +5462,16 @@ export default function BizPlatform() {
   const [showQuickAdd, setShowQuickAdd] = useState(false);
   const [currency, setCurrency]     = useState("USD");
   const [exchangeRate, setExchangeRate] = useState(2800);
+  const [showMoreNav, setShowMoreNav] = useState(false);
+
+  // Persist data to localStorage on every change
+  useEffect(() => {
+    try {
+      localStorage.setItem('bizplatform_data', JSON.stringify(data));
+    } catch (e) {
+      console.warn('Failed to save to localStorage:', e);
+    }
+  }, [data]);
 
   // Keep global currency & rate in sync for fmt()
   _globalCurrency = currency;
@@ -5581,15 +5673,55 @@ export default function BizPlatform() {
           </div>
         </div>
 
-        {/* ─ MOBILE NAV ─ */}
+        {/* ─ MOBILE NAV (5 items + More) ─ */}
         <nav className="mobile-nav">
-          {NAV.map(n => (
+          {NAV.slice(0, 4).map(n => (
             <div key={n.id} className={`mn-item ${activePage===n.id?"active":""}`} onClick={() => setActivePage(n.id)}>
               <span>{n.icon}</span>
-              <span className="mn-label">{n.short}</span>
+              <span className="mn-label" style={{ fontSize:11 }}>{n.short}</span>
             </div>
           ))}
+          <div className={`mn-item ${NAV.slice(4).some(n=>n.id===activePage)?"active":""}`} onClick={() => setShowMoreNav(true)}>
+            <span>•••</span>
+            <span className="mn-label" style={{ fontSize:11 }}>Plus</span>
+          </div>
         </nav>
+
+        {/* ─ MOBILE MORE BOTTOM SHEET ─ */}
+        {showMoreNav && (
+          <div style={{ position:"fixed", inset:0, zIndex:300, background:"rgba(0,0,0,0.5)", backdropFilter:"blur(4px)" }}
+            onClick={e => e.target === e.currentTarget && setShowMoreNav(false)}>
+            <div style={{
+              position:"absolute", bottom:0, left:0, right:0,
+              background: dark ? "#0B1028" : "#F0F4FF",
+              borderTop: `1px solid ${dark?"rgba(120,165,255,0.15)":"rgba(100,140,255,0.15)"}`,
+              borderRadius:"18px 18px 0 0",
+              padding:"12px 16px max(16px, env(safe-area-inset-bottom))",
+              animation:"slideUp 0.3s ease forwards",
+              boxShadow:"0 -8px 40px rgba(0,0,0,0.25)"
+            }}>
+              {/* Handle bar */}
+              <div style={{ width:40, height:4, borderRadius:2, background: dark?"rgba(120,165,255,0.2)":"rgba(100,140,255,0.2)", margin:"0 auto 14px" }} />
+              <div style={{ fontSize:12, fontWeight:700, color:"#7B91C4", marginBottom:10, textTransform:"uppercase", letterSpacing:0.6, paddingLeft:4 }}>Autres pages</div>
+              <div style={{ display:"grid", gridTemplateColumns:"repeat(3, 1fr)", gap:8 }}>
+                {NAV.slice(4).map(n => (
+                  <div key={n.id}
+                    onClick={() => { setActivePage(n.id); setShowMoreNav(false); }}
+                    style={{
+                      display:"flex", flexDirection:"column", alignItems:"center", gap:6,
+                      padding:"14px 8px", borderRadius:14, cursor:"pointer",
+                      background: activePage===n.id ? "rgba(26,86,255,0.12)" : dark?"rgba(25,40,80,0.4)":"rgba(220,230,255,0.5)",
+                      border: `1px solid ${activePage===n.id ? "rgba(26,86,255,0.3)" : dark?"rgba(120,165,255,0.1)":"rgba(100,140,255,0.1)"}`,
+                      transition:"all 0.2s"
+                    }}>
+                    <span style={{ fontSize:22 }}>{n.icon}</span>
+                    <span style={{ fontSize:12, fontWeight:600, color: activePage===n.id ? "#1A56FF" : dark?"#94ADDB":"#374A6D" }}>{n.label}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* ── GLOBAL SEARCH MODAL ── */}
