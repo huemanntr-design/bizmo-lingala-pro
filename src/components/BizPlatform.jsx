@@ -5663,12 +5663,14 @@ export default function BizPlatform() {
 
             {/* Global Search Trigger */}
             <div onClick={() => setShowGlobalSearch(true)}
+              tabIndex={0} role="button" aria-label="Recherche globale"
+              onKeyDown={e => e.key === "Enter" && setShowGlobalSearch(true)}
               style={{ display:"flex", alignItems:"center", gap:8, padding:"7px 14px", borderRadius:12, cursor:"pointer",
                 background: dark ? "rgba(15,22,55,0.5)" : "rgba(240,244,255,0.7)",
                 backdropFilter:"blur(12px)", border:`1px solid ${dark?"rgba(100,140,255,0.1)":"rgba(100,140,255,0.12)"}`,
                 transition:"all 0.2s", minWidth:160 }}>
-              <span style={{ fontSize:13, color:"#7B91C4" }}>🔍</span>
-              <span style={{ fontSize:12, color:"#7B91C4", flex:1 }}>Rechercher...</span>
+              <span style={{ fontSize:13, color:"#8FA3CC" }}>🔍</span>
+              <span style={{ fontSize:12, color:"#8FA3CC", flex:1 }}>Rechercher...</span>
               <span style={{ fontSize:9, padding:"2px 6px", borderRadius:5, background: dark?"rgba(100,140,255,0.1)":"rgba(26,86,255,0.08)", color:"#7B91C4", fontWeight:700, fontFamily:"monospace" }}>⌘K</span>
             </div>
 
