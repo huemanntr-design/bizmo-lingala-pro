@@ -5022,6 +5022,38 @@ function BusinessPlanPage({ data, showToast, dark }) {
 
 function SettingsPage({ data, setData, showToast, dark, setDark }) {
   const [tab, setTab] = useState("profile");
+  const [waUsers, setWaUsers] = useState([]);
+  const [waMessages, setWaMessages] = useState([]);
+  const [waLoading, setWaLoading] = useState(false);
+  const [waSelectedUser, setWaSelectedUser] = useState(null);
+
+  // Fetch WhatsApp data when integrations tab is selected
+  useEffect(() => {
+    if (tab !== "integrations") return;
+    setWaLoading(true);
+    Promise.all([
+      supabase.from('whatsapp_users').select('*').order('last_message_at', { ascending: false }),
+      supabase.from('whatsapp_messages').select('*').order('created_at', { ascending: false }).limit(100),
+    ]).then(([usersRes, msgsRes]) => {
+      if (usersRes.data) setWaUsers(usersRes.data);
+      if (msgsRes.data) setWaMessages(msgsRes.data);
+      setWaLoading(false);
+    }).catch(() => setWaLoading(false));
+  }, [tab]);
+
+  // Realtime subscription for new messages
+  useEffect(() => {
+    if (tab !== "integrations") return;
+    const channel = supabase.channel('wa-messages-rt')
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'whatsapp_messages' }, (payload) => {
+        setWaMessages(prev => [payload.new, ...prev]);
+      })
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'whatsapp_users' }, () => {
+        supabase.from('whatsapp_users').select('*').order('last_message_at', { ascending: false }).then(r => { if (r.data) setWaUsers(r.data); });
+      })
+      .subscribe();
+    return () => supabase.removeChannel(channel);
+  }, [tab]);
   return (
     <div className="page-bg page-content fade-in">
       <HeroBanner
@@ -5113,17 +5145,128 @@ function SettingsPage({ data, setData, showToast, dark, setDark }) {
       )}
 
       {tab==="integrations" && (
-        <div className="g2">
-          {[["💬","WhatsApp Business","Bot automatique · Messages directs","Connecté","#25D366"],["📊","Google Analytics","Suivi des performances marketing","Non connecté","#D42B3A"],["📧","Email Marketing","Mailchimp · Sendinblue","Non connecté","#D42B3A"],["🏦","Banque Mobile","M-PESA · Airtel · Orange","Connecté","#16C55E"],["📦","Gestion Stock","Système de stock interne","Actif","#16C55E"],["🧾","Comptabilité","Export PDF · Excel · CSV","Actif","#16C55E"]].map(([ico,n,d,status2,col]) => (
-            <div key={n} className="card card-pad card-hover" style={{ display:"flex", alignItems:"center", gap:14, cursor:"pointer" }} onClick={() => showToast(`${n} — configuration ouverte`, "info")}>
-              <div style={{ width:46, height:46, borderRadius:12, background:`${col}12`, display:"flex", alignItems:"center", justifyContent:"center", fontSize:22, flexShrink:0 }}>{ico}</div>
+        <div style={{ display:"flex", flexDirection:"column", gap:16 }}>
+          {/* WhatsApp Connection Card */}
+          <div className="card card-pad" style={{ border:"1.5px solid #25D36640" }}>
+            <div style={{ display:"flex", alignItems:"center", gap:14, marginBottom:16 }}>
+              <div style={{ width:52, height:52, borderRadius:14, background:"#25D36615", display:"flex", alignItems:"center", justifyContent:"center", fontSize:26 }}>💬</div>
               <div style={{ flex:1 }}>
-                <div style={{ fontWeight:700, fontSize:14 }}>{n}</div>
-                <div style={{ fontSize:11, color:"#7B91C4", marginTop:2 }}>{d}</div>
+                <div style={{ fontWeight:800, fontSize:16, fontFamily:"'Bricolage Grotesque'" }}>WhatsApp BizBot 🤖</div>
+                <div style={{ fontSize:12, color:"var(--text2)", marginTop:2 }}>Chatbot IA connecté à votre plateforme</div>
               </div>
-              <span className="tag" style={{ background:`${col}12`, color:col }}>{status2}</span>
+              <span className="tag" style={{ background:"#25D36618", color:"#25D366", fontWeight:700 }}>● Actif</span>
             </div>
-          ))}
+
+            <div style={{ padding:16, borderRadius:12, background:"var(--glass3)", border:"1px solid var(--border)", marginBottom:16 }}>
+              <div style={{ fontSize:12, fontWeight:700, color:"var(--text2)", marginBottom:10, textTransform:"uppercase", letterSpacing:0.5 }}>📱 Comment connecter WhatsApp</div>
+              <div style={{ display:"flex", flexDirection:"column", gap:8 }}>
+                {[
+                  ["1️⃣", "Ouvrez WhatsApp sur votre téléphone"],
+                  ["2️⃣", "Envoyez *START* au numéro du bot Twilio"],
+                  ["3️⃣", "Le bot vous enregistre automatiquement"],
+                  ["4️⃣", "Posez vos questions en langage naturel!"],
+                ].map(([n,t],i) => (
+                  <div key={i} style={{ display:"flex", alignItems:"center", gap:10, fontSize:13 }}>
+                    <span style={{ fontSize:16 }}>{n}</span>
+                    <span>{t}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div style={{ display:"flex", gap:8, flexWrap:"wrap", marginBottom:12 }}>
+              {["📊 Rapport", "📦 Stock", "👥 Clients", "💰 Ventes", "❓ Aide"].map(cmd => (
+                <span key={cmd} style={{ fontSize:11, padding:"5px 10px", borderRadius:20, background:"var(--surface2)", border:"1px solid var(--border)", fontWeight:600 }}>{cmd}</span>
+              ))}
+            </div>
+            <div style={{ fontSize:11, color:"var(--text2)" }}>
+              💡 Le bot comprend le langage naturel grâce à l'IA — vos utilisateurs peuvent poser des questions en français!
+            </div>
+          </div>
+
+          {/* Connected Users */}
+          <div className="card card-pad">
+            <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:14 }}>
+              <div className="sec-title">👥 Utilisateurs Connectés ({waUsers.length})</div>
+              <button className="btn btn-ghost" style={{ fontSize:11 }} onClick={() => {
+                setWaLoading(true);
+                supabase.from('whatsapp_users').select('*').order('last_message_at', { ascending: false })
+                  .then(r => { if (r.data) setWaUsers(r.data); setWaLoading(false); });
+              }}>🔄 Rafraîchir</button>
+            </div>
+            {waLoading ? (
+              <div style={{ textAlign:"center", padding:20, color:"var(--text2)", fontSize:13 }}>Chargement...</div>
+            ) : waUsers.length === 0 ? (
+              <div style={{ textAlign:"center", padding:30, color:"var(--text2)" }}>
+                <div style={{ fontSize:40, marginBottom:8 }}>📱</div>
+                <div style={{ fontSize:14, fontWeight:600, marginBottom:4 }}>Aucun utilisateur connecté</div>
+                <div style={{ fontSize:12 }}>Les utilisateurs apparaîtront ici après avoir envoyé START au bot</div>
+              </div>
+            ) : (
+              <div style={{ display:"flex", flexDirection:"column", gap:6 }}>
+                {waUsers.map(u => (
+                  <div key={u.id} className="card-hover" style={{ display:"flex", alignItems:"center", gap:12, padding:"10px 14px", borderRadius:10, border:"1px solid var(--border)", cursor:"pointer", background: waSelectedUser === u.phone ? "var(--glass3)" : "transparent" }}
+                    onClick={() => setWaSelectedUser(waSelectedUser === u.phone ? null : u.phone)}>
+                    <div style={{ width:36, height:36, borderRadius:"50%", background:"#25D36615", display:"flex", alignItems:"center", justifyContent:"center", fontSize:16 }}>📱</div>
+                    <div style={{ flex:1 }}>
+                      <div style={{ fontSize:13, fontWeight:600 }}>{u.name || u.phone}</div>
+                      <div style={{ fontSize:11, color:"var(--text2)" }}>{u.phone}</div>
+                    </div>
+                    <div style={{ textAlign:"right" }}>
+                      <span className="tag" style={{ background: u.active ? "#25D36618" : "#D42B3A18", color: u.active ? "#25D366" : "#D42B3A", fontSize:10 }}>
+                        {u.active ? "Actif" : "Inactif"}
+                      </span>
+                      <div style={{ fontSize:10, color:"var(--text2)", marginTop:3 }}>
+                        {u.last_message_at ? new Date(u.last_message_at).toLocaleDateString("fr-FR") : "—"}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Message History for selected user */}
+          {waSelectedUser && (
+            <div className="card card-pad">
+              <div className="sec-title" style={{ marginBottom:14 }}>💬 Conversation — {waSelectedUser}</div>
+              <div style={{ maxHeight:350, overflowY:"auto", display:"flex", flexDirection:"column", gap:8, padding:4 }}>
+                {waMessages.filter(m => m.phone === waSelectedUser).slice(0, 30).reverse().map(m => (
+                  <div key={m.id} style={{ display:"flex", justifyContent: m.direction === "outbound" ? "flex-end" : "flex-start" }}>
+                    <div style={{
+                      maxWidth:"75%", padding:"10px 14px", borderRadius: m.direction === "outbound" ? "14px 14px 4px 14px" : "14px 14px 14px 4px",
+                      background: m.direction === "outbound" ? "#25D36620" : "var(--surface2)",
+                      border: `1px solid ${m.direction === "outbound" ? "#25D36630" : "var(--border)"}`,
+                      fontSize:12, lineHeight:1.5, whiteSpace:"pre-wrap", wordBreak:"break-word"
+                    }}>
+                      <div>{m.body}</div>
+                      <div style={{ fontSize:9, color:"var(--text2)", marginTop:4, textAlign:"right" }}>
+                        {new Date(m.created_at).toLocaleTimeString("fr-FR", { hour:"2-digit", minute:"2-digit" })}
+                        {m.direction === "outbound" && " · 🤖"}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+                {waMessages.filter(m => m.phone === waSelectedUser).length === 0 && (
+                  <div style={{ textAlign:"center", padding:20, color:"var(--text2)", fontSize:12 }}>Aucun message</div>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* Other integrations */}
+          <div className="g2">
+            {[["📊","Google Analytics","Suivi des performances marketing","Non connecté","#D42B3A"],["📧","Email Marketing","Mailchimp · Sendinblue","Non connecté","#D42B3A"],["🏦","Banque Mobile","M-PESA · Airtel · Orange","Connecté","#16C55E"],["📦","Gestion Stock","Système de stock interne","Actif","#16C55E"],["🧾","Comptabilité","Export PDF · Excel · CSV","Actif","#16C55E"]].map(([ico,n,d,status2,col]) => (
+              <div key={n} className="card card-pad card-hover" style={{ display:"flex", alignItems:"center", gap:14, cursor:"pointer" }} onClick={() => showToast(`${n} — configuration ouverte`, "info")}>
+                <div style={{ width:46, height:46, borderRadius:12, background:`${col}12`, display:"flex", alignItems:"center", justifyContent:"center", fontSize:22, flexShrink:0 }}>{ico}</div>
+                <div style={{ flex:1 }}>
+                  <div style={{ fontWeight:700, fontSize:14 }}>{n}</div>
+                  <div style={{ fontSize:11, color:"var(--text2)", marginTop:2 }}>{d}</div>
+                </div>
+                <span className="tag" style={{ background:`${col}12`, color:col }}>{status2}</span>
+              </div>
+            ))}
+          </div>
         </div>
       )}
 
