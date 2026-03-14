@@ -1874,7 +1874,7 @@ function SalesPage({ data, setData, showToast, kpiGoals, updateGoal, exchangeRat
           </div>
 
           {/* Cart */}
-          <div className="card card-pad" style={{ height:"fit-content", position:"sticky", top:0 }}>
+          <div className="card card-pad" style={{ height:"fit-content", position:"sticky", top:0, transition:"opacity 0.4s ease", opacity: cartFading ? 0.3 : 1 }}>
             <div className="sec-title" style={{ marginBottom: 14 }}>🛒 Panier ({cart.length})</div>
             {!cart.length ? (
               <div style={{ textAlign:"center", padding:"24px 0", color:"#7B91C4" }}><div style={{ fontSize:32, marginBottom:8 }}>🛒</div>Aucun article</div>
