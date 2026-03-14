@@ -5022,6 +5022,38 @@ function BusinessPlanPage({ data, showToast, dark }) {
 
 function SettingsPage({ data, setData, showToast, dark, setDark }) {
   const [tab, setTab] = useState("profile");
+  const [waUsers, setWaUsers] = useState([]);
+  const [waMessages, setWaMessages] = useState([]);
+  const [waLoading, setWaLoading] = useState(false);
+  const [waSelectedUser, setWaSelectedUser] = useState(null);
+
+  // Fetch WhatsApp data when integrations tab is selected
+  useEffect(() => {
+    if (tab !== "integrations") return;
+    setWaLoading(true);
+    Promise.all([
+      supabase.from('whatsapp_users').select('*').order('last_message_at', { ascending: false }),
+      supabase.from('whatsapp_messages').select('*').order('created_at', { ascending: false }).limit(100),
+    ]).then(([usersRes, msgsRes]) => {
+      if (usersRes.data) setWaUsers(usersRes.data);
+      if (msgsRes.data) setWaMessages(msgsRes.data);
+      setWaLoading(false);
+    }).catch(() => setWaLoading(false));
+  }, [tab]);
+
+  // Realtime subscription for new messages
+  useEffect(() => {
+    if (tab !== "integrations") return;
+    const channel = supabase.channel('wa-messages-rt')
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'whatsapp_messages' }, (payload) => {
+        setWaMessages(prev => [payload.new, ...prev]);
+      })
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'whatsapp_users' }, () => {
+        supabase.from('whatsapp_users').select('*').order('last_message_at', { ascending: false }).then(r => { if (r.data) setWaUsers(r.data); });
+      })
+      .subscribe();
+    return () => supabase.removeChannel(channel);
+  }, [tab]);
   return (
     <div className="page-bg page-content fade-in">
       <HeroBanner
