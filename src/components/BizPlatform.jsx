@@ -1480,6 +1480,10 @@ function HomePage({ data, setData, showToast, dark, kpiGoals, updateGoal, setAct
         <MiniKpiCard icon="🛍️" label="Nb de Ventes" value={data.sales.length} trend="+12%" trendUp={true} color="#F5C518" />
         <MiniKpiCard icon="⚠️" label="Produits en rupture" value={lowStock.length} trendUp={false} color={lowStock.length>0?"#D42B3A":"#16C55E"} />
       </div>
+      <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom:4 }}>
+        <span style={{ fontSize:12, color:"#7B91C4" }}>Résumé rapide</span>
+        <HelpIcon text="Ceci est votre tableau de bord — un résumé de tout ce qui se passe dans votre business. Utilisez les filtres de date pour voir vos performances." />
+      </div>
 
       {/* ── VISUAL ANALYTICS ROW ── */}
       <div className="g3" style={{ marginBottom:16 }}>
