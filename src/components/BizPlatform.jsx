@@ -5619,13 +5619,17 @@ export default function BizPlatform() {
           </div>
 
           <div className="nav-list">
-            {NAV.slice(0,-1).map(n => (
-              <div key={n.id} className={`nav-item ${activePage===n.id?"active":""}`} onClick={() => setActivePage(n.id)} title={n.label}>
-                <span className="nav-icon">{n.icon}</span>
-                {sidebarExp && <span className="nav-label">{n.label}</span>}
-                {n.badge && <span className="nav-badge">{n.badge}</span>}
-              </div>
-            ))}
+            {NAV.slice(0,-1).map(n => {
+              const NavIcon = n.icon;
+              return (
+                <div key={n.id} className={`nav-item ${activePage===n.id?"active":""}`} onClick={() => setActivePage(n.id)} title={n.label}
+                  tabIndex={0} role="button" aria-label={n.label} onKeyDown={e => e.key === "Enter" && setActivePage(n.id)}>
+                  <span className="nav-icon"><NavIcon size={18} /></span>
+                  {sidebarExp && <span className="nav-label">{n.label}</span>}
+                  {n.badge && <span className="nav-badge">{n.badge}</span>}
+                </div>
+              );
+            })}
           </div>
 
           <div className="nav-bottom">
