@@ -904,6 +904,7 @@ const buildStyles = (dark) => {
   @keyframes barGrow   { from { transform: scaleY(0); transform-origin: bottom; } to { transform: scaleY(1); transform-origin: bottom; } }
   @keyframes float     { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-6px); } }
   @keyframes shimmer   { 0% { background-position: -200% 0; } 100% { background-position: 200% 0; } }
+  @keyframes slideUp   { from { opacity: 0; transform: translateY(100%); } to { opacity: 1; transform: translateY(0); } }
 
   .fade-in  { animation: fadeIn  0.35s ease forwards; }
   .scale-in { animation: scaleIn 0.25s ease forwards; }
