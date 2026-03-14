@@ -5700,12 +5700,12 @@ export default function BizPlatform() {
             </div>
 
             {/* Theme toggle */}
-            <button className="theme-btn" onClick={() => setDark(d => !d)} title={dark?"Mode Clair":"Mode Sombre"}>
+            <button className="theme-btn" onClick={() => setDark(d => !d)} aria-label={dark?"Passer en mode clair":"Passer en mode sombre"} title={dark?"Mode Clair":"Mode Sombre"}>
               {dark ? "☀️" : "🌙"}
             </button>
 
             {/* Notifications */}
-            <button className="theme-btn" onClick={() => showToast("🔔 Aucune nouvelle alerte", "info")} title="Notifications" style={{ position:"relative" }}>
+            <button className="theme-btn" onClick={() => showToast("🔔 Aucune nouvelle alerte", "info")} aria-label="Notifications" title="Notifications" style={{ position:"relative" }}>
               🔔
               <div style={{ position:"absolute", top:6, right:6, width:6, height:6, borderRadius:"50%", background:"#D42B3A", boxShadow:"0 0 6px rgba(212,43,58,0.5)" }} />
             </button>
@@ -5713,6 +5713,8 @@ export default function BizPlatform() {
             {/* Avatar */}
             <div style={{ cursor:"pointer", transition:"transform 0.2s" }}
               onClick={() => setActivePage("settings")}
+              tabIndex={0} role="button" aria-label="Paramètres du profil"
+              onKeyDown={e => e.key === "Enter" && setActivePage("settings")}
               onMouseEnter={e => e.currentTarget.style.transform="scale(1.1)"}
               onMouseLeave={e => e.currentTarget.style.transform="scale(1)"}>
               <Avatar name={data.user.name} size={36} />
