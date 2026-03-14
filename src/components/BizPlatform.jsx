@@ -1388,7 +1388,7 @@ const RevenueChart = ({ data: chartData, dark }) => {
     "linear-gradient(180deg, #F43F5E, #BE123C)",
   ];
   return (
-    <div style={{ display: "flex", alignItems: "flex-end", gap: 8, height: 140, paddingTop: 10, position: "relative" }}>
+    <div style={{ display: "flex", alignItems: "flex-end", gap: 8, height: 140, paddingTop: 10, position: "relative" }} role="img" aria-label="Graphique des revenus hebdomadaires">
       {/* Average line */}
       <div style={{ position: "absolute", left: 0, right: 0, bottom: `${(avg / max) * 100 * 1.3 + 20}px`, borderTop: "1.5px dashed rgba(26,86,255,0.3)", zIndex: 1 }}>
         <span style={{ position: "absolute", right: 0, top: -14, fontSize: 9, color: "#7B91C4", background: dark ? "#0E1330" : "#EFF2FA", padding: "1px 4px", borderRadius: 3 }}>moy</span>
