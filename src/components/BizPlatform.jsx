@@ -2600,6 +2600,12 @@ function ClientsPage({ data, setData, showToast, kpiGoals, updateGoal }) {
   const [showAdd, setShowAdd] = useState(false);
   const [editingClient, setEditingClient] = useState(null);
   const [newClient, setNewClient] = useState({ name:"", email:"", phone:"", address:"", status:"active", credit_limit:200, credit_balance:0, total_revenue:0 });
+  const [clientTouched, setClientTouched] = useState({});
+  const clientErrors = {
+    name: clientTouched.name && !newClient.name ? "Le nom est requis" : "",
+    phone: clientTouched.phone && !newClient.phone ? "Le téléphone est requis" : "",
+  };
+  const clientValid = !!newClient.name && !!newClient.phone;
 
   const filtered = data.clients.filter(c => c.name.toLowerCase().includes(search.toLowerCase()) || c.phone.includes(search));
   const statusColors = { vip:"#F5C518", active:"#16C55E", lead:"#1A56FF", inactive:"#7B91C4" };
