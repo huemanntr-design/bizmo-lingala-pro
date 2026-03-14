@@ -5670,7 +5670,7 @@ export default function BizPlatform() {
             </div>
 
             {/* Quick Add */}
-            <button className="theme-btn" onClick={() => setShowQuickAdd(true)} title="Action rapide" style={{ background:"linear-gradient(135deg, #1A56FF, #2B6BFF)", color:"white", border:"none", boxShadow:"0 4px 16px rgba(26,86,255,0.3)" }}>
+            <button className="theme-btn" onClick={() => setShowQuickAdd(true)} aria-label="Action rapide" title="Action rapide" style={{ background:"linear-gradient(135deg, #1A56FF, #2B6BFF)", color:"white", border:"none", boxShadow:"0 4px 16px rgba(26,86,255,0.3)" }}>
               ＋
             </button>
 
