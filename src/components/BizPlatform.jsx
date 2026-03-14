@@ -1651,6 +1651,7 @@ function HomePage({ data, setData, showToast, dark, kpiGoals, updateGoal, setAct
         </div>
       </div>
 
+      {showFullAnalysis && (<>
       {/* Product Performance Graph */}
       <div className="card card-pad" style={{ marginBottom:16 }}>
         <div className="sec-head">
@@ -1697,7 +1698,7 @@ function HomePage({ data, setData, showToast, dark, kpiGoals, updateGoal, setAct
       </div>
 
       {/* Transactions */}
-      <div className="card card-pad">
+      <div className="card card-pad" style={{ marginBottom:16 }}>
         <div className="sec-head">
           <div className="sec-title">🕐 Dernières Transactions</div>
           <button className="btn btn-ghost" style={{ fontSize: 12 }}>Voir tout →</button>
@@ -1721,6 +1722,7 @@ function HomePage({ data, setData, showToast, dark, kpiGoals, updateGoal, setAct
           </table>
         </div>
       </div>
+      </>)}
 
       {showWAModal && (
         <Modal title="📱 Envoyer Rapport WhatsApp" onClose={() => setShowWAModal(false)}>
