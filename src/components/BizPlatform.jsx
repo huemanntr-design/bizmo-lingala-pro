@@ -2567,16 +2567,25 @@ function ProductsPage({ data, setData, showToast }) {
       )}
 
       {showAdd && (
-        <Modal title="➕ Nouveau Produit" onClose={() => setShowAdd(false)}>
+        <Modal title="➕ Nouveau Produit" onClose={() => { setShowAdd(false); setProdTouched({}); }}>
           {[["Nom","name","text"],["Prix de vente","unit_price","number"],["Coût d'achat","cogs","number"],["Stock initial","stock_quantity","number"],["Alerte stock bas","low_stock_alert","number"],["Emoji","emoji","text"]].map(([l,k,t]) => (
-            <div className="form-group" key={k}><label className="form-label">{l}</label><input type={t} value={newProd[k]} onChange={e => setNewProd(p => ({...p,[k]:e.target.value}))} placeholder={l} /></div>
+            <div className="form-group" key={k}>
+              <label className="form-label">{l}{(k==="name"||k==="unit_price") && " *"}</label>
+              <input type={t} value={newProd[k]}
+                onChange={e => setNewProd(p => ({...p,[k]:e.target.value}))}
+                onBlur={() => setProdTouched(p => ({...p,[k]:true}))}
+                placeholder={l}
+                style={prodErrors[k] ? { borderColor:"#D42B3A", boxShadow:"0 0 0 2px rgba(212,43,58,0.15)" } : {}}
+              />
+              {prodErrors[k] && <div style={{ color:"#D42B3A", fontSize:11, marginTop:4, fontWeight:600 }}>{prodErrors[k]}</div>}
+            </div>
           ))}
           <div className="form-group"><label className="form-label">Catégorie</label>
             <select value={newProd.type} onChange={e => setNewProd(p => ({...p,type:e.target.value}))}>
               {["Alimentaire","Boisson","Hygiène","Électronique","Textile","Autre"].map(t => <option key={t}>{t}</option>)}
             </select>
           </div>
-          <button className="btn btn-primary" style={{ width:"100%", justifyContent:"center" }} onClick={addProduct}>➕ Ajouter Produit</button>
+          <button className="btn btn-primary" style={{ width:"100%", justifyContent:"center", opacity: prodValid?1:0.5, pointerEvents: prodValid?"auto":"none" }} onClick={addProduct} disabled={!prodValid}>➕ Ajouter Produit</button>
         </Modal>
       )}
     </div>
