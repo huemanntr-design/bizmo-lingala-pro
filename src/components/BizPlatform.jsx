@@ -1091,16 +1091,45 @@ const SparkLine = ({ data, width = 100, height = 32, color = "#1A56FF", fill = t
   );
 };
 
-function MiniBarChartViz({ data, height = 48, barColor = "#1A56FF" }) {
-  const max = Math.max(...data.map(d => d.value));
+function MiniBarChartViz({ data, height = 80, barColor = "#1A56FF" }) {
+  const max = Math.max(...data.map(d => d.value), 1);
+  const barColors = [
+    "linear-gradient(180deg, #3B82F6, #1D4ED8)",
+    "linear-gradient(180deg, #60A5FA, #2563EB)",
+    "linear-gradient(180deg, #38BDF8, #0284C7)",
+    "linear-gradient(180deg, #34D399, #059669)",
+    "linear-gradient(180deg, #FBBF24, #D97706)",
+    "linear-gradient(180deg, #F97316, #EA580C)",
+    "linear-gradient(180deg, #F43F5E, #BE123C)",
+  ];
   return (
-    <div style={{ display:"flex", alignItems:"flex-end", gap:3, height }}>
-      {data.map((d, i) => (
-        <div key={i} style={{ flex:1, display:"flex", flexDirection:"column", alignItems:"center", gap:2 }}>
-          <div style={{ width:"100%", height:`${Math.max((d.value / max) * 100, 8)}%`, borderRadius:"3px 3px 0 0", background: d.highlight ? "#D42B3A" : barColor, opacity: d.highlight ? 1 : 0.7, transition:"height 0.5s ease" }} />
-          {d.label && <span style={{ fontSize:8, color:"#7B91C4" }}>{d.label}</span>}
-        </div>
-      ))}
+    <div style={{ display:"flex", alignItems:"flex-end", gap:6, height, paddingTop:8 }} role="img" aria-label="Graphique en barres des ventes par produit">
+      {data.map((d, i) => {
+        const h = Math.max((d.value / max) * 100, 6);
+        return (
+          <div key={i} style={{ flex:1, display:"flex", flexDirection:"column", alignItems:"center", gap:3 }}>
+            <div style={{ fontSize:9, fontWeight:700, color: d.highlight ? "#F59E0B" : "#60A5FA", opacity:0.9 }}>
+              {d.value >= 1000 ? `$${(d.value/1000).toFixed(1)}k` : `$${d.value.toFixed(0)}`}
+            </div>
+            <div style={{
+              width:"100%", maxWidth:36, height:`${h}%`, minHeight:4,
+              borderRadius:"6px 6px 2px 2px",
+              background: d.highlight ? "linear-gradient(180deg, #F59E0B, #D97706)" : barColors[i % barColors.length],
+              boxShadow: d.highlight ? "0 0 14px rgba(245,158,11,0.35)" : "0 4px 10px rgba(26,86,255,0.12)",
+              border: d.highlight ? "1px solid rgba(245,158,11,0.4)" : "none",
+              transition:"all 0.5s ease",
+              animation: "barGrow 0.6s ease forwards",
+              animationDelay: `${i * 80}ms`,
+              cursor:"pointer",
+            }}
+              title={`${d.label || ''}: $${d.value.toFixed(2)}`}
+              onMouseEnter={e => e.currentTarget.style.transform = "scaleY(1.08)"}
+              onMouseLeave={e => e.currentTarget.style.transform = "scaleY(1)"}
+            />
+            {d.label && <span style={{ fontSize:10 }}>{d.label}</span>}
+          </div>
+        );
+      })}
     </div>
   );
 }
@@ -4344,6 +4373,42 @@ function PersonalPage({ data, setData, showToast, kpiGoals, updateGoal }) {
                   💡 <strong>Astuce:</strong> La règle <strong>50/30/20</strong> — 50% besoins, 30% envies, 20% épargne. Votre taux d'épargne est de <strong style={{ color: Number(savingsRate) >= 20 ? "#16C55E" : "#F5C518" }}>{savingsRate}%</strong>.
                 </div>
               </div>
+
+              {/* Category spending horizontal bar chart */}
+              <div style={{ marginTop:18 }}>
+                <div style={{ fontSize:12, fontWeight:700, marginBottom:10 }}>📊 Répartition par Catégorie</div>
+                {(() => {
+                  const cats = data.budget.categories;
+                  const maxSpent = Math.max(...cats.map(c => c.spent), 1);
+                  const catColors = ["#1A56FF","#D42B3A","#F5C518","#16C55E","#25D366","#7B91C4"];
+                  return cats.map((c, i) => {
+                    const pct = (c.spent / c.budget * 100);
+                    const over = c.spent > c.budget;
+                    return (
+                      <div key={c.name} style={{ marginBottom:8 }}>
+                        <div style={{ display:"flex", justifyContent:"space-between", fontSize:11, marginBottom:3 }}>
+                          <span style={{ color: over ? "#D42B3A" : "inherit", fontWeight: over ? 700 : 400 }}>{c.name}</span>
+                          <span style={{ color:"#7B91C4" }}>{fmt(c.spent)} / {fmt(c.budget)} ({pct.toFixed(0)}%)</span>
+                        </div>
+                        <div style={{ height:8, borderRadius:4, background:"rgba(26,86,255,0.08)", overflow:"hidden", position:"relative" }}>
+                          <div style={{
+                            height:"100%",
+                            width:`${Math.min(pct, 100)}%`,
+                            borderRadius:4,
+                            background: over ? "linear-gradient(90deg, #D42B3A, #E8384F)" : `linear-gradient(90deg, ${catColors[i%catColors.length]}, ${catColors[i%catColors.length]}AA)`,
+                            transition:"width 0.6s ease",
+                          }} />
+                          {over && <div style={{
+                            position:"absolute", top:0, left:`${100*(c.budget/c.spent)}%`, right:0, height:"100%",
+                            background:"repeating-linear-gradient(45deg, transparent, transparent 2px, rgba(212,43,58,0.15) 2px, rgba(212,43,58,0.15) 4px)",
+                            borderRadius:"0 4px 4px 0",
+                          }} />}
+                        </div>
+                      </div>
+                    );
+                  });
+                })()}
+              </div>
             </div>
 
             {/* Income vs Expense trend */}
@@ -4837,52 +4902,258 @@ function BusinessPlanPage({ data, showToast, dark }) {
     }, 3000);
   };
 
+  const [activeTab, setActiveTab] = useState("plan"); // "plan" | "etude"
+  const [studyStep, setStudyStep] = useState(0);
+  const [studyAnswers, setStudyAnswers] = useState({ zone:"", concurrent1:"", concurrent2:"", concurrent3:"", prixConc1:"", prixConc2:"", prixConc3:"", clientType:"", problemeSolve:"", canalVente:"", budgetMarketing:"" });
+
+  // Market study practical tool results
+  const computeStudyInsights = () => {
+    const concs = [studyAnswers.concurrent1, studyAnswers.concurrent2, studyAnswers.concurrent3].filter(Boolean);
+    const prices = [studyAnswers.prixConc1, studyAnswers.prixConc2, studyAnswers.prixConc3].map(Number).filter(n => n > 0);
+    const avgConc = prices.length > 0 ? prices.reduce((a,b)=>a+b,0)/prices.length : 0;
+    const myAvg = data.products.reduce((s,p)=>s+p.unit_price,0)/data.products.length;
+    return { concs, prices, avgConc, myAvg, priceDiff: myAvg > 0 && avgConc > 0 ? ((myAvg - avgConc)/avgConc*100).toFixed(1) : null };
+  };
+
   if (step === 0) {
     return (
       <div className="page-bg page-content fade-in">
-        <div style={{ maxWidth:700, margin:"0 auto", textAlign:"center", padding:"40px 0" }}>
-          <div style={{ fontSize:64, marginBottom:20 }}>📋</div>
-          <h1 style={{ fontFamily:"'Bricolage Grotesque'", fontSize:32, fontWeight:800, letterSpacing:"-0.5px", marginBottom:12 }}>Créateur de Business Plan</h1>
-          <div style={{ fontSize:15, color:"#7B91C4", lineHeight:1.8, marginBottom:32, maxWidth:500, margin:"0 auto 32px" }}>
-            Générez un plan d'affaires professionnel et complet basé sur vos <strong style={{ color:"#1A56FF" }}>données réelles</strong> — produits, ventes, clients, et finances. L'IA analyse votre activité et crée un document prêt pour investisseurs et partenaires.
-          </div>
+        {/* Tabs: Business Plan vs Étude de Marché */}
+        <div className="tabs" style={{ marginBottom:24, maxWidth:700, margin:"0 auto 24px" }}>
+          {[["plan","📋 Business Plan"],["etude","🔍 Étude de Marché"]].map(([k,l]) => (
+            <div key={k} className={`tab ${activeTab===k?"active":""}`} onClick={() => setActiveTab(k)}
+              tabIndex={0} role="button" onKeyDown={e => e.key==="Enter" && setActiveTab(k)}>{l}</div>
+          ))}
+        </div>
 
-          <div className="g3" style={{ marginBottom:32 }}>
-            {[
-              ["📊","Données Réelles","Utilise vos ventes, produits, clients et finances existants"],
-              ["🧠","Analyse IA","L'IA structure un plan professionnel avec projections"],
-              ["📥","Export PDF","Document prêt pour banques et investisseurs"],
-            ].map(([ico,t,d]) => (
-              <div key={t} className="card card-pad" style={{ textAlign:"center" }}>
-                <div style={{ fontSize:32, marginBottom:10 }}>{ico}</div>
-                <div style={{ fontWeight:700, fontSize:14, marginBottom:4 }}>{t}</div>
-                <div style={{ fontSize:12, color:"#7B91C4", lineHeight:1.5 }}>{d}</div>
-              </div>
-            ))}
-          </div>
+        {activeTab === "plan" ? (
+          <div style={{ maxWidth:700, margin:"0 auto", textAlign:"center", padding:"40px 0" }}>
+            <div style={{ fontSize:64, marginBottom:20 }}>📋</div>
+            <h1 style={{ fontFamily:"'Bricolage Grotesque'", fontSize:32, fontWeight:800, letterSpacing:"-0.5px", marginBottom:12 }}>Créateur de Business Plan</h1>
+            <div style={{ fontSize:15, color:"#7B91C4", lineHeight:1.8, marginBottom:32, maxWidth:500, margin:"0 auto 32px" }}>
+              Générez un plan d'affaires professionnel et complet basé sur vos <strong style={{ color:"#1A56FF" }}>données réelles</strong> — produits, ventes, clients, et finances. L'IA analyse votre activité et crée un document prêt pour investisseurs et partenaires.
+            </div>
 
-          <div className="card card-pad" style={{ textAlign:"left", marginBottom:24 }}>
-            <div className="sec-title" style={{ marginBottom:12 }}>📈 Données disponibles pour votre plan</div>
-            <div className="g4">
+            <div className="g3" style={{ marginBottom:32 }}>
               {[
-                ["🛍️","Produits",data.products.length,"#1A56FF"],
-                ["💰","Revenus",fmt(totalRevenue),"#16C55E"],
-                ["👥","Clients",data.clients.length,"#F5C518"],
-                ["📊","Marge moy.",avgMargin.toFixed(0)+"%","#25D366"],
-              ].map(([ico,l,v,c]) => (
-                <div key={l} style={{ padding:12, background:`${c}0A`, borderRadius:10, border:`1px solid ${c}22`, textAlign:"center" }}>
-                  <div style={{ fontSize:18 }}>{ico}</div>
-                  <div style={{ fontFamily:"'Bricolage Grotesque'", fontWeight:700, fontSize:18, color:c }}>{v}</div>
-                  <div style={{ fontSize:10, color:"#7B91C4" }}>{l}</div>
+                ["📊","Données Réelles","Utilise vos ventes, produits, clients et finances existants"],
+                ["🧠","Analyse IA","L'IA structure un plan professionnel avec projections"],
+                ["📥","Export PDF","Document prêt pour banques et investisseurs"],
+              ].map(([ico,t,d]) => (
+                <div key={t} className="card card-pad" style={{ textAlign:"center" }}>
+                  <div style={{ fontSize:32, marginBottom:10 }}>{ico}</div>
+                  <div style={{ fontWeight:700, fontSize:14, marginBottom:4 }}>{t}</div>
+                  <div style={{ fontSize:12, color:"#7B91C4", lineHeight:1.5 }}>{d}</div>
                 </div>
               ))}
             </div>
-          </div>
 
-          <button className="btn btn-primary" style={{ fontSize:16, padding:"14px 40px" }} onClick={() => setStep(1)}>
-            🚀 Commencer
-          </button>
-        </div>
+            <div className="card card-pad" style={{ textAlign:"left", marginBottom:24 }}>
+              <div className="sec-title" style={{ marginBottom:12 }}>📈 Données disponibles pour votre plan</div>
+              <div className="g4">
+                {[
+                  ["🛍️","Produits",data.products.length,"#1A56FF"],
+                  ["💰","Revenus",fmt(totalRevenue),"#16C55E"],
+                  ["👥","Clients",data.clients.length,"#F5C518"],
+                  ["📊","Marge moy.",avgMargin.toFixed(0)+"%","#25D366"],
+                ].map(([ico,l,v,c]) => (
+                  <div key={l} style={{ padding:12, background:`${c}0A`, borderRadius:10, border:`1px solid ${c}22`, textAlign:"center" }}>
+                    <div style={{ fontSize:18 }}>{ico}</div>
+                    <div style={{ fontFamily:"'Bricolage Grotesque'", fontWeight:700, fontSize:18, color:c }}>{v}</div>
+                    <div style={{ fontSize:10, color:"#7B91C4" }}>{l}</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <button className="btn btn-primary" style={{ fontSize:16, padding:"14px 40px" }} onClick={() => setStep(1)}>
+              🚀 Commencer
+            </button>
+          </div>
+        ) : (
+          /* ─── ÉTUDE DE MARCHÉ PÉDAGOGIQUE ─── */
+          <div style={{ maxWidth:750, margin:"0 auto", padding:"20px 0" }}>
+            <div style={{ textAlign:"center", marginBottom:32 }}>
+              <div style={{ fontSize:56, marginBottom:16 }}>🔍</div>
+              <h1 style={{ fontFamily:"'Bricolage Grotesque'", fontSize:28, fontWeight:800, letterSpacing:"-0.5px", marginBottom:8 }}>Étude de Marché Guidée</h1>
+              <div style={{ fontSize:14, color:"#7B91C4", lineHeight:1.8, maxWidth:550, margin:"0 auto" }}>
+                Avant de lancer ou améliorer votre business, il faut <strong style={{ color:"#1A56FF" }}>comprendre votre marché</strong>. On vous guide pas à pas, comme un professeur à l'université — mais en pratique!
+              </div>
+            </div>
+
+            {/* Pedagogic Steps */}
+            <div className="card card-pad" style={{ marginBottom:20 }}>
+              <div className="sec-title" style={{ marginBottom:16 }}>🎓 Les 5 Étapes d'une Bonne Étude de Marché</div>
+              {[
+                { num:"1", title:"Connaître votre zone", emoji:"📍", desc:"Où sont vos clients? À Kinshasa, dans quel quartier? Gombe, Limete, Masina? Chaque zone a ses habitudes d'achat et son pouvoir d'achat.", tip:"Sortez de votre boutique et comptez combien de clients passent devant en 1 heure. Notez combien entrent chez vos voisins concurrents.", action: studyStep === 0 },
+                { num:"2", title:"Identifier la concurrence", emoji:"👀", desc:"Qui vend la même chose que vous? À quel prix? Pourquoi les clients vont chez eux plutôt que chez vous? Ce n'est pas un ennemi — c'est une source d'information!", tip:"Visitez 3 concurrents cette semaine. Notez: leurs prix, comment ils accueillent les clients, quels produits se vendent le plus.", action: studyStep === 1 },
+                { num:"3", title:"Comprendre le client", emoji:"🗣️", desc:"Qui achète? Des mamans? Des restaurants? Des jeunes? Chaque type de client a des besoins différents. Un restaurant veut des gros volumes, une maman veut un bon prix.", tip:"Posez 3 questions à vos 10 prochains clients: Qu'est-ce qui vous plaît ici? Qu'est-ce qui manque? À quel prix vous achetez ailleurs?", action: studyStep === 2 },
+                { num:"4", title:"Trouver votre avantage", emoji:"💎", desc:"Pourquoi quelqu'un devrait acheter chez VOUS et pas ailleurs? Le prix le plus bas? La meilleure qualité? Le service le plus rapide? La livraison?", tip:"Écrivez en une phrase: 'Les clients viennent chez moi parce que...' Si vous n'arrivez pas à finir cette phrase, il faut travailler dessus!", action: studyStep === 3 },
+                { num:"5", title:"Tester et ajuster", emoji:"🧪", desc:"Lancez petit, mesurez, ajustez. Vendez un nouveau produit pendant 2 semaines. Si ça marche, augmentez. Si ça ne marche pas, changez vite.", tip:"Utilisez BizPlatform pour suivre les ventes de chaque produit. Les données vous diront la vérité mieux que votre intuition.", action: studyStep === 4 },
+              ].map((s, i) => (
+                <div key={s.num} style={{
+                  padding:16, marginBottom:12, borderRadius:12,
+                  background: studyStep === i ? "rgba(26,86,255,0.06)" : "transparent",
+                  border: studyStep === i ? "1px solid rgba(26,86,255,0.2)" : "1px solid rgba(26,86,255,0.06)",
+                  cursor:"pointer", transition:"all 0.3s",
+                }} onClick={() => setStudyStep(i)} tabIndex={0} role="button" onKeyDown={e => e.key==="Enter" && setStudyStep(i)}>
+                  <div style={{ display:"flex", alignItems:"center", gap:12, marginBottom: studyStep === i ? 10 : 0 }}>
+                    <div style={{ width:36, height:36, borderRadius:10, background: studyStep === i ? "#1A56FF" : "rgba(26,86,255,0.1)", color: studyStep === i ? "#FFF" : "#1A56FF", display:"flex", alignItems:"center", justifyContent:"center", fontWeight:800, fontSize:14, flexShrink:0, transition:"all 0.3s" }}>{s.num}</div>
+                    <div style={{ flex:1 }}>
+                      <div style={{ fontWeight:700, fontSize:14 }}>{s.emoji} {s.title}</div>
+                    </div>
+                    <span style={{ fontSize:18, opacity:0.5 }}>{studyStep === i ? "▼" : "▶"}</span>
+                  </div>
+                  {studyStep === i && (
+                    <div style={{ paddingLeft:48, animation:"fadeIn 0.3s ease" }}>
+                      <div style={{ fontSize:13, color:"#7B91C4", lineHeight:1.8, marginBottom:10 }}>{s.desc}</div>
+                      <div style={{ padding:"10px 14px", background:"rgba(22,197,94,0.06)", border:"1px solid rgba(22,197,94,0.15)", borderRadius:8, fontSize:12, lineHeight:1.7 }}>
+                        <strong style={{ color:"#16C55E" }}>🎯 Exercice pratique:</strong> <span style={{ color:"#7B91C4" }}>{s.tip}</span>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+
+            {/* Practical Market Research Tool */}
+            <div className="card card-pad" style={{ marginBottom:20 }}>
+              <div className="sec-title" style={{ marginBottom:6 }}>🛠️ Outil Pratique: Analysez Votre Marché</div>
+              <div style={{ fontSize:12, color:"#7B91C4", marginBottom:16, lineHeight:1.6 }}>Remplissez ces informations pour obtenir une analyse comparative instantanée de votre positionnement.</div>
+
+              <div className="g2" style={{ marginBottom:16 }}>
+                <div className="form-group">
+                  <label className="form-label">📍 Zone géographique</label>
+                  <input value={studyAnswers.zone} onChange={e => setStudyAnswers(a=>({...a, zone:e.target.value}))} placeholder="Ex: Gombe, Kinshasa" />
+                </div>
+                <div className="form-group">
+                  <label className="form-label">🗣️ Type de client principal</label>
+                  <select value={studyAnswers.clientType} onChange={e => setStudyAnswers(a=>({...a, clientType:e.target.value}))}>
+                    <option value="">Sélectionner...</option>
+                    {["Ménages / Particuliers","Restaurants & Hôtels","Commerces / Revendeurs","Entreprises / Bureaux","Écoles & Institutions","Mix de tout"].map(o => <option key={o} value={o}>{o}</option>)}
+                  </select>
+                </div>
+              </div>
+
+              <div style={{ fontSize:12, fontWeight:700, marginBottom:10, color:"#1A56FF" }}>👀 Vos 3 principaux concurrents</div>
+              <div className="g3" style={{ marginBottom:16 }}>
+                {[1,2,3].map(n => (
+                  <div key={n}>
+                    <div className="form-group" style={{ marginBottom:6 }}>
+                      <input value={studyAnswers[`concurrent${n}`]} onChange={e => setStudyAnswers(a=>({...a, [`concurrent${n}`]:e.target.value}))} placeholder={`Nom concurrent ${n}`} />
+                    </div>
+                    <div className="form-group">
+                      <input type="number" value={studyAnswers[`prixConc${n}`]} onChange={e => setStudyAnswers(a=>({...a, [`prixConc${n}`]:e.target.value}))} placeholder="Prix moyen ($)" />
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              <div className="g2" style={{ marginBottom:16 }}>
+                <div className="form-group">
+                  <label className="form-label">💎 Quel problème résolvez-vous?</label>
+                  <textarea value={studyAnswers.problemeSolve} onChange={e => setStudyAnswers(a=>({...a, problemeSolve:e.target.value}))} placeholder="Ex: Les gens n'ont pas accès à de l'eau potable bon marché dans mon quartier..." rows={2} style={{ resize:"vertical" }} />
+                </div>
+                <div className="form-group">
+                  <label className="form-label">📢 Canal de vente principal</label>
+                  <select value={studyAnswers.canalVente} onChange={e => setStudyAnswers(a=>({...a, canalVente:e.target.value}))}>
+                    <option value="">Sélectionner...</option>
+                    {["Boutique physique","Marché / Stand","WhatsApp / Réseaux sociaux","Livraison à domicile","En gros uniquement","Multi-canal"].map(o => <option key={o} value={o}>{o}</option>)}
+                  </select>
+                </div>
+              </div>
+
+              {/* Analysis Results */}
+              {(studyAnswers.concurrent1 || studyAnswers.zone) && (() => {
+                const ins = computeStudyInsights();
+                return (
+                  <div style={{ marginTop:20, padding:16, background:"rgba(26,86,255,0.04)", borderRadius:12, border:"1px solid rgba(26,86,255,0.12)" }}>
+                    <div style={{ fontSize:14, fontWeight:800, marginBottom:14, color:"#1A56FF" }}>📊 Résultats de votre Analyse</div>
+
+                    {ins.avgConc > 0 && (
+                      <div style={{ marginBottom:16 }}>
+                        <div style={{ fontSize:12, fontWeight:700, marginBottom:8 }}>💰 Comparaison des Prix</div>
+                        <div style={{ display:"flex", alignItems:"flex-end", gap:10, height:80 }}>
+                          {ins.prices.map((p, i) => (
+                            <div key={i} style={{ flex:1, textAlign:"center" }}>
+                              <div style={{ fontSize:10, fontWeight:700, color:"#D42B3A", marginBottom:3 }}>${p}</div>
+                              <div style={{ height:`${(p/Math.max(...ins.prices, ins.myAvg))*60}px`, borderRadius:"4px 4px 0 0", background:"linear-gradient(180deg, #D42B3A88, #D42B3A44)", transition:"height 0.5s" }} />
+                              <div style={{ fontSize:9, color:"#7B91C4", marginTop:3 }}>{studyAnswers[`concurrent${i+1}`] || `C${i+1}`}</div>
+                            </div>
+                          ))}
+                          <div style={{ flex:1, textAlign:"center" }}>
+                            <div style={{ fontSize:10, fontWeight:700, color:"#16C55E", marginBottom:3 }}>${ins.myAvg.toFixed(2)}</div>
+                            <div style={{ height:`${(ins.myAvg/Math.max(...ins.prices, ins.myAvg))*60}px`, borderRadius:"4px 4px 0 0", background:"linear-gradient(180deg, #16C55E, #16C55E88)", transition:"height 0.5s" }} />
+                            <div style={{ fontSize:9, color:"#16C55E", fontWeight:700, marginTop:3 }}>Vous</div>
+                          </div>
+                        </div>
+                        <div style={{ fontSize:12, color:"#7B91C4", marginTop:10, lineHeight:1.7 }}>
+                          {ins.priceDiff > 0
+                            ? `⚠️ Vos prix sont <strong style="color:#F5C518">${ins.priceDiff}% plus chers</strong> que la moyenne des concurrents. Assurez-vous d'offrir une valeur ajoutée qui justifie cette différence (qualité, service, livraison).`
+                            : ins.priceDiff < 0
+                            ? `✅ Vos prix sont <strong style="color:#16C55E">${Math.abs(ins.priceDiff)}% moins chers</strong> que la concurrence. C'est un avantage! Mais vérifiez que vos marges restent saines.`
+                            : "Vos prix sont similaires à la concurrence."
+                          }
+                        </div>
+                      </div>
+                    )}
+
+                    {studyAnswers.zone && (
+                      <div style={{ padding:"10px 14px", background:"rgba(22,197,94,0.06)", borderRadius:8, marginBottom:12, fontSize:12, lineHeight:1.7 }}>
+                        <strong style={{ color:"#16C55E" }}>📍 Zone: {studyAnswers.zone}</strong><br/>
+                        <span style={{ color:"#7B91C4" }}>Conseil: Faites un comptage pendant 3 jours à des heures différentes. Le matin (7h-9h), midi (12h-14h), et soir (17h-19h). Notez combien de personnes passent et combien achètent.</span>
+                      </div>
+                    )}
+
+                    {studyAnswers.clientType && (
+                      <div style={{ padding:"10px 14px", background:"rgba(245,197,24,0.06)", borderRadius:8, marginBottom:12, fontSize:12, lineHeight:1.7 }}>
+                        <strong style={{ color:"#F5C518" }}>🗣️ Cible: {studyAnswers.clientType}</strong><br/>
+                        <span style={{ color:"#7B91C4" }}>
+                          {studyAnswers.clientType.includes("Ménages") ? "Les ménages achètent régulièrement mais en petites quantités. Proposez des formats économiques et des promotions de fidélité." :
+                           studyAnswers.clientType.includes("Restaurant") ? "Les restaurants veulent des prix de gros, une livraison fiable et une qualité constante. Proposez des contrats mensuels." :
+                           studyAnswers.clientType.includes("Commerces") ? "Les revendeurs cherchent les meilleures marges. Offrez des remises par volume et des conditions de paiement flexibles." :
+                           "Adaptez votre offre aux besoins spécifiques de cette cible. Posez-leur la question directement!"}
+                        </span>
+                      </div>
+                    )}
+
+                    {studyAnswers.problemeSolve && (
+                      <div style={{ padding:"10px 14px", background:"rgba(26,86,255,0.06)", borderRadius:8, fontSize:12, lineHeight:1.7 }}>
+                        <strong style={{ color:"#1A56FF" }}>💎 Votre proposition de valeur</strong><br/>
+                        <span style={{ color:"#7B91C4" }}>"{studyAnswers.problemeSolve}" — C'est votre avantage compétitif. Mettez-le en avant dans toute votre communication: affiches, WhatsApp, réseaux sociaux.</span>
+                      </div>
+                    )}
+                  </div>
+                );
+              })()}
+            </div>
+
+            {/* Quick checklist */}
+            <div className="card card-pad" style={{ marginBottom:20 }}>
+              <div className="sec-title" style={{ marginBottom:12 }}>✅ Checklist avant de lancer / améliorer</div>
+              {[
+                "J'ai visité au moins 3 concurrents et noté leurs prix",
+                "J'ai parlé à 10+ clients potentiels",
+                "Je connais le pouvoir d'achat de ma zone",
+                "Je peux expliquer en 1 phrase pourquoi acheter chez moi",
+                "J'ai un prix compétitif OU un avantage clair",
+                "J'ai testé mon produit/service pendant au moins 2 semaines",
+                "J'utilise BizPlatform pour suivre mes données",
+              ].map((item, i) => (
+                <label key={i} style={{ display:"flex", alignItems:"center", gap:10, padding:"8px 0", borderBottom:"1px solid rgba(26,86,255,0.06)", fontSize:13, cursor:"pointer" }}>
+                  <input type="checkbox" style={{ accentColor:"#1A56FF" }} />
+                  <span>{item}</span>
+                </label>
+              ))}
+            </div>
+
+            <div style={{ textAlign:"center" }}>
+              <button className="btn btn-primary" style={{ fontSize:14, padding:"12px 32px" }} onClick={() => { setActiveTab("plan"); }}>
+                📋 J'ai fait mon étude → Créer mon Business Plan
+              </button>
+            </div>
+          </div>
+        )}
       </div>
     );
   }
