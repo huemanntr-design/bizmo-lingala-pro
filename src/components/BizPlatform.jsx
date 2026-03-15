@@ -4373,6 +4373,42 @@ function PersonalPage({ data, setData, showToast, kpiGoals, updateGoal }) {
                   💡 <strong>Astuce:</strong> La règle <strong>50/30/20</strong> — 50% besoins, 30% envies, 20% épargne. Votre taux d'épargne est de <strong style={{ color: Number(savingsRate) >= 20 ? "#16C55E" : "#F5C518" }}>{savingsRate}%</strong>.
                 </div>
               </div>
+
+              {/* Category spending horizontal bar chart */}
+              <div style={{ marginTop:18 }}>
+                <div style={{ fontSize:12, fontWeight:700, marginBottom:10 }}>📊 Répartition par Catégorie</div>
+                {(() => {
+                  const cats = data.budget.categories;
+                  const maxSpent = Math.max(...cats.map(c => c.spent), 1);
+                  const catColors = ["#1A56FF","#D42B3A","#F5C518","#16C55E","#25D366","#7B91C4"];
+                  return cats.map((c, i) => {
+                    const pct = (c.spent / c.budget * 100);
+                    const over = c.spent > c.budget;
+                    return (
+                      <div key={c.name} style={{ marginBottom:8 }}>
+                        <div style={{ display:"flex", justifyContent:"space-between", fontSize:11, marginBottom:3 }}>
+                          <span style={{ color: over ? "#D42B3A" : "inherit", fontWeight: over ? 700 : 400 }}>{c.name}</span>
+                          <span style={{ color:"#7B91C4" }}>{fmt(c.spent)} / {fmt(c.budget)} ({pct.toFixed(0)}%)</span>
+                        </div>
+                        <div style={{ height:8, borderRadius:4, background:"rgba(26,86,255,0.08)", overflow:"hidden", position:"relative" }}>
+                          <div style={{
+                            height:"100%",
+                            width:`${Math.min(pct, 100)}%`,
+                            borderRadius:4,
+                            background: over ? "linear-gradient(90deg, #D42B3A, #E8384F)" : `linear-gradient(90deg, ${catColors[i%catColors.length]}, ${catColors[i%catColors.length]}AA)`,
+                            transition:"width 0.6s ease",
+                          }} />
+                          {over && <div style={{
+                            position:"absolute", top:0, left:`${100*(c.budget/c.spent)}%`, right:0, height:"100%",
+                            background:"repeating-linear-gradient(45deg, transparent, transparent 2px, rgba(212,43,58,0.15) 2px, rgba(212,43,58,0.15) 4px)",
+                            borderRadius:"0 4px 4px 0",
+                          }} />}
+                        </div>
+                      </div>
+                    );
+                  });
+                })()}
+              </div>
             </div>
 
             {/* Income vs Expense trend */}
