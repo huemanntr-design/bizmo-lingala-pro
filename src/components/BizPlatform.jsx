@@ -1091,16 +1091,45 @@ const SparkLine = ({ data, width = 100, height = 32, color = "#1A56FF", fill = t
   );
 };
 
-function MiniBarChartViz({ data, height = 48, barColor = "#1A56FF" }) {
-  const max = Math.max(...data.map(d => d.value));
+function MiniBarChartViz({ data, height = 80, barColor = "#1A56FF" }) {
+  const max = Math.max(...data.map(d => d.value), 1);
+  const barColors = [
+    "linear-gradient(180deg, #3B82F6, #1D4ED8)",
+    "linear-gradient(180deg, #60A5FA, #2563EB)",
+    "linear-gradient(180deg, #38BDF8, #0284C7)",
+    "linear-gradient(180deg, #34D399, #059669)",
+    "linear-gradient(180deg, #FBBF24, #D97706)",
+    "linear-gradient(180deg, #F97316, #EA580C)",
+    "linear-gradient(180deg, #F43F5E, #BE123C)",
+  ];
   return (
-    <div style={{ display:"flex", alignItems:"flex-end", gap:3, height }}>
-      {data.map((d, i) => (
-        <div key={i} style={{ flex:1, display:"flex", flexDirection:"column", alignItems:"center", gap:2 }}>
-          <div style={{ width:"100%", height:`${Math.max((d.value / max) * 100, 8)}%`, borderRadius:"3px 3px 0 0", background: d.highlight ? "#D42B3A" : barColor, opacity: d.highlight ? 1 : 0.7, transition:"height 0.5s ease" }} />
-          {d.label && <span style={{ fontSize:8, color:"#7B91C4" }}>{d.label}</span>}
-        </div>
-      ))}
+    <div style={{ display:"flex", alignItems:"flex-end", gap:6, height, paddingTop:8 }} role="img" aria-label="Graphique en barres des ventes par produit">
+      {data.map((d, i) => {
+        const h = Math.max((d.value / max) * 100, 6);
+        return (
+          <div key={i} style={{ flex:1, display:"flex", flexDirection:"column", alignItems:"center", gap:3 }}>
+            <div style={{ fontSize:9, fontWeight:700, color: d.highlight ? "#F59E0B" : "#60A5FA", opacity:0.9 }}>
+              {d.value >= 1000 ? `$${(d.value/1000).toFixed(1)}k` : `$${d.value.toFixed(0)}`}
+            </div>
+            <div style={{
+              width:"100%", maxWidth:36, height:`${h}%`, minHeight:4,
+              borderRadius:"6px 6px 2px 2px",
+              background: d.highlight ? "linear-gradient(180deg, #F59E0B, #D97706)" : barColors[i % barColors.length],
+              boxShadow: d.highlight ? "0 0 14px rgba(245,158,11,0.35)" : "0 4px 10px rgba(26,86,255,0.12)",
+              border: d.highlight ? "1px solid rgba(245,158,11,0.4)" : "none",
+              transition:"all 0.5s ease",
+              animation: "barGrow 0.6s ease forwards",
+              animationDelay: `${i * 80}ms`,
+              cursor:"pointer",
+            }}
+              title={`${d.label || ''}: $${d.value.toFixed(2)}`}
+              onMouseEnter={e => e.currentTarget.style.transform = "scaleY(1.08)"}
+              onMouseLeave={e => e.currentTarget.style.transform = "scaleY(1)"}
+            />
+            {d.label && <span style={{ fontSize:10 }}>{d.label}</span>}
+          </div>
+        );
+      })}
     </div>
   );
 }
